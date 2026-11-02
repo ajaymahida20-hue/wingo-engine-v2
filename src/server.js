@@ -29,7 +29,7 @@ function panelPassword() {
   if (pw === DEFAULT_PANEL_PASSWORD) {
     console.warn(
       "\n  ! Panel password is the built-in default. Set PANEL_PASSWORD in the\n" +
-      "  ! environment to change it — the panel can read your bot token.\n"
+      "  ! environment to change it - the panel can read your bot token.\n"
     );
   }
   return pw;
@@ -72,13 +72,16 @@ function snapshot() {
       welcomeVideo: state.cfg.welcomeVideo || "",
       welcomeAudio: state.cfg.welcomeAudio || "",
       videoMessage: state.cfg.videoMessage || "",
+      uidMessage: state.cfg.uidMessage || "",
+      customLink: state.cfg.customLink || "",
+      customLinkText: state.cfg.customLinkText || "?? OPEN LINK",
       autoVerifyUid: state.cfg.autoVerifyUid !== false
     },
     subscribers: state.subs.map(s => ({
       id: s.id,
       name: s.name,
       username: s.username,
-      uid: s.uid || "—",
+      uid: s.uid || "-",
       uidStatus: s.uidStatus || "NONE",
       uidSubmittedAt: s.uidSubmittedAt || null,
       active: s.active === true,
@@ -125,6 +128,9 @@ async function api(req, res, url) {
     if ("welcomeVideo" in body) state.cfg.welcomeVideo = String(body.welcomeVideo || "").trim();
     if ("welcomeAudio" in body) state.cfg.welcomeAudio = String(body.welcomeAudio || "").trim();
     if ("videoMessage" in body) state.cfg.videoMessage = String(body.videoMessage || "");
+    if ("uidMessage" in body) state.cfg.uidMessage = String(body.uidMessage || "");
+    if ("customLink" in body) state.cfg.customLink = String(body.customLink || "").trim();
+    if ("customLinkText" in body) state.cfg.customLinkText = String(body.customLinkText || "").trim();
     if ("autoVerifyUid" in body) state.cfg.autoVerifyUid = !!body.autoVerifyUid;
     saveNow();
     if (state.cfg.botToken && !state.listener.running) await tg.startListener();
@@ -147,7 +153,7 @@ async function api(req, res, url) {
     const was = state.engine.enabled;
     state.engine.enabled = on;
     saveNow();
-    if (was !== on) info(on ? "prediction engine STARTED" : "prediction engine STOPPED — feed polling paused");
+    if (was !== on) info(on ? "prediction engine STARTED" : "prediction engine STOPPED - feed polling paused");
     return json(res, 200, { ok: true, enabled: on });
   }
 
@@ -215,6 +221,10 @@ async function api(req, res, url) {
     if (typeof cfg.welcomeVideo === "string") state.cfg.welcomeVideo = cfg.welcomeVideo;
     if (typeof cfg.welcomeAudio === "string") state.cfg.welcomeAudio = cfg.welcomeAudio;
     if (typeof cfg.videoMessage === "string") state.cfg.videoMessage = cfg.videoMessage;
+    if (typeof cfg.uidMessage === "string") state.cfg.uidMessage = cfg.uidMessage;
+    if (typeof cfg.customLink === "string") state.cfg.customLink = cfg.customLink;
+    if (typeof cfg.customLinkText === "string") state.cfg.customLinkText = cfg.customLinkText;
+    if (typeof cfg.autoVerifyUid === "boolean") state.cfg.autoVerifyUid = cfg.autoVerifyUid;
     saveNow();
     return json(res, 200, { ok: true });
   }

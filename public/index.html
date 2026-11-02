@@ -10,14 +10,14 @@
 
 <!-- ============ LOGIN SCREEN ============ -->
 <div id="login" class="login-card">
-  <div class="login-icon">⚡</div>
+  <div class="login-icon">?</div>
   <h1 class="login-title">WINGO ENGINE V2</h1>
   <p class="muted" style="margin-bottom:18px;">Authentication required to access terminal</p>
   <div class="field">
     <input type="password" id="pw" placeholder="Enter access key / password" autocomplete="current-password" autofocus>
   </div>
   <div class="row" style="margin-top:14px; justify-content:center;">
-    <button class="primary" style="width:100%;" onclick="login()">AUTHORIZE ACCESS ❯</button>
+    <button class="primary" style="width:100%;" onclick="login()">AUTHORIZE ACCESS ?</button>
   </div>
   <div id="loginErr" class="bad" style="margin-top:10px; font-weight:700; font-size:12px;"></div>
   <p class="note" style="margin-top:16px;">Default key is <b>012m24</b>. Override via <b>PANEL_PASSWORD</b> in environment.</p>
@@ -30,80 +30,80 @@
   <header class="cyber-header">
     <div class="header-title-box">
       <div class="header-title">
-        <span>⚡ WINGO ENGINE V2</span>
-        <span class="pill" id="modePill">—</span>
+        <span>? WINGO ENGINE V2</span>
+        <span class="pill" id="modePill">-</span>
       </div>
-      <div class="header-sub" id="headLine">Establishing connection…</div>
+      <div class="header-sub" id="headLine">Establishing connection.</div>
     </div>
     <div class="row">
-      <button onclick="refresh()" title="Instant refresh">🔄 SYNC</button>
-      <button class="danger" onclick="logout()" title="Lock terminal">🔒 LOCK</button>
+      <button onclick="refresh()" title="Instant refresh">?? SYNC</button>
+      <button class="danger" onclick="logout()" title="Lock terminal">?? LOCK</button>
     </div>
   </header>
 
   <!-- NAVIGATION TABS -->
   <nav class="cyber-nav">
-    <button class="nav-tab active" data-tab="tab-hud" onclick="switchTab('tab-hud')">⚡ LIVE ENGINE</button>
-    <button class="nav-tab" data-tab="tab-subs" onclick="switchTab('tab-subs')">👥 USERS &amp; UID <span class="nav-badge" id="navSubBadge">0</span></button>
-    <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">🤖 BOT &amp; VIDEO SETTINGS</button>
-    <button class="nav-tab" data-tab="tab-console" onclick="switchTab('tab-console')">💻 CONSOLE LOGS</button>
+    <button class="nav-tab active" data-tab="tab-hud" onclick="switchTab('tab-hud')">? LIVE ENGINE</button>
+    <button class="nav-tab" data-tab="tab-subs" onclick="switchTab('tab-subs')">?? USERS &amp; UID <span class="nav-badge" id="navSubBadge">0</span></button>
+    <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">?? BOT &amp; VIDEO SETTINGS</button>
+    <button class="nav-tab" data-tab="tab-console" onclick="switchTab('tab-console')">?? CONSOLE LOGS</button>
   </nav>
 
   <!-- ================= TAB 1: LIVE HUD ================= -->
   <div id="tab-hud" class="tab-pane">
     <div class="card">
       <div class="card-head">
-        <h2>⚡ Core Engine Status <span class="pill" id="enginePill">—</span></h2>
+        <h2>? Core Engine Status <span class="pill" id="enginePill">-</span></h2>
         <div class="row">
-          <button class="primary" id="btnEngineOn" onclick="engineAction('start')">▶ START ENGINE</button>
-          <button class="danger" id="btnEngineOff" onclick="engineAction('stop')">⏸ STOP ENGINE</button>
+          <button class="primary" id="btnEngineOn" onclick="engineAction('start')">? START ENGINE</button>
+          <button class="danger" id="btnEngineOff" onclick="engineAction('stop')">? STOP ENGINE</button>
         </div>
       </div>
-      <p class="note" id="engineNote" style="margin-bottom:12px;">Loading engine status…</p>
+      <p class="note" id="engineNote" style="margin-bottom:12px;">Loading engine status.</p>
 
       <div class="grid">
-        <div class="kv"><label>Stage Mode</label><b id="kStage">—</b></div>
-        <div class="kv"><label>Signal Call</label><b class="cy" id="kPred">—</b></div>
-        <div class="kv"><label>Next Period</label><b id="kPeriod">—</b></div>
-        <div class="kv"><label>Round Timer</label><b class="cy" id="kTimer">—</b></div>
-        <div class="kv"><label>History Buffer</label><b id="kHist">—</b></div>
-        <div class="kv"><label>Loss Streak</label><b id="kLossRun">—</b></div>
+        <div class="kv"><label>Stage Mode</label><b id="kStage">-</b></div>
+        <div class="kv"><label>Signal Call</label><b class="cy" id="kPred">-</b></div>
+        <div class="kv"><label>Next Period</label><b id="kPeriod">-</b></div>
+        <div class="kv"><label>Round Timer</label><b class="cy" id="kTimer">-</b></div>
+        <div class="kv"><label>History Buffer</label><b id="kHist">-</b></div>
+        <div class="kv"><label>Loss Streak</label><b id="kLossRun">-</b></div>
       </div>
 
       <div class="big-signal-box">
-        <div class="lbl">⚡ CURRENT ACTIVE SIGNAL ⚡</div>
-        <div class="sig-text" id="kBigSig">—</div>
+        <div class="lbl">? CURRENT ACTIVE SIGNAL ?</div>
+        <div class="sig-text" id="kBigSig">-</div>
       </div>
 
       <div class="grid">
-        <div class="kv"><label>Total Wins</label><b class="ok" id="kWins">—</b></div>
-        <div class="kv"><label>Jackpots</label><b class="ok" id="kJack">—</b></div>
-        <div class="kv"><label>Losses</label><b class="bad" id="kLoss">—</b></div>
-        <div class="kv"><label>Accuracy Rate</label><b class="cy" id="kRate">—</b></div>
+        <div class="kv"><label>Total Wins</label><b class="ok" id="kWins">-</b></div>
+        <div class="kv"><label>Jackpots</label><b class="ok" id="kJack">-</b></div>
+        <div class="kv"><label>Losses</label><b class="bad" id="kLoss">-</b></div>
+        <div class="kv"><label>Accuracy Rate</label><b class="cy" id="kRate">-</b></div>
       </div>
     </div>
 
     <!-- Data Feed Quick Status -->
     <div class="card">
       <div class="card-head">
-        <h2>🌐 Data Feed Mirror <span class="pill" id="feedPill">—</span></h2>
+        <h2>?? Data Feed Mirror <span class="pill" id="feedPill">-</span></h2>
         <button onclick="testFeed()">TEST FEED NOW</button>
       </div>
       <div class="grid">
-        <div class="kv"><label>Last Sync</label><b id="kFeedOk">—</b></div>
-        <div class="kv"><label>HTTP Status</label><b id="kFeedStatus">—</b></div>
-        <div class="kv"><label>Rounds/Call</label><b id="kFeedRounds">—</b></div>
-        <div class="kv"><label>Feed Mirror</label><b id="kFeedPath">—</b></div>
-        <div class="kv"><label>Success / Fail</label><b id="kFeedCounts">—</b></div>
+        <div class="kv"><label>Last Sync</label><b id="kFeedOk">-</b></div>
+        <div class="kv"><label>HTTP Status</label><b id="kFeedStatus">-</b></div>
+        <div class="kv"><label>Rounds/Call</label><b id="kFeedRounds">-</b></div>
+        <div class="kv"><label>Feed Mirror</label><b id="kFeedPath">-</b></div>
+        <div class="kv"><label>Success / Fail</label><b id="kFeedCounts">-</b></div>
       </div>
       <div id="feedTestOut" class="muted" style="margin-top:8px;"></div>
-      <p class="note" id="feedNote">—</p>
+      <p class="note" id="feedNote">-</p>
     </div>
 
     <!-- Recent Session Log Table -->
     <div class="card">
       <div class="card-head">
-        <h2>📊 Recent Rounds Log <span class="muted">(Latest 5 Settled)</span></h2>
+        <h2>?? Recent Rounds Log <span class="muted">(Latest 5 Settled)</span></h2>
       </div>
       <div class="tablewrap">
         <table>
@@ -120,7 +120,7 @@
   <div id="tab-subs" class="tab-pane hidden">
     <div class="card">
       <div class="card-head">
-        <h2>👥 Bot Subscribers &amp; UID Verification <span class="pill on" id="subCount">0</span></h2>
+        <h2>?? Bot Subscribers &amp; UID Verification <span class="pill on" id="subCount">0</span></h2>
         <div class="row">
           <button onclick="setSubFilter('all')" class="nav-tab active" id="subFilterAll" style="padding:4px 10px; font-size:11px;">ALL</button>
           <button onclick="setSubFilter('pending')" class="nav-tab" id="subFilterPending" style="padding:4px 10px; font-size:11px;">PENDING UID</button>
@@ -131,15 +131,15 @@
 
       <!-- Quick Metrics -->
       <div class="grid" style="margin-bottom:12px;">
-        <div class="kv"><label>Total Registered</label><b class="cy" id="kTotalUsers">—</b></div>
-        <div class="kv"><label>Verified Members</label><b class="ok" id="kVerifiedUsers">—</b></div>
-        <div class="kv"><label>Pending Verification</label><b class="cy" id="kPendingUsers">—</b></div>
-        <div class="kv"><label>Live Predicting</label><b class="ok" id="kLiveUsers">—</b></div>
+        <div class="kv"><label>Total Registered</label><b class="cy" id="kTotalUsers">-</b></div>
+        <div class="kv"><label>Verified Members</label><b class="ok" id="kVerifiedUsers">-</b></div>
+        <div class="kv"><label>Pending Verification</label><b class="cy" id="kPendingUsers">-</b></div>
+        <div class="kv"><label>Live Predicting</label><b class="ok" id="kLiveUsers">-</b></div>
       </div>
 
       <!-- Search Filter -->
       <div class="search-bar-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon">??</span>
         <input type="text" id="subSearch" class="search-input" placeholder="Search by name, @username, Telegram ID or submitted UID..." oninput="onSubSearch(this.value)">
       </div>
 
@@ -150,8 +150,8 @@
       <div class="pager-wrap" id="subPager">
         <span class="pager-info" id="subPageInfo">Showing 0 of 0</span>
         <div class="pager-actions">
-          <button id="subPrevBtn" onclick="changeSubPage(-1)">❮ PREV</button>
-          <button id="subNextBtn" onclick="changeSubPage(1)">NEXT ❯</button>
+          <button id="subPrevBtn" onclick="changeSubPage(-1)">? PREV</button>
+          <button id="subNextBtn" onclick="changeSubPage(1)">NEXT ?</button>
         </div>
       </div>
 
@@ -164,7 +164,7 @@
     <!-- Bot Listener Settings -->
     <div class="card">
       <div class="card-head">
-        <h2>🤖 Bot Configuration <span class="pill" id="listenerPill">—</span></h2>
+        <h2>?? Bot Configuration <span class="pill" id="listenerPill">-</span></h2>
         <div class="row">
           <button onclick="listenerAction('start')">START BOT LISTENER</button>
           <button class="danger" onclick="listenerAction('stop')">STOP</button>
@@ -174,8 +174,8 @@
       <div class="field">
         <label>Telegram Bot Token</label>
         <div class="row">
-          <input type="password" id="inpToken" placeholder="123456789:AAH…" autocomplete="off" style="flex:1;">
-          <button onclick="toggleToken()">👁 VIEW</button>
+          <input type="password" id="inpToken" placeholder="123456789:AAH." autocomplete="off" style="flex:1;">
+          <button onclick="toggleToken()">?? VIEW</button>
           <button onclick="verifyToken()">VERIFY</button>
         </div>
       </div>
@@ -183,17 +183,33 @@
       <div class="field">
         <label>Instruction Video (Telegram file_id, Direct URL, or local path)</label>
         <input type="text" id="inpWelcomeVideo" placeholder="e.g. BAACAgUAAxkBA... or https://...">
-        <p class="note" style="margin-top:4px;">When a user sends /start, this video is sent with the instructions below.</p>
+        <p class="note" style="margin-top:4px;">When enabled, this video is sent to the user.</p>
       </div>
 
       <div class="field">
         <label>Instruction Audio / Voice Note (Telegram file_id, Direct URL, or local path)</label>
         <input type="text" id="inpWelcomeAudio" placeholder="e.g. AwACAgUAAxkBA... or https://...">
-        <p class="note" style="margin-top:4px;">Delivered directly beneath the video when a user sends /start.</p>
+        <p class="note" style="margin-top:4px;">Delivered directly beneath the video when active.</p>
       </div>
 
       <div class="field">
-        <label>Video Message / Deposit Instructions (Sent with video)</label>
+        <label>UID Request Message (Second message sent after welcome banner)</label>
+        <textarea id="inpUidMessage" rows="3" placeholder="?? ???? ?????? ??? ???, ???? ??? ???? Account UID ????..."></textarea>
+      </div>
+
+      <div class="field">
+        <label>Custom Platform / Registration Link URL (Optional button on UID message)</label>
+        <input type="text" id="inpCustomLink" placeholder="https://example.com/register">
+        <p class="note" style="margin-top:4px;">When configured, a button with this URL is attached to the UID request message in a clean structured format.</p>
+      </div>
+
+      <div class="field">
+        <label>Custom Link Button Text</label>
+        <input type="text" id="inpCustomLinkText" placeholder="?? OPEN LINK or ?? REGISTER NOW">
+      </div>
+
+      <div class="field">
+        <label>Video Message / Deposit Instructions (Sent with video if enabled)</label>
         <textarea id="inpVideoMessage" rows="3" placeholder="Watch this video carefully and send your UID..."></textarea>
       </div>
 
@@ -215,11 +231,11 @@
       </div>
 
       <div class="row" style="margin-top:14px;">
-        <button class="primary" onclick="saveConfig()">💾 SAVE ALL SETTINGS</button>
+        <button class="primary" onclick="saveConfig()">?? SAVE ALL SETTINGS</button>
         <button onclick="post('/api/webhook').then(refresh)">CLEAR WEBHOOK</button>
         <button onclick="post('/api/commands').then(refresh)">SET BOT MENU</button>
       </div>
-      <p class="note" id="cfgNote">—</p>
+      <p class="note" id="cfgNote">-</p>
     </div>
 
   </div>
@@ -228,23 +244,23 @@
   <div id="tab-console" class="tab-pane hidden">
     <div class="card">
       <div class="card-head">
-        <h2>💻 Live System Log <span class="muted">(Real-time terminal stream)</span></h2>
+        <h2>?? Live System Log <span class="muted">(Real-time terminal stream)</span></h2>
         <button onclick="refresh()">REFRESH LOGS</button>
       </div>
-      <div class="logbox" id="logBox">Initializing live console stream…</div>
+      <div class="logbox" id="logBox">Initializing live console stream.</div>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <h2>🛠️ System Operations &amp; Maintenance</h2>
+        <h2>??? System Operations &amp; Maintenance</h2>
       </div>
       <div class="row">
-        <button class="danger" onclick="clearHistory()">🧹 PURGE HISTORY</button>
-        <button class="danger" onclick="resetStats()">🔄 RESET WIN/LOSS STATS</button>
-        <button onclick="exportCfg()">📤 EXPORT CONFIG</button>
-        <button onclick="importCfg()">📥 IMPORT CONFIG</button>
+        <button class="danger" onclick="clearHistory()">?? PURGE HISTORY</button>
+        <button class="danger" onclick="resetStats()">?? RESET WIN/LOSS STATS</button>
+        <button onclick="exportCfg()">?? EXPORT CONFIG</button>
+        <button onclick="importCfg()">?? IMPORT CONFIG</button>
       </div>
-      <textarea id="cfgBox" rows="3" placeholder='{"botToken":"…"}' style="margin-top:10px;"></textarea>
+      <textarea id="cfgBox" rows="3" placeholder='{"botToken":"."}' style="margin-top:10px;"></textarea>
     </div>
   </div>
 
