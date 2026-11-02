@@ -68,9 +68,6 @@ function snapshot() {
       botToken: state.cfg.botToken,
       header: state.cfg.header,
       footer: state.cfg.footer,
-      photoBig: state.cfg.photoBig,
-      photoSmall: state.cfg.photoSmall,
-      usePhotos: state.cfg.usePhotos,
       welcomePhoto: state.cfg.welcomePhoto,
       welcomeVideo: state.cfg.welcomeVideo || "",
       videoMessage: state.cfg.videoMessage || "",
@@ -124,9 +121,6 @@ async function api(req, res, url) {
     if ("botToken" in body) state.cfg.botToken = String(body.botToken || "").trim();
     if ("header" in body) state.cfg.header = String(body.header || "");
     if ("footer" in body) state.cfg.footer = String(body.footer || "").trim();
-    if ("photoBig" in body) state.cfg.photoBig = String(body.photoBig || "").trim();
-    if ("photoSmall" in body) state.cfg.photoSmall = String(body.photoSmall || "").trim();
-    if ("usePhotos" in body) state.cfg.usePhotos = !!body.usePhotos;
     if ("welcomeVideo" in body) state.cfg.welcomeVideo = String(body.welcomeVideo || "").trim();
     if ("videoMessage" in body) state.cfg.videoMessage = String(body.videoMessage || "");
     if ("autoVerifyUid" in body) state.cfg.autoVerifyUid = !!body.autoVerifyUid;
@@ -136,8 +130,8 @@ async function api(req, res, url) {
   }
 
   if (route === "/api/verify-token" && req.method === "POST") {
-    const r = await tg.verifyToken();
-    if (r.ok && !state.listener.running) await tg.startListener();
+    const token = body.botToken ? String(body.botToken).trim() : "";
+    const r = await tg.verifyToken(token);
     return json(res, 200, r);
   }
 
@@ -216,9 +210,6 @@ async function api(req, res, url) {
     if (typeof cfg.botToken === "string") state.cfg.botToken = cfg.botToken;
     if (typeof cfg.header === "string") state.cfg.header = cfg.header;
     if (typeof cfg.footer === "string") state.cfg.footer = cfg.footer;
-    if (typeof cfg.photoBig === "string") state.cfg.photoBig = cfg.photoBig;
-    if (typeof cfg.photoSmall === "string") state.cfg.photoSmall = cfg.photoSmall;
-    if (typeof cfg.usePhotos === "boolean") state.cfg.usePhotos = cfg.usePhotos;
     if (typeof cfg.welcomeVideo === "string") state.cfg.welcomeVideo = cfg.welcomeVideo;
     if (typeof cfg.videoMessage === "string") state.cfg.videoMessage = cfg.videoMessage;
     saveNow();

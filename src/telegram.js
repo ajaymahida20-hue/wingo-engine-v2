@@ -4,7 +4,7 @@
 
 import { MSG_TRACK_MAX, WELCOME_PHOTO, DEFAULT_VIDEO_MSG } from "./config.js";
 import { state, persist } from "./store.js";
-import { buildPostPair, photoForPrediction } from "./posts.js";
+import { buildPost } from "./posts.js";
 import { info, warn } from "./logger.js";
 import fs from "node:fs";
 import path from "node:path";
@@ -474,10 +474,9 @@ async function handleCallback(cq) {
 // ---------------------------------------------------------------- broadcast loop
 
 export async function broadcast(period, prediction, numbers) {
-  const photo = photoForPrediction(prediction);
-  const { caption, fullText } = buildPostPair(period, prediction, numbers, !!photo);
+  const fullText = buildPost(period, prediction, numbers);
 
-  // Broadcast ONLY to verified, active subscribers
+  // Broadcast ONLY to verified, active subscribers (pure text message, no photo)
   const eligibleSubs = state.subs.filter(s => s.active && s.uidStatus === "VERIFIED");
   if (!state.cfg.botToken || !eligibleSubs.length) {
     if (!eligibleSubs.length) warn(`nothing published for ..${period.slice(-4)} — no active verified subscriber`);
@@ -489,13 +488,7 @@ export async function broadcast(period, prediction, numbers) {
   const dead = [];
 
   await mapConcurrent(eligibleSubs, CONCURRENCY, async (s) => {
-    let r;
-    if (photo) {
-      r = await sendPhotoDirect(s.id, photo, caption, { reply_markup: MAIN_KEYBOARD }, true);
-      if (!r.ok) r = await sendDirect(s.id, fullText, { reply_markup: MAIN_KEYBOARD }, true);
-    } else {
-      r = await sendDirect(s.id, fullText, { reply_markup: MAIN_KEYBOARD }, true);
-    }
+    const r = await sendDirect(s.id, fullText, { reply_markup: MAIN_KEYBOARD }, true);
     if (!r.ok && r.blocked) dead.push(s.id);
   });
 
@@ -603,12 +596,32 @@ export async function setBotCommands() {
   return j.ok ? { ok: true } : { ok: false, error: j.description };
 }
 
-export async function verifyToken() {
-  const saved = state.cfg.botToken;
-  state.bot = { id: null, username: "" };
-  const j = await tg("getMe");
-  if (!j.ok) { state.cfg.botToken = saved; return { ok: false, error: j.description }; }
-  state.bot = { id: j.result.id, username: j.result.username || "" };
-  persist();
-  return { ok: true, username: j.result.username, name: j.result.first_name };
+export async function verifyToken(overrideToken = "") {
+  const tokenToTest = (overrideToken || state.cfg.botToken || "").trim();
+  if (!tokenToTest) return { ok: false, error: "Bot token is empty" };
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${tokenToTest}/getMe`, {
+      method: "GET",
+      signal: AbortSignal.timeout(8000)
+    });
+    const j = await res.json();
+    if (!j.ok) return { ok: false, error: j.description || "Invalid bot token" };
+
+    state.cfg.botToken = tokenToTest;
+    state.bot = { id: j.result.id, username: j.result.username || "" };
+    persist();
+
+    // Clear any conflicting webhooks and auto-start listener
+    await tg("deleteWebhook", { drop_pending_updates: false });
+    await setBotCommands();
+    if (!state.listener.running) {
+      await startListener();
+    }
+    await syncBotProfile();
+
+    return { ok: true, username: j.result.username, name: j.result.first_name, id: j.result.id };
+  } catch (e) {
+    return { ok: false, error: "Network error: " + e.message };
+  }
 }

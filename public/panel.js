@@ -150,15 +150,12 @@ function render() {
   $("navSubBadge").textContent = S.totals.pending ? `${S.totals.pending} PENDING` : (S.totals.users || 0);
 
   // Bot & Media Settings Form
-  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpPhotoBig", "inpPhotoSmall", "inpWelcomeVideo", "inpVideoMessage"].includes(document.activeElement.id)) {
+  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpWelcomeVideo", "inpVideoMessage"].includes(document.activeElement.id)) {
     $("inpToken").value = S.cfg.botToken || "";
     $("inpWelcomeVideo").value = S.cfg.welcomeVideo || "";
     $("inpVideoMessage").value = S.cfg.videoMessage || "";
     $("inpHeader").value = S.cfg.header || "";
     $("inpFooter").value = S.cfg.footer || "";
-    $("inpPhotoBig").value = S.cfg.photoBig || "";
-    $("inpPhotoSmall").value = S.cfg.photoSmall || "";
-    $("swPhotos").classList.toggle("on", !!S.cfg.usePhotos);
     $("swAutoVerify").classList.toggle("on", S.cfg.autoVerifyUid !== false);
   }
 
@@ -317,10 +314,6 @@ async function testFeed() {
   refresh();
 }
 
-function togglePhotos() {
-  $("swPhotos").classList.toggle("on");
-}
-
 function toggleAutoVerify() {
   $("swAutoVerify").classList.toggle("on");
 }
@@ -331,8 +324,17 @@ function toggleToken() {
 }
 
 async function verifyToken() {
-  const r = await post("/api/verify-token");
-  alert(r.ok ? `✅ Valid Bot Token! Active as @${r.username} (${r.name})` : `❌ Token Error: ${r.error}`);
+  const token = $("inpToken").value.trim();
+  if (!token) {
+    alert("Please enter a bot token first.");
+    return;
+  }
+  const r = await post("/api/verify-token", { botToken: token });
+  if (r.ok) {
+    alert(`✅ Valid Bot Token!\nActive as @${r.username} (${r.name})\nBot listener has been started automatically!`);
+  } else {
+    alert(`❌ Token Error: ${r.error}`);
+  }
   refresh();
 }
 
@@ -343,9 +345,6 @@ async function saveConfig() {
     videoMessage: $("inpVideoMessage").value,
     header: $("inpHeader").value,
     footer: $("inpFooter").value.trim(),
-    photoBig: $("inpPhotoBig").value.trim(),
-    photoSmall: $("inpPhotoSmall").value.trim(),
-    usePhotos: $("swPhotos").classList.contains("on"),
     autoVerifyUid: $("swAutoVerify").classList.contains("on")
   };
   const r = await post("/api/config", body);

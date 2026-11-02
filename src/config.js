@@ -40,11 +40,6 @@ export const DEFAULT_HEADER =
   "vᵎp °᭄ ➳❦Ꭿl๏ήє ہ٨ـہہ٨ـ♡ ⲦRȺᎠER࿐\n" +
   "                  ✵∘∘cOmєвcคк∘∘✵";
 
-// Telegram file_ids for the post images. A file_id only works for the bot that
-// received the photo, so these must be re-captured if the token ever changes.
-export const DEFAULT_PHOTO_BIG   = "AgACAgUAAxkDAALRIGrkkcAG-zDdpEcmvs4YSHe0gnD7AAL_FWsbgtogV8p0jwqTVXIeAQADAgADeQADPQQ";
-export const DEFAULT_PHOTO_SMALL = "AgACAgUAAxkDAALRImrkkcauNpjeT_Qbn_6ncXSNWTOJAAMWaxuC2iBXrihb5g6p9s8BAAMCAAN5AAM9BA";
-
 // Fallback welcome banner file_id. The bundled public/welcome.jpg is sent first, so
 // this only matters if that file is missing.
 export const WELCOME_PHOTO = "AgACAgUAAxkBAAKewGrjIoFBm2kgboImZdiPbbRz3EeLAAK6GWsbG5EZV4gS6Q9RJmYmAQADAgADeQADPQQ";
@@ -57,9 +52,6 @@ export const DEFAULT_CONFIG = {
   botToken: (process.env.BOT_TOKEN || "").trim(),
   header: DEFAULT_HEADER,
   footer: "@NXTKernelPredictor_Bot",
-  photoBig: DEFAULT_PHOTO_BIG,
-  photoSmall: DEFAULT_PHOTO_SMALL,
-  usePhotos: true,
   welcomePhoto: "",     // set by sending an image to the bot with caption /setwelcome
   welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(),     // Telegram file_id, URL, or local path
   videoMessage: DEFAULT_VIDEO_MSG,
