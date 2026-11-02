@@ -54,6 +54,7 @@ export const DEFAULT_CONFIG = {
   footer: "@NXTKernelPredictor_Bot",
   welcomePhoto: "",     // set by sending an image to the bot with caption /setwelcome
   welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(),     // Telegram file_id, URL, or local path
+  welcomeAudio: (process.env.WELCOME_AUDIO || "").trim(),     // Telegram file_id, URL, or local path
   videoMessage: DEFAULT_VIDEO_MSG,
   autoVerifyUid: true   // If true, automatically verifies UID as soon as it hits server
 };

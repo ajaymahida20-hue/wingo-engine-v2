@@ -12,6 +12,8 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const WELCOME_FILE = path.join(here, "..", "public", "welcome.jpg");
+const WELCOME_VIDEO_FILE = path.join(here, "..", "public", "welcome-video.mp4");
+const WELCOME_AUDIO_FILE = path.join(here, "..", "public", "welcome-audio.mp4");
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m =>
@@ -133,22 +135,68 @@ export async function sendWelcomePhoto(chatId, caption, extra = {}) {
 }
 
 export async function sendWelcomeVideo(chatId, caption = "") {
-  const video = (state.cfg.welcomeVideo || "").trim();
   const text = caption || state.cfg.videoMessage || DEFAULT_VIDEO_MSG;
+  const video = (state.cfg.welcomeVideo || "").trim();
 
-  if (video) {
-    // Check if it is a local file path
-    if (fs.existsSync(video)) {
-      const j = await tgUpload("sendVideo", { chat_id: chatId, caption: text, parse_mode: "HTML" }, "video", video);
-      if (j.ok) { trackSubMessage(chatId, j.result?.message_id); return { ok: true }; }
-    }
-    // Else treat as Telegram file_id or video URL
+  // 1. If we already have a cached Telegram file_id or external URL, send it directly
+  if (video && !fs.existsSync(video)) {
     const j = await tg("sendVideo", { chat_id: chatId, video, caption: text, parse_mode: "HTML" });
-    if (j.ok) { trackSubMessage(chatId, j.result?.message_id); return { ok: true }; }
+    if (j.ok) { trackSubMessage(chatId, j.result?.message_id); return { ok: true, result: j.result }; }
   }
 
-  // Fallback to text message if no video or if video send failed
+  // 2. Check if a local file exists (either custom path or bundled public/welcome-video.mp4)
+  const targetFile = (video && fs.existsSync(video))
+    ? video
+    : (fs.existsSync(WELCOME_VIDEO_FILE) ? WELCOME_VIDEO_FILE : null);
+
+  if (targetFile) {
+    const j = await tgUpload("sendVideo", { chat_id: chatId, caption: text, parse_mode: "HTML" }, "video", targetFile);
+    if (j.ok) {
+      trackSubMessage(chatId, j.result?.message_id);
+      const fileId = j.result?.video?.file_id;
+      if (fileId && !state.cfg.welcomeVideo) {
+        state.cfg.welcomeVideo = fileId;
+        persist();
+      }
+      return { ok: true, result: j.result };
+    }
+  }
+
+  // 3. Fallback to text message if video sending fails
   return sendDirect(chatId, text);
+}
+
+export async function sendWelcomeAudio(chatId) {
+  const audio = (state.cfg.welcomeAudio || "").trim();
+
+  // 1. If we already have a cached Telegram file_id or URL, send it directly
+  if (audio && !fs.existsSync(audio)) {
+    const j = await tg("sendAudio", { chat_id: chatId, audio, parse_mode: "HTML" });
+    if (j.ok) { trackSubMessage(chatId, j.result?.message_id); return { ok: true, result: j.result }; }
+  }
+
+  // 2. Check if a local audio file exists (either custom path or bundled public/welcome-audio.mp4)
+  const targetFile = (audio && fs.existsSync(audio))
+    ? audio
+    : (fs.existsSync(WELCOME_AUDIO_FILE) ? WELCOME_AUDIO_FILE : null);
+
+  if (targetFile) {
+    let j = await tgUpload("sendAudio", { chat_id: chatId }, "audio", targetFile);
+    if (!j.ok) {
+      j = await tgUpload("sendVoice", { chat_id: chatId }, "voice", targetFile);
+    }
+    if (j.ok) {
+      trackSubMessage(chatId, j.result?.message_id);
+      const fileId = j.result?.audio?.file_id || j.result?.voice?.file_id;
+      if (fileId && !state.cfg.welcomeAudio) {
+        state.cfg.welcomeAudio = fileId;
+        persist();
+      }
+      return { ok: true, result: j.result };
+    }
+  }
+
+  return { ok: false };
 }
 
 // ---------------------------------------------------------------- chat cleanup
@@ -304,15 +352,19 @@ async function handleMessage(msg) {
 
     // Step 1: Send Welcome banner
     await sendWelcomePhoto(chatId, welcomeCaption(from));
-    await sleep(500);
+    await sleep(600);
 
     // Step 2: Send Instruction Video + Prompt for UID
     await sendWelcomeVideo(chatId, state.cfg.videoMessage || DEFAULT_VIDEO_MSG);
+    await sleep(600);
+
+    // Step 3: Send Instruction Audio right below the video!
+    await sendWelcomeAudio(chatId);
     persist();
     return;
   }
 
-  // Operator setting commands for Video & Photo uploads
+  // Operator setting commands for Video, Audio & Photo uploads
   if (msg.video) {
     const fileId = msg.video.file_id;
     const caption = (msg.caption || "").trim().toLowerCase();
@@ -323,6 +375,21 @@ async function handleMessage(msg) {
       return;
     } else {
       await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>To set this as your welcome instruction video, send it with caption <code>/setvideo</code> or paste this File ID into your Control Panel.</i>`);
+      return;
+    }
+  }
+
+  if (msg.audio || msg.voice) {
+    const audioObj = msg.audio || msg.voice;
+    const fileId = audioObj.file_id;
+    const caption = (msg.caption || "").trim().toLowerCase();
+    if (caption === "/setaudio" || text === "/setaudio") {
+      state.cfg.welcomeAudio = fileId;
+      persist();
+      await sendDirect(chatId, `✅ <b>Instruction Audio Saved!</b>\n\nYour welcome instruction audio is now active!\n\nFile ID:\n<code>${fileId}</code>`);
+      return;
+    } else {
+      await sendDirect(chatId, `🎵 <b>Audio Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>To set this as your welcome instruction audio, send it with caption <code>/setaudio</code> or paste this File ID into your Control Panel.</i>`);
       return;
     }
   }
@@ -339,6 +406,14 @@ async function handleMessage(msg) {
     state.cfg.welcomeVideo = msg.reply_to_message.video.file_id;
     persist();
     await sendDirect(chatId, "✅ Welcome video file_id updated.");
+    return;
+  }
+
+  if (text === "/setaudio" && (msg.reply_to_message?.audio || msg.reply_to_message?.voice)) {
+    const audioObj = msg.reply_to_message.audio || msg.reply_to_message.voice;
+    state.cfg.welcomeAudio = audioObj.file_id;
+    persist();
+    await sendDirect(chatId, "✅ Welcome audio file_id updated.");
     return;
   }
 

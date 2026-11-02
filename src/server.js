@@ -70,6 +70,7 @@ function snapshot() {
       footer: state.cfg.footer,
       welcomePhoto: state.cfg.welcomePhoto,
       welcomeVideo: state.cfg.welcomeVideo || "",
+      welcomeAudio: state.cfg.welcomeAudio || "",
       videoMessage: state.cfg.videoMessage || "",
       autoVerifyUid: state.cfg.autoVerifyUid !== false
     },
@@ -122,6 +123,7 @@ async function api(req, res, url) {
     if ("header" in body) state.cfg.header = String(body.header || "");
     if ("footer" in body) state.cfg.footer = String(body.footer || "").trim();
     if ("welcomeVideo" in body) state.cfg.welcomeVideo = String(body.welcomeVideo || "").trim();
+    if ("welcomeAudio" in body) state.cfg.welcomeAudio = String(body.welcomeAudio || "").trim();
     if ("videoMessage" in body) state.cfg.videoMessage = String(body.videoMessage || "");
     if ("autoVerifyUid" in body) state.cfg.autoVerifyUid = !!body.autoVerifyUid;
     saveNow();
@@ -211,6 +213,7 @@ async function api(req, res, url) {
     if (typeof cfg.header === "string") state.cfg.header = cfg.header;
     if (typeof cfg.footer === "string") state.cfg.footer = cfg.footer;
     if (typeof cfg.welcomeVideo === "string") state.cfg.welcomeVideo = cfg.welcomeVideo;
+    if (typeof cfg.welcomeAudio === "string") state.cfg.welcomeAudio = cfg.welcomeAudio;
     if (typeof cfg.videoMessage === "string") state.cfg.videoMessage = cfg.videoMessage;
     saveNow();
     return json(res, 200, { ok: true });

@@ -150,9 +150,10 @@ function render() {
   $("navSubBadge").textContent = S.totals.pending ? `${S.totals.pending} PENDING` : (S.totals.users || 0);
 
   // Bot & Media Settings Form
-  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpWelcomeVideo", "inpVideoMessage"].includes(document.activeElement.id)) {
+  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpWelcomeVideo", "inpWelcomeAudio", "inpVideoMessage"].includes(document.activeElement.id)) {
     $("inpToken").value = S.cfg.botToken || "";
     $("inpWelcomeVideo").value = S.cfg.welcomeVideo || "";
+    $("inpWelcomeAudio").value = S.cfg.welcomeAudio || "";
     $("inpVideoMessage").value = S.cfg.videoMessage || "";
     $("inpHeader").value = S.cfg.header || "";
     $("inpFooter").value = S.cfg.footer || "";
@@ -342,6 +343,7 @@ async function saveConfig() {
   const body = {
     botToken: $("inpToken").value.trim(),
     welcomeVideo: $("inpWelcomeVideo").value.trim(),
+    welcomeAudio: $("inpWelcomeAudio").value.trim(),
     videoMessage: $("inpVideoMessage").value,
     header: $("inpHeader").value,
     footer: $("inpFooter").value.trim(),
