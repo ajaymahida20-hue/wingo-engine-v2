@@ -312,14 +312,29 @@ async function handleMessage(msg) {
     return;
   }
 
-  // Operator setting commands
-  if (text === "/setwelcome" && msg.reply_to_message?.photo) {
-    const photos = msg.reply_to_message.photo;
+  // Operator setting commands for Video & Photo uploads
+  if (msg.video) {
+    const fileId = msg.video.file_id;
+    const caption = (msg.caption || "").trim().toLowerCase();
+    if (caption === "/setvideo" || text === "/setvideo") {
+      state.cfg.welcomeVideo = fileId;
+      persist();
+      await sendDirect(chatId, `✅ <b>Instruction Video Saved!</b>\n\nYour welcome instruction video is now active!\n\nFile ID:\n<code>${fileId}</code>`);
+      return;
+    } else {
+      await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>To set this as your welcome instruction video, send it with caption <code>/setvideo</code> or paste this File ID into your Control Panel.</i>`);
+      return;
+    }
+  }
+
+  if (msg.photo && ((msg.caption || "").trim() === "/setwelcome" || text === "/setwelcome")) {
+    const photos = msg.photo;
     state.cfg.welcomePhoto = photos[photos.length - 1].file_id;
     persist();
     await sendDirect(chatId, "✅ Welcome photo file_id updated.");
     return;
   }
+
   if (text === "/setvideo" && msg.reply_to_message?.video) {
     state.cfg.welcomeVideo = msg.reply_to_message.video.file_id;
     persist();
