@@ -1,271 +1,422 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>WinGo Engine V2 // Deposit Unlock Terminal</title>
-<link rel="stylesheet" href="panel.css">
-</head>
-<body>
+// Control panel logic for WinGo Engine V2 (Deposit Unlock & UID Verification)
 
-<!-- ============ LOGIN SCREEN ============ -->
-<div id="login" class="login-card">
-  <div class="login-icon">?</div>
-  <h1 class="login-title">WINGO ENGINE V2</h1>
-  <p class="muted" style="margin-bottom:18px;">Authentication required to access terminal</p>
-  <div class="field">
-    <input type="password" id="pw" placeholder="Enter access key / password" autocomplete="current-password" autofocus>
-  </div>
-  <div class="row" style="margin-top:14px; justify-content:center;">
-    <button class="primary" style="width:100%;" onclick="login()">AUTHORIZE ACCESS ?</button>
-  </div>
-  <div id="loginErr" class="bad" style="margin-top:10px; font-weight:700; font-size:12px;"></div>
-  <p class="note" style="margin-top:16px;">Default key is <b>012m24</b>. Override via <b>PANEL_PASSWORD</b> in environment.</p>
-</div>
+const KEY = "wingo_panel_key";
+const TAB_KEY = "wingo_active_tab";
+let key = sessionStorage.getItem(KEY) || "";
+let S = null;              // last snapshot from /api/state
+let tickBase = 0;          // used to count the round down smoothly between refreshes
 
-<!-- ============ MAIN CYBER TERMINAL ============ -->
-<div id="app" class="wrap hidden">
+// Pagination & Filter States
+let subSearch = "";
+let subFilter = "all"; // 'all' | 'pending' | 'verified' | 'live'
+let subPage = 1;
+const SUB_PER_PAGE = 8;
 
-  <!-- TOP HEADER HUD -->
-  <header class="cyber-header">
-    <div class="header-title-box">
-      <div class="header-title">
-        <span>? WINGO ENGINE V2</span>
-        <span class="pill" id="modePill">-</span>
-      </div>
-      <div class="header-sub" id="headLine">Establishing connection.</div>
-    </div>
-    <div class="row">
-      <button onclick="refresh()" title="Instant refresh">?? SYNC</button>
-      <button class="danger" onclick="logout()" title="Lock terminal">?? LOCK</button>
-    </div>
-  </header>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, m =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
-  <!-- NAVIGATION TABS -->
-  <nav class="cyber-nav">
-    <button class="nav-tab active" data-tab="tab-hud" onclick="switchTab('tab-hud')">? LIVE ENGINE</button>
-    <button class="nav-tab" data-tab="tab-subs" onclick="switchTab('tab-subs')">?? USERS &amp; UID <span class="nav-badge" id="navSubBadge">0</span></button>
-    <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">?? BOT &amp; VIDEO SETTINGS</button>
-    <button class="nav-tab" data-tab="tab-console" onclick="switchTab('tab-console')">?? CONSOLE LOGS</button>
-  </nav>
+async function api(path, opts = {}) {
+  const headers = Object.assign({}, opts.headers || {}, { "x-panel-key": key });
+  if (opts.body) headers["Content-Type"] = "application/json";
+  const res = await fetch(path, Object.assign({}, opts, { headers }));
+  if (res.status === 401) { showLogin(); throw new Error("unauthorized"); }
+  return res.json();
+}
+const post = (path, body) => api(path, { method: "POST", body: JSON.stringify(body || {}) });
 
-  <!-- ================= TAB 1: LIVE HUD ================= -->
-  <div id="tab-hud" class="tab-pane">
-    <div class="card">
-      <div class="card-head">
-        <h2>? Core Engine Status <span class="pill" id="enginePill">-</span></h2>
+function showLogin() {
+  $("app").classList.add("hidden");
+  $("login").classList.remove("hidden");
+}
+function showApp() {
+  $("login").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  restoreActiveTab();
+}
+
+function logout() {
+  sessionStorage.removeItem(KEY);
+  key = "";
+  showLogin();
+}
+
+async function login() {
+  const pw = $("pw").value.trim();
+  if (!pw) return;
+  key = pw;
+  try {
+    S = await api("/api/state");
+    sessionStorage.setItem(KEY, key);
+    $("loginErr").textContent = "";
+    showApp();
+    render();
+  } catch (e) {
+    $("loginErr").textContent = "❌ Invalid password";
+    key = "";
+  }
+}
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+
+// ================= TAB NAVIGATION =================
+function switchTab(tabId) {
+  sessionStorage.setItem(TAB_KEY, tabId);
+  document.querySelectorAll(".nav-tab[data-tab]").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll(".tab-pane").forEach(pane => {
+    pane.classList.toggle("hidden", pane.id !== tabId);
+  });
+}
+
+function restoreActiveTab() {
+  const savedTab = sessionStorage.getItem(TAB_KEY) || "tab-hud";
+  switchTab(savedTab);
+}
+
+async function refresh() {
+  if (!key || $("app").classList.contains("hidden")) return;
+  try {
+    S = await api("/api/state");
+    tickBase = Date.now();
+    render();
+  } catch (e) { /* retry automatically on next interval */ }
+}
+
+// ------------------------------------------------------------------ render
+
+function signalText(run) {
+  const p = run.prediction;
+  if (!p) return "—";
+  const balls = (run.numbers || []).join(", ");
+  return balls ? `${p} [${balls}]` : p;
+}
+
+function render() {
+  if (!S) return;
+
+  // Header & Status
+  $("headLine").textContent = `Uptime ${fmtUptime(S.uptimeSeconds)} · Node Service · Game ${S.feed.game}`;
+  const eng = S.engine.enabled;
+  $("enginePill").textContent = eng ? "ACTIVE" : "PAUSED";
+  $("enginePill").className = "pill " + (eng ? "on" : "");
+  $("modePill").textContent = eng ? "LIVE RUNNING" : "STOPPED";
+  $("modePill").className = "pill " + (eng ? "on" : "");
+  $("btnEngineOn").disabled = eng;
+  $("btnEngineOff").disabled = !eng;
+  $("engineNote").textContent = eng
+    ? "Engine is actively polling lottery draws and streaming prediction signals to verified subscribers."
+    : "Engine is paused. Polling and broadcasts are halted.";
+
+  // Signal & Timer
+  $("kStage").textContent = S.run.mode || "FLOW";
+  $("kPred").textContent = signalText(S.run);
+  $("kPeriod").textContent = S.round.nextPeriod ? `..${String(S.round.nextPeriod).slice(-4)}` : "—";
+  $("kHist").textContent = `${S.history.depth} / ${S.history.max} rounds`;
+  $("kLossRun").textContent = `${S.run.consecutiveLosses || 0} in a row`;
+
+  const bigSig = signalText(S.run);
+  $("kBigSig").textContent = bigSig !== "—" ? `${S.round.nextPeriod ? "PERIOD .." + String(S.round.nextPeriod).slice(-4) + " → " : ""}${bigSig}` : "AWAITING NEXT ROUND DRAW";
+
+  // Win/Loss Metrics
+  const w = S.stats.wins, j = S.stats.jackpots, l = S.stats.losses;
+  const total = w + j + l;
+  $("kWins").textContent = w;
+  $("kJack").textContent = j;
+  $("kLoss").textContent = l;
+  $("kRate").textContent = total ? `${Math.round(((w + j) / total) * 100)}% (${total} rounds)` : "—";
+
+  // Data Feed
+  const feedOk = Date.now() - S.feed.lastOk < 20000;
+  $("feedPill").textContent = feedOk ? "ONLINE" : (S.feed.lastError ? "ATTENTION" : "INITIALIZING");
+  $("feedPill").className = "pill " + (feedOk ? "on" : "");
+  $("kFeedOk").textContent = S.feed.lastOk ? `${Math.round((Date.now() - S.feed.lastOk) / 1000)}s ago` : "never";
+  $("kFeedStatus").textContent = S.feed.lastStatus ? `HTTP ${S.feed.lastStatus}` : "—";
+  $("kFeedRounds").textContent = S.feed.lastRounds || "—";
+  $("kFeedPath").textContent = S.feed.host ? `draw.${S.feed.host}.com` : "—";
+  $("kFeedCounts").textContent = `${S.feed.ok} ok / ${S.feed.failed} failed`;
+  $("feedNote").textContent = S.feed.lastError
+    ? `⚠️ Recent feed issue: ${S.feed.lastError}`
+    : `Connected to mirror draw.${S.feed.host || "auto"}.com. Polling every 2s.`;
+
+  // Recent Log Table
+  renderLog(S.log);
+
+  // Totals & Subscriber Counters
+  $("kTotalUsers").textContent = S.totals.users || 0;
+  $("kVerifiedUsers").textContent = S.totals.verified || 0;
+  $("kPendingUsers").textContent = S.totals.pending || 0;
+  $("kLiveUsers").textContent = S.totals.live || 0;
+  $("navSubBadge").textContent = S.totals.pending ? `${S.totals.pending} PENDING` : (S.totals.users || 0);
+
+  // Bot & Media Settings Form
+  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpWelcomeVideo", "inpWelcomeAudio", "inpVideoMessage", "inpUidMessage", "inpCustomLink", "inpCustomLinkText"].includes(document.activeElement.id)) {
+    $("inpToken").value = S.cfg.botToken || "";
+    $("inpWelcomeVideo").value = S.cfg.welcomeVideo || "";
+    $("inpWelcomeAudio").value = S.cfg.welcomeAudio || "";
+    $("inpUidMessage").value = S.cfg.uidMessage || "";
+    $("inpCustomLink").value = S.cfg.customLink || "";
+    $("inpCustomLinkText").value = S.cfg.customLinkText || "🔗 OPEN LINK";
+    $("inpVideoMessage").value = S.cfg.videoMessage || "";
+    $("inpHeader").value = S.cfg.header || "";
+    $("inpFooter").value = S.cfg.footer || "";
+    $("swAutoVerify").classList.toggle("on", S.cfg.autoVerifyUid !== false);
+  }
+
+  const lRun = S.listener.running;
+  $("listenerPill").textContent = lRun ? "LISTENING" : "IDLE";
+  $("listenerPill").className = "pill " + (lRun ? "on" : "");
+
+  // Subscribers List
+  renderSubscribers(S.subscribers);
+
+  // Console Logs
+  const logBox = $("logBox");
+  if (Array.isArray(S.logs)) {
+    logBox.textContent = S.logs.map(e => `[${new Date(e.t).toISOString().slice(11, 19)}] [${e.level.toUpperCase()}] ${e.msg}`).join("\n");
+  }
+}
+
+function renderLog(log) {
+  const b = $("logBody");
+  if (!log || !log.length) {
+    b.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">No rounds settled in this session yet.</td></tr>';
+    return;
+  }
+  b.innerHTML = log.map(r => {
+    let tagClass = "off";
+    if (r.resultText.includes("WIN") || r.resultText.includes("JACKPOT")) tagClass = "ok";
+    else if (r.resultText.includes("LOSE")) tagClass = "err";
+    else if (r.resultText.includes("PENDING")) tagClass = "user";
+
+    return `<tr>
+      <td><b>..${String(r.period).slice(-4)}</b></td>
+      <td>${esc(r.label)}</td>
+      <td><b>${esc(r.actual)}</b></td>
+      <td><span class="badge ${tagClass}">${esc(r.resultText)}</span></td>
+    </tr>`;
+  }).join("");
+}
+
+// ================= SUBSCRIBERS LIST & PAGINATION =================
+
+function onSubSearch(val) {
+  subSearch = (val || "").toLowerCase().trim();
+  subPage = 1;
+  if (S) renderSubscribers(S.subscribers);
+}
+
+function setSubFilter(filter) {
+  subFilter = filter;
+  subPage = 1;
+  $("subFilterAll").classList.toggle("active", filter === "all");
+  $("subFilterPending").classList.toggle("active", filter === "pending");
+  $("subFilterVerified").classList.toggle("active", filter === "verified");
+  $("subFilterLive").classList.toggle("active", filter === "live");
+  if (S) renderSubscribers(S.subscribers);
+}
+
+function changeSubPage(delta) {
+  subPage += delta;
+  if (S) renderSubscribers(S.subscribers);
+}
+
+function renderSubscribers(subs) {
+  $("subCount").textContent = subs.length;
+  const box = $("subList");
+  if (!subs.length) {
+    box.innerHTML = '<p class="note">No members registered yet. Users who /start the bot will appear here.</p>';
+    $("subPager").classList.add("hidden");
+    return;
+  }
+
+  // Filter
+  const filtered = subs.filter(s => {
+    if (subFilter === "pending" && s.uidStatus !== "PENDING") return false;
+    if (subFilter === "verified" && s.uidStatus !== "VERIFIED") return false;
+    if (subFilter === "live" && !s.active) return false;
+    if (!subSearch) return true;
+    return String(s.name || "").toLowerCase().includes(subSearch) ||
+           String(s.username || "").toLowerCase().includes(subSearch) ||
+           String(s.uid || "").toLowerCase().includes(subSearch) ||
+           String(s.id).toLowerCase().includes(subSearch);
+  });
+
+  const totalPages = Math.ceil(filtered.length / SUB_PER_PAGE) || 1;
+  if (subPage > totalPages) subPage = totalPages;
+  if (subPage < 1) subPage = 1;
+
+  const start = (subPage - 1) * SUB_PER_PAGE;
+  const pageItems = filtered.slice(start, start + SUB_PER_PAGE);
+
+  $("subPageInfo").textContent = `Showing ${filtered.length ? start + 1 : 0}–${Math.min(start + SUB_PER_PAGE, filtered.length)} of ${filtered.length} (Page ${subPage}/${totalPages})`;
+  $("subPrevBtn").disabled = subPage <= 1;
+  $("subNextBtn").disabled = subPage >= totalPages;
+  $("subPager").classList.remove("hidden");
+
+  if (!pageItems.length) {
+    box.innerHTML = '<p class="note">No subscribers matched your current search/filter.</p>';
+    return;
+  }
+
+  box.innerHTML = pageItems.map(s => {
+    let statusBadge = '<span class="badge off">NO UID</span>';
+    if (s.uidStatus === "VERIFIED") statusBadge = '<span class="badge ok">✅ VERIFIED</span>';
+    else if (s.uidStatus === "PENDING") statusBadge = '<span class="badge user">⏳ PENDING</span>';
+    else if (s.uidStatus === "REJECTED") statusBadge = '<span class="badge err">❌ REJECTED</span>';
+
+    const liveBadge = s.active
+      ? '<span class="badge ok">🟢 LIVE SIGNALS</span>'
+      : '<span class="badge off">⏸ PAUSED</span>';
+
+    return `<div class="ch">
+      <div class="top">
+        <div>
+          <div class="lbl">${esc(s.name)} ${statusBadge} ${liveBadge}</div>
+          <div class="id">TG ID: <b>${s.id}</b> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
+        </div>
         <div class="row">
-          <button class="primary" id="btnEngineOn" onclick="engineAction('start')">? START ENGINE</button>
-          <button class="danger" id="btnEngineOff" onclick="engineAction('stop')">? STOP ENGINE</button>
+          ${s.uidStatus !== "VERIFIED" ? `<button class="primary" onclick="subAction('verify','${s.id}')">✅ VERIFY</button>` : ''}
+          ${s.uidStatus !== "REJECTED" ? `<button onclick="subAction('reject','${s.id}')">❌ REJECT</button>` : ''}
+          <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
         </div>
       </div>
-      <p class="note" id="engineNote" style="margin-bottom:12px;">Loading engine status.</p>
-
-      <div class="grid">
-        <div class="kv"><label>Stage Mode</label><b id="kStage">-</b></div>
-        <div class="kv"><label>Signal Call</label><b class="cy" id="kPred">-</b></div>
-        <div class="kv"><label>Next Period</label><b id="kPeriod">-</b></div>
-        <div class="kv"><label>Round Timer</label><b class="cy" id="kTimer">-</b></div>
-        <div class="kv"><label>History Buffer</label><b id="kHist">-</b></div>
-        <div class="kv"><label>Loss Streak</label><b id="kLossRun">-</b></div>
+      <div class="meta" style="margin-top:6px;">
+        Account UID: <b style="color:var(--cyan); font-size:13px;">${esc(s.uid || "None submitted")}</b>
+        ${s.uidSubmittedAt ? ' · Submitted ' + new Date(s.uidSubmittedAt).toLocaleTimeString() : ''}
+        · ${s.tracked || 0} messages tracked in DM
       </div>
+    </div>`;
+  }).join("");
+}
 
-      <div class="big-signal-box">
-        <div class="lbl">? CURRENT ACTIVE SIGNAL ?</div>
-        <div class="sig-text" id="kBigSig">-</div>
-      </div>
+async function subAction(action, id) {
+  if (action === "delete" && !confirm("Remove this user? This will also wipe their saved DM history.")) return;
+  const r = await post("/api/subscribers", { action, id });
+  if (!r.ok) alert(r.error || "Action failed");
+  refresh();
+}
 
-      <div class="grid">
-        <div class="kv"><label>Total Wins</label><b class="ok" id="kWins">-</b></div>
-        <div class="kv"><label>Jackpots</label><b class="ok" id="kJack">-</b></div>
-        <div class="kv"><label>Losses</label><b class="bad" id="kLoss">-</b></div>
-        <div class="kv"><label>Accuracy Rate</label><b class="cy" id="kRate">-</b></div>
-      </div>
-    </div>
+// ================= ACTIONS & CONFIG =================
 
-    <!-- Data Feed Quick Status -->
-    <div class="card">
-      <div class="card-head">
-        <h2>?? Data Feed Mirror <span class="pill" id="feedPill">-</span></h2>
-        <button onclick="testFeed()">TEST FEED NOW</button>
-      </div>
-      <div class="grid">
-        <div class="kv"><label>Last Sync</label><b id="kFeedOk">-</b></div>
-        <div class="kv"><label>HTTP Status</label><b id="kFeedStatus">-</b></div>
-        <div class="kv"><label>Rounds/Call</label><b id="kFeedRounds">-</b></div>
-        <div class="kv"><label>Feed Mirror</label><b id="kFeedPath">-</b></div>
-        <div class="kv"><label>Success / Fail</label><b id="kFeedCounts">-</b></div>
-      </div>
-      <div id="feedTestOut" class="muted" style="margin-top:8px;"></div>
-      <p class="note" id="feedNote">-</p>
-    </div>
+async function engineAction(action) {
+  await post("/api/engine", { action });
+  refresh();
+}
 
-    <!-- Recent Session Log Table -->
-    <div class="card">
-      <div class="card-head">
-        <h2>?? Recent Rounds Log <span class="muted">(Latest 5 Settled)</span></h2>
-      </div>
-      <div class="tablewrap">
-        <table>
-          <thead>
-            <tr><th>Period</th><th>Signal Call</th><th>Draw Result</th><th>Status</th></tr>
-          </thead>
-          <tbody id="logBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+async function listenerAction(action) {
+  await post("/api/listener", { action });
+  refresh();
+}
 
-  <!-- ================= TAB 2: BOT USERS & UID VERIFICATION ================= -->
-  <div id="tab-subs" class="tab-pane hidden">
-    <div class="card">
-      <div class="card-head">
-        <h2>?? Bot Subscribers &amp; UID Verification <span class="pill on" id="subCount">0</span></h2>
-        <div class="row">
-          <button onclick="setSubFilter('all')" class="nav-tab active" id="subFilterAll" style="padding:4px 10px; font-size:11px;">ALL</button>
-          <button onclick="setSubFilter('pending')" class="nav-tab" id="subFilterPending" style="padding:4px 10px; font-size:11px;">PENDING UID</button>
-          <button onclick="setSubFilter('verified')" class="nav-tab" id="subFilterVerified" style="padding:4px 10px; font-size:11px;">VERIFIED</button>
-          <button onclick="setSubFilter('live')" class="nav-tab" id="subFilterLive" style="padding:4px 10px; font-size:11px;">PREDICTING</button>
-        </div>
-      </div>
+async function testFeed() {
+  $("feedTestOut").textContent = "Pinging feed mirrors…";
+  const r = await post("/api/test-feed");
+  $("feedTestOut").textContent = r.ok
+    ? `✅ Feed OK: ${r.rounds} rounds received in ${r.ms}ms. Latest Period: ..${String(r.newest?.period).slice(-4)}`
+    : `❌ Feed Error: ${r.error} (${r.ms}ms)`;
+  refresh();
+}
 
-      <!-- Quick Metrics -->
-      <div class="grid" style="margin-bottom:12px;">
-        <div class="kv"><label>Total Registered</label><b class="cy" id="kTotalUsers">-</b></div>
-        <div class="kv"><label>Verified Members</label><b class="ok" id="kVerifiedUsers">-</b></div>
-        <div class="kv"><label>Pending Verification</label><b class="cy" id="kPendingUsers">-</b></div>
-        <div class="kv"><label>Live Predicting</label><b class="ok" id="kLiveUsers">-</b></div>
-      </div>
+function toggleAutoVerify() {
+  $("swAutoVerify").classList.toggle("on");
+}
 
-      <!-- Search Filter -->
-      <div class="search-bar-wrap">
-        <span class="search-icon">??</span>
-        <input type="text" id="subSearch" class="search-input" placeholder="Search by name, @username, Telegram ID or submitted UID..." oninput="onSubSearch(this.value)">
-      </div>
+function toggleToken() {
+  const el = $("inpToken");
+  el.type = el.type === "password" ? "text" : "password";
+}
 
-      <!-- Subscribers List -->
-      <div id="subList" class="item-list-container"></div>
+async function verifyToken() {
+  const token = $("inpToken").value.trim();
+  if (!token) {
+    alert("Please enter a bot token first.");
+    return;
+  }
+  const r = await post("/api/verify-token", { botToken: token });
+  if (r.ok) {
+    alert(`✅ Valid Bot Token!\nActive as @${r.username} (${r.name})\nBot listener has been started automatically!`);
+  } else {
+    alert(`❌ Token Error: ${r.error}`);
+  }
+  refresh();
+}
 
-      <!-- Pagination -->
-      <div class="pager-wrap" id="subPager">
-        <span class="pager-info" id="subPageInfo">Showing 0 of 0</span>
-        <div class="pager-actions">
-          <button id="subPrevBtn" onclick="changeSubPage(-1)">? PREV</button>
-          <button id="subNextBtn" onclick="changeSubPage(1)">NEXT ?</button>
-        </div>
-      </div>
+async function saveConfig() {
+  const body = {
+    botToken: $("inpToken").value.trim(),
+    welcomeVideo: $("inpWelcomeVideo").value.trim(),
+    welcomeAudio: $("inpWelcomeAudio").value.trim(),
+    uidMessage: $("inpUidMessage").value,
+    customLink: $("inpCustomLink").value.trim(),
+    customLinkText: $("inpCustomLinkText").value.trim(),
+    videoMessage: $("inpVideoMessage").value,
+    header: $("inpHeader").value,
+    footer: $("inpFooter").value.trim(),
+    autoVerifyUid: $("swAutoVerify").classList.contains("on")
+  };
+  const r = await post("/api/config", body);
+  $("cfgNote").textContent = r.ok ? "✅ Settings saved successfully." : "❌ Failed to save settings.";
+  setTimeout(() => { $("cfgNote").textContent = "—"; }, 4000);
+  refresh();
+}
 
-      <p class="note">Users submit their 10-12 digit UID via the bot. You can verify or reject them here or let the server auto-verify them.</p>
-    </div>
-  </div>
+async function clearHistory() {
+  if (!confirm("Clear rolling rounds history?")) return;
+  await post("/api/clear-history");
+  refresh();
+}
 
-  <!-- ================= TAB 3: BOT & VIDEO SETTINGS ================= -->
-  <div id="tab-bot" class="tab-pane hidden">
-    <!-- Bot Listener Settings -->
-    <div class="card">
-      <div class="card-head">
-        <h2>?? Bot Configuration <span class="pill" id="listenerPill">-</span></h2>
-        <div class="row">
-          <button onclick="listenerAction('start')">START BOT LISTENER</button>
-          <button class="danger" onclick="listenerAction('stop')">STOP</button>
-        </div>
-      </div>
+async function resetStats() {
+  if (!confirm("Reset total Wins, Jackpots, and Losses to 0?")) return;
+  await post("/api/reset-stats");
+  refresh();
+}
 
-      <div class="field">
-        <label>Telegram Bot Token</label>
-        <div class="row">
-          <input type="password" id="inpToken" placeholder="123456789:AAH." autocomplete="off" style="flex:1;">
-          <button onclick="toggleToken()">?? VIEW</button>
-          <button onclick="verifyToken()">VERIFY</button>
-        </div>
-      </div>
+async function exportCfg() {
+  const r = await api("/api/export");
+  if (r.ok) $("cfgBox").value = JSON.stringify(r.config, null, 2);
+}
 
-      <div class="field">
-        <label>Instruction Video (Telegram file_id, Direct URL, or local path)</label>
-        <input type="text" id="inpWelcomeVideo" placeholder="e.g. BAACAgUAAxkBA... or https://...">
-        <p class="note" style="margin-top:4px;">When enabled, this video is sent to the user.</p>
-      </div>
+async function importCfg() {
+  try {
+    const cfg = JSON.parse($("cfgBox").value.trim());
+    await post("/api/import", { config: cfg });
+    alert("Config imported successfully!");
+    refresh();
+  } catch (e) {
+    alert("Invalid JSON format in config box.");
+  }
+}
 
-      <div class="field">
-        <label>Instruction Audio / Voice Note (Telegram file_id, Direct URL, or local path)</label>
-        <input type="text" id="inpWelcomeAudio" placeholder="e.g. AwACAgUAAxkBA... or https://...">
-        <p class="note" style="margin-top:4px;">Delivered directly beneath the video when active.</p>
-      </div>
+function fmtUptime(sec) {
+  if (!sec) return "0s";
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m ${sec % 60}s`;
+}
 
-      <div class="field">
-        <label>UID Request Message (Second message sent after welcome banner)</label>
-        <textarea id="inpUidMessage" rows="3" placeholder="?? ???? ?????? ??? ???, ???? ??? ???? Account UID ????..."></textarea>
-      </div>
+// Smooth countdown loop
+setInterval(() => {
+  if (!S || !S.round || S.round.secondsLeft === null) return;
+  const elapsed = Math.floor((Date.now() - tickBase) / 1000);
+  const rem = Math.max(0, S.round.secondsLeft - elapsed);
+  $("kTimer").textContent = `${rem}s`;
+}, 1000);
 
-      <div class="field">
-        <label>Custom Platform / Registration Link URL (Optional button on UID message)</label>
-        <input type="text" id="inpCustomLink" placeholder="https://example.com/register">
-        <p class="note" style="margin-top:4px;">When configured, a button with this URL is attached to the UID request message in a clean structured format.</p>
-      </div>
+// Auto-refresh interval
+setInterval(refresh, 3000);
 
-      <div class="field">
-        <label>Custom Link Button Text</label>
-        <input type="text" id="inpCustomLinkText" placeholder="?? OPEN LINK or ?? REGISTER NOW">
-      </div>
-
-      <div class="field">
-        <label>Video Message / Deposit Instructions (Sent with video if enabled)</label>
-        <textarea id="inpVideoMessage" rows="3" placeholder="Watch this video carefully and send your UID..."></textarea>
-      </div>
-
-      <div class="field">
-        <label class="switchline">
-          <span class="sw" id="swAutoVerify" onclick="toggleAutoVerify()"></span> Auto-verify UID immediately on server hit
-        </label>
-        <p class="note" style="margin-top:4px;">When ON, user UID is automatically verified when sent to server. In next step, connect your server API.</p>
-      </div>
-
-      <div class="field">
-        <label>Post Header (Top branding message for predictions)</label>
-        <textarea id="inpHeader" rows="3"></textarea>
-      </div>
-
-      <div class="field">
-        <label>Post Footer / Bot Mention Link</label>
-        <input type="text" id="inpFooter" placeholder="@YourBot">
-      </div>
-
-      <div class="row" style="margin-top:14px;">
-        <button class="primary" onclick="saveConfig()">?? SAVE ALL SETTINGS</button>
-        <button onclick="post('/api/webhook').then(refresh)">CLEAR WEBHOOK</button>
-        <button onclick="post('/api/commands').then(refresh)">SET BOT MENU</button>
-      </div>
-      <p class="note" id="cfgNote">-</p>
-    </div>
-
-  </div>
-
-  <!-- ================= TAB 4: CONSOLE & LOGS ================= -->
-  <div id="tab-console" class="tab-pane hidden">
-    <div class="card">
-      <div class="card-head">
-        <h2>?? Live System Log <span class="muted">(Real-time terminal stream)</span></h2>
-        <button onclick="refresh()">REFRESH LOGS</button>
-      </div>
-      <div class="logbox" id="logBox">Initializing live console stream.</div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <h2>??? System Operations &amp; Maintenance</h2>
-      </div>
-      <div class="row">
-        <button class="danger" onclick="clearHistory()">?? PURGE HISTORY</button>
-        <button class="danger" onclick="resetStats()">?? RESET WIN/LOSS STATS</button>
-        <button onclick="exportCfg()">?? EXPORT CONFIG</button>
-        <button onclick="importCfg()">?? IMPORT CONFIG</button>
-      </div>
-      <textarea id="cfgBox" rows="3" placeholder='{"botToken":"."}' style="margin-top:10px;"></textarea>
-    </div>
-  </div>
-
-</div>
-
-<script src="panel.js"></script>
-</body>
-</html>
+// Auto-login on boot
+if (key) {
+  api("/api/state").then(s => {
+    S = s;
+    showApp();
+    render();
+  }).catch(() => { showLogin(); });
+} else {
+  showLogin();
+}

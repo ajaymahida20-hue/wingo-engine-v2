@@ -29,7 +29,7 @@ function panelPassword() {
   if (pw === DEFAULT_PANEL_PASSWORD) {
     console.warn(
       "\n  ! Panel password is the built-in default. Set PANEL_PASSWORD in the\n" +
-      "  ! environment to change it - the panel can read your bot token.\n"
+      "  ! environment to change it — the panel can read your bot token.\n"
     );
   }
   return pw;
@@ -74,14 +74,14 @@ function snapshot() {
       videoMessage: state.cfg.videoMessage || "",
       uidMessage: state.cfg.uidMessage || "",
       customLink: state.cfg.customLink || "",
-      customLinkText: state.cfg.customLinkText || "?? OPEN LINK",
+      customLinkText: state.cfg.customLinkText || "🔗 OPEN LINK",
       autoVerifyUid: state.cfg.autoVerifyUid !== false
     },
     subscribers: state.subs.map(s => ({
       id: s.id,
       name: s.name,
       username: s.username,
-      uid: s.uid || "-",
+      uid: s.uid || "—",
       uidStatus: s.uidStatus || "NONE",
       uidSubmittedAt: s.uidSubmittedAt || null,
       active: s.active === true,
@@ -153,7 +153,7 @@ async function api(req, res, url) {
     const was = state.engine.enabled;
     state.engine.enabled = on;
     saveNow();
-    if (was !== on) info(on ? "prediction engine STARTED" : "prediction engine STOPPED - feed polling paused");
+    if (was !== on) info(on ? "prediction engine STARTED" : "prediction engine STOPPED — feed polling paused");
     return json(res, 200, { ok: true, enabled: on });
   }
 
