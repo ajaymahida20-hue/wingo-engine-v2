@@ -1,0 +1,35 @@
+services:
+  # A Web Service gives the engine an always-on process AND a public URL, which is
+  # what the control panel needs. A free web service sleeps after 15 minutes with no
+  # traffic (which would stop the engine), so this uses a paid instance type.
+  #
+  # If you would rather not expose a panel, swap `type: web` for `type: worker` and
+  # drop the healthCheckPath — background workers never sleep either.
+  - type: web
+    name: wingo-engine-v2
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.1
+      - key: PANEL_PASSWORD
+        sync: false          # set this in the Render dashboard
+      - key: BOT_TOKEN
+        sync: false          # Telegram bot token; keeps the bot alive across redeploys
+      - key: GITHUB_TOKEN
+        sync: false          # GitHub PAT for automatic remote cloud state persistence
+      - key: GITHUB_REPO
+        value: ajaymahida20-hue/wingo-engine-v2
+      - key: GITHUB_BRANCH
+        value: data-v2       # Independent branch for instance 2
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      # Persists the saved channels, subscribers and rolling history across
+      # restarts and deploys. Without it every deploy starts from nothing.
+      name: wingo-data-v2
+      mountPath: /var/data
+      sizeGB: 1

@@ -1,0 +1,415 @@
+// Control panel logic for WinGo Engine V2 (Deposit Unlock & UID Verification)
+
+const KEY = "wingo_panel_key";
+const TAB_KEY = "wingo_active_tab";
+let key = sessionStorage.getItem(KEY) || "";
+let S = null;              // last snapshot from /api/state
+let tickBase = 0;          // used to count the round down smoothly between refreshes
+
+// Pagination & Filter States
+let subSearch = "";
+let subFilter = "all"; // 'all' | 'pending' | 'verified' | 'live'
+let subPage = 1;
+const SUB_PER_PAGE = 8;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, m =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+
+async function api(path, opts = {}) {
+  const headers = Object.assign({}, opts.headers || {}, { "x-panel-key": key });
+  if (opts.body) headers["Content-Type"] = "application/json";
+  const res = await fetch(path, Object.assign({}, opts, { headers }));
+  if (res.status === 401) { showLogin(); throw new Error("unauthorized"); }
+  return res.json();
+}
+const post = (path, body) => api(path, { method: "POST", body: JSON.stringify(body || {}) });
+
+function showLogin() {
+  $("app").classList.add("hidden");
+  $("login").classList.remove("hidden");
+}
+function showApp() {
+  $("login").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  restoreActiveTab();
+}
+
+function logout() {
+  sessionStorage.removeItem(KEY);
+  key = "";
+  showLogin();
+}
+
+async function login() {
+  const pw = $("pw").value.trim();
+  if (!pw) return;
+  key = pw;
+  try {
+    S = await api("/api/state");
+    sessionStorage.setItem(KEY, key);
+    $("loginErr").textContent = "";
+    showApp();
+    render();
+  } catch (e) {
+    $("loginErr").textContent = "❌ Invalid password";
+    key = "";
+  }
+}
+$("pw").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+
+// ================= TAB NAVIGATION =================
+function switchTab(tabId) {
+  sessionStorage.setItem(TAB_KEY, tabId);
+  document.querySelectorAll(".nav-tab[data-tab]").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll(".tab-pane").forEach(pane => {
+    pane.classList.toggle("hidden", pane.id !== tabId);
+  });
+}
+
+function restoreActiveTab() {
+  const savedTab = sessionStorage.getItem(TAB_KEY) || "tab-hud";
+  switchTab(savedTab);
+}
+
+async function refresh() {
+  if (!key || $("app").classList.contains("hidden")) return;
+  try {
+    S = await api("/api/state");
+    tickBase = Date.now();
+    render();
+  } catch (e) { /* retry automatically on next interval */ }
+}
+
+// ------------------------------------------------------------------ render
+
+function signalText(run) {
+  const p = run.prediction;
+  if (!p) return "—";
+  const balls = (run.numbers || []).join(", ");
+  return balls ? `${p} [${balls}]` : p;
+}
+
+function render() {
+  if (!S) return;
+
+  // Header & Status
+  $("headLine").textContent = `Uptime ${fmtUptime(S.uptimeSeconds)} · Node Service · Game ${S.feed.game}`;
+  const eng = S.engine.enabled;
+  $("enginePill").textContent = eng ? "ACTIVE" : "PAUSED";
+  $("enginePill").className = "pill " + (eng ? "on" : "");
+  $("modePill").textContent = eng ? "LIVE RUNNING" : "STOPPED";
+  $("modePill").className = "pill " + (eng ? "on" : "");
+  $("btnEngineOn").disabled = eng;
+  $("btnEngineOff").disabled = !eng;
+  $("engineNote").textContent = eng
+    ? "Engine is actively polling lottery draws and streaming prediction signals to verified subscribers."
+    : "Engine is paused. Polling and broadcasts are halted.";
+
+  // Signal & Timer
+  $("kStage").textContent = S.run.mode || "FLOW";
+  $("kPred").textContent = signalText(S.run);
+  $("kPeriod").textContent = S.round.nextPeriod ? `..${String(S.round.nextPeriod).slice(-4)}` : "—";
+  $("kHist").textContent = `${S.history.depth} / ${S.history.max} rounds`;
+  $("kLossRun").textContent = `${S.run.consecutiveLosses || 0} in a row`;
+
+  const bigSig = signalText(S.run);
+  $("kBigSig").textContent = bigSig !== "—" ? `${S.round.nextPeriod ? "PERIOD .." + String(S.round.nextPeriod).slice(-4) + " → " : ""}${bigSig}` : "AWAITING NEXT ROUND DRAW";
+
+  // Win/Loss Metrics
+  const w = S.stats.wins, j = S.stats.jackpots, l = S.stats.losses;
+  const total = w + j + l;
+  $("kWins").textContent = w;
+  $("kJack").textContent = j;
+  $("kLoss").textContent = l;
+  $("kRate").textContent = total ? `${Math.round(((w + j) / total) * 100)}% (${total} rounds)` : "—";
+
+  // Data Feed
+  const feedOk = Date.now() - S.feed.lastOk < 20000;
+  $("feedPill").textContent = feedOk ? "ONLINE" : (S.feed.lastError ? "ATTENTION" : "INITIALIZING");
+  $("feedPill").className = "pill " + (feedOk ? "on" : "");
+  $("kFeedOk").textContent = S.feed.lastOk ? `${Math.round((Date.now() - S.feed.lastOk) / 1000)}s ago` : "never";
+  $("kFeedStatus").textContent = S.feed.lastStatus ? `HTTP ${S.feed.lastStatus}` : "—";
+  $("kFeedRounds").textContent = S.feed.lastRounds || "—";
+  $("kFeedPath").textContent = S.feed.host ? `draw.${S.feed.host}.com` : "—";
+  $("kFeedCounts").textContent = `${S.feed.ok} ok / ${S.feed.failed} failed`;
+  $("feedNote").textContent = S.feed.lastError
+    ? `⚠️ Recent feed issue: ${S.feed.lastError}`
+    : `Connected to mirror draw.${S.feed.host || "auto"}.com. Polling every 2s.`;
+
+  // Recent Log Table
+  renderLog(S.log);
+
+  // Totals & Subscriber Counters
+  $("kTotalUsers").textContent = S.totals.users || 0;
+  $("kVerifiedUsers").textContent = S.totals.verified || 0;
+  $("kPendingUsers").textContent = S.totals.pending || 0;
+  $("kLiveUsers").textContent = S.totals.live || 0;
+  $("navSubBadge").textContent = S.totals.pending ? `${S.totals.pending} PENDING` : (S.totals.users || 0);
+
+  // Bot & Media Settings Form
+  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpPhotoBig", "inpPhotoSmall", "inpWelcomeVideo", "inpVideoMessage"].includes(document.activeElement.id)) {
+    $("inpToken").value = S.cfg.botToken || "";
+    $("inpWelcomeVideo").value = S.cfg.welcomeVideo || "";
+    $("inpVideoMessage").value = S.cfg.videoMessage || "";
+    $("inpHeader").value = S.cfg.header || "";
+    $("inpFooter").value = S.cfg.footer || "";
+    $("inpPhotoBig").value = S.cfg.photoBig || "";
+    $("inpPhotoSmall").value = S.cfg.photoSmall || "";
+    $("swPhotos").classList.toggle("on", !!S.cfg.usePhotos);
+    $("swAutoVerify").classList.toggle("on", S.cfg.autoVerifyUid !== false);
+  }
+
+  const lRun = S.listener.running;
+  $("listenerPill").textContent = lRun ? "LISTENING" : "IDLE";
+  $("listenerPill").className = "pill " + (lRun ? "on" : "");
+
+  // Subscribers List
+  renderSubscribers(S.subscribers);
+
+  // Console Logs
+  const logBox = $("logBox");
+  if (Array.isArray(S.logs)) {
+    logBox.textContent = S.logs.map(e => `[${new Date(e.t).toISOString().slice(11, 19)}] [${e.level.toUpperCase()}] ${e.msg}`).join("\n");
+  }
+}
+
+function renderLog(log) {
+  const b = $("logBody");
+  if (!log || !log.length) {
+    b.innerHTML = '<tr><td colspan="4" class="muted" style="text-align:center;">No rounds settled in this session yet.</td></tr>';
+    return;
+  }
+  b.innerHTML = log.map(r => {
+    let tagClass = "off";
+    if (r.resultText.includes("WIN") || r.resultText.includes("JACKPOT")) tagClass = "ok";
+    else if (r.resultText.includes("LOSE")) tagClass = "err";
+    else if (r.resultText.includes("PENDING")) tagClass = "user";
+
+    return `<tr>
+      <td><b>..${String(r.period).slice(-4)}</b></td>
+      <td>${esc(r.label)}</td>
+      <td><b>${esc(r.actual)}</b></td>
+      <td><span class="badge ${tagClass}">${esc(r.resultText)}</span></td>
+    </tr>`;
+  }).join("");
+}
+
+// ================= SUBSCRIBERS LIST & PAGINATION =================
+
+function onSubSearch(val) {
+  subSearch = (val || "").toLowerCase().trim();
+  subPage = 1;
+  if (S) renderSubscribers(S.subscribers);
+}
+
+function setSubFilter(filter) {
+  subFilter = filter;
+  subPage = 1;
+  $("subFilterAll").classList.toggle("active", filter === "all");
+  $("subFilterPending").classList.toggle("active", filter === "pending");
+  $("subFilterVerified").classList.toggle("active", filter === "verified");
+  $("subFilterLive").classList.toggle("active", filter === "live");
+  if (S) renderSubscribers(S.subscribers);
+}
+
+function changeSubPage(delta) {
+  subPage += delta;
+  if (S) renderSubscribers(S.subscribers);
+}
+
+function renderSubscribers(subs) {
+  $("subCount").textContent = subs.length;
+  const box = $("subList");
+  if (!subs.length) {
+    box.innerHTML = '<p class="note">No members registered yet. Users who /start the bot will appear here.</p>';
+    $("subPager").classList.add("hidden");
+    return;
+  }
+
+  // Filter
+  const filtered = subs.filter(s => {
+    if (subFilter === "pending" && s.uidStatus !== "PENDING") return false;
+    if (subFilter === "verified" && s.uidStatus !== "VERIFIED") return false;
+    if (subFilter === "live" && !s.active) return false;
+    if (!subSearch) return true;
+    return String(s.name || "").toLowerCase().includes(subSearch) ||
+           String(s.username || "").toLowerCase().includes(subSearch) ||
+           String(s.uid || "").toLowerCase().includes(subSearch) ||
+           String(s.id).toLowerCase().includes(subSearch);
+  });
+
+  const totalPages = Math.ceil(filtered.length / SUB_PER_PAGE) || 1;
+  if (subPage > totalPages) subPage = totalPages;
+  if (subPage < 1) subPage = 1;
+
+  const start = (subPage - 1) * SUB_PER_PAGE;
+  const pageItems = filtered.slice(start, start + SUB_PER_PAGE);
+
+  $("subPageInfo").textContent = `Showing ${filtered.length ? start + 1 : 0}–${Math.min(start + SUB_PER_PAGE, filtered.length)} of ${filtered.length} (Page ${subPage}/${totalPages})`;
+  $("subPrevBtn").disabled = subPage <= 1;
+  $("subNextBtn").disabled = subPage >= totalPages;
+  $("subPager").classList.remove("hidden");
+
+  if (!pageItems.length) {
+    box.innerHTML = '<p class="note">No subscribers matched your current search/filter.</p>';
+    return;
+  }
+
+  box.innerHTML = pageItems.map(s => {
+    let statusBadge = '<span class="badge off">NO UID</span>';
+    if (s.uidStatus === "VERIFIED") statusBadge = '<span class="badge ok">✅ VERIFIED</span>';
+    else if (s.uidStatus === "PENDING") statusBadge = '<span class="badge user">⏳ PENDING</span>';
+    else if (s.uidStatus === "REJECTED") statusBadge = '<span class="badge err">❌ REJECTED</span>';
+
+    const liveBadge = s.active
+      ? '<span class="badge ok">🟢 LIVE SIGNALS</span>'
+      : '<span class="badge off">⏸ PAUSED</span>';
+
+    return `<div class="ch">
+      <div class="top">
+        <div>
+          <div class="lbl">${esc(s.name)} ${statusBadge} ${liveBadge}</div>
+          <div class="id">TG ID: <b>${s.id}</b> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
+        </div>
+        <div class="row">
+          ${s.uidStatus !== "VERIFIED" ? `<button class="primary" onclick="subAction('verify','${s.id}')">✅ VERIFY</button>` : ''}
+          ${s.uidStatus !== "REJECTED" ? `<button onclick="subAction('reject','${s.id}')">❌ REJECT</button>` : ''}
+          <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+        </div>
+      </div>
+      <div class="meta" style="margin-top:6px;">
+        Account UID: <b style="color:var(--cyan); font-size:13px;">${esc(s.uid || "None submitted")}</b>
+        ${s.uidSubmittedAt ? ' · Submitted ' + new Date(s.uidSubmittedAt).toLocaleTimeString() : ''}
+        · ${s.tracked || 0} messages tracked in DM
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function subAction(action, id) {
+  if (action === "delete" && !confirm("Remove this user? This will also wipe their saved DM history.")) return;
+  const r = await post("/api/subscribers", { action, id });
+  if (!r.ok) alert(r.error || "Action failed");
+  refresh();
+}
+
+// ================= ACTIONS & CONFIG =================
+
+async function engineAction(action) {
+  await post("/api/engine", { action });
+  refresh();
+}
+
+async function listenerAction(action) {
+  await post("/api/listener", { action });
+  refresh();
+}
+
+async function testFeed() {
+  $("feedTestOut").textContent = "Pinging feed mirrors…";
+  const r = await post("/api/test-feed");
+  $("feedTestOut").textContent = r.ok
+    ? `✅ Feed OK: ${r.rounds} rounds received in ${r.ms}ms. Latest Period: ..${String(r.newest?.period).slice(-4)}`
+    : `❌ Feed Error: ${r.error} (${r.ms}ms)`;
+  refresh();
+}
+
+function togglePhotos() {
+  $("swPhotos").classList.toggle("on");
+}
+
+function toggleAutoVerify() {
+  $("swAutoVerify").classList.toggle("on");
+}
+
+function toggleToken() {
+  const el = $("inpToken");
+  el.type = el.type === "password" ? "text" : "password";
+}
+
+async function verifyToken() {
+  const r = await post("/api/verify-token");
+  alert(r.ok ? `✅ Valid Bot Token! Active as @${r.username} (${r.name})` : `❌ Token Error: ${r.error}`);
+  refresh();
+}
+
+async function saveConfig() {
+  const body = {
+    botToken: $("inpToken").value.trim(),
+    welcomeVideo: $("inpWelcomeVideo").value.trim(),
+    videoMessage: $("inpVideoMessage").value,
+    header: $("inpHeader").value,
+    footer: $("inpFooter").value.trim(),
+    photoBig: $("inpPhotoBig").value.trim(),
+    photoSmall: $("inpPhotoSmall").value.trim(),
+    usePhotos: $("swPhotos").classList.contains("on"),
+    autoVerifyUid: $("swAutoVerify").classList.contains("on")
+  };
+  const r = await post("/api/config", body);
+  $("cfgNote").textContent = r.ok ? "✅ Settings saved successfully." : "❌ Failed to save settings.";
+  setTimeout(() => { $("cfgNote").textContent = "—"; }, 4000);
+  refresh();
+}
+
+async function clearHistory() {
+  if (!confirm("Clear rolling rounds history?")) return;
+  await post("/api/clear-history");
+  refresh();
+}
+
+async function resetStats() {
+  if (!confirm("Reset total Wins, Jackpots, and Losses to 0?")) return;
+  await post("/api/reset-stats");
+  refresh();
+}
+
+async function exportCfg() {
+  const r = await api("/api/export");
+  if (r.ok) $("cfgBox").value = JSON.stringify(r.config, null, 2);
+}
+
+async function importCfg() {
+  try {
+    const cfg = JSON.parse($("cfgBox").value.trim());
+    await post("/api/import", { config: cfg });
+    alert("Config imported successfully!");
+    refresh();
+  } catch (e) {
+    alert("Invalid JSON format in config box.");
+  }
+}
+
+function fmtUptime(sec) {
+  if (!sec) return "0s";
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m ${sec % 60}s`;
+}
+
+// Smooth countdown loop
+setInterval(() => {
+  if (!S || !S.round || S.round.secondsLeft === null) return;
+  const elapsed = Math.floor((Date.now() - tickBase) / 1000);
+  const rem = Math.max(0, S.round.secondsLeft - elapsed);
+  $("kTimer").textContent = `${rem}s`;
+}, 1000);
+
+// Auto-refresh interval
+setInterval(refresh, 3000);
+
+// Auto-login on boot
+if (key) {
+  api("/api/state").then(s => {
+    S = s;
+    showApp();
+    render();
+  }).catch(() => { showLogin(); });
+} else {
+  showLogin();
+}
