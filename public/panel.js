@@ -150,17 +150,14 @@ function render() {
   $("navSubBadge").textContent = S.totals.pending ? `${S.totals.pending} PENDING` : (S.totals.users || 0);
 
   // Bot & Media Settings Form
-  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpWelcomeVideo", "inpWelcomeAudio", "inpVideoMessage", "inpUidMessage", "inpCustomLink", "inpCustomLinkText"].includes(document.activeElement.id)) {
-    $("inpToken").value = S.cfg.botToken || "";
-    $("inpWelcomeVideo").value = S.cfg.welcomeVideo || "";
-    $("inpWelcomeAudio").value = S.cfg.welcomeAudio || "";
-    $("inpUidMessage").value = S.cfg.uidMessage || "";
-    $("inpCustomLink").value = S.cfg.customLink || "";
-    $("inpCustomLinkText").value = S.cfg.customLinkText || "🔗 OPEN LINK";
-    $("inpVideoMessage").value = S.cfg.videoMessage || "";
-    $("inpHeader").value = S.cfg.header || "";
-    $("inpFooter").value = S.cfg.footer || "";
-    $("swAutoVerify").classList.toggle("on", S.cfg.autoVerifyUid !== false);
+  if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpUidMessage", "inpCustomLink", "inpCustomLinkText"].includes(document.activeElement.id)) {
+    if ($("inpToken")) $("inpToken").value = S.cfg.botToken || "";
+    if ($("inpUidMessage")) $("inpUidMessage").value = S.cfg.uidMessage || "";
+    if ($("inpCustomLink")) $("inpCustomLink").value = S.cfg.customLink || "";
+    if ($("inpCustomLinkText")) $("inpCustomLinkText").value = S.cfg.customLinkText || "👉 REGISTER / OPEN LINK";
+    if ($("inpHeader")) $("inpHeader").value = S.cfg.header || "";
+    if ($("inpFooter")) $("inpFooter").value = S.cfg.footer || "";
+    if ($("swAutoVerify")) $("swAutoVerify").classList.toggle("on", S.cfg.autoVerifyUid !== false);
   }
 
   const lRun = S.listener.running;
@@ -344,16 +341,13 @@ async function verifyToken() {
 
 async function saveConfig() {
   const body = {
-    botToken: $("inpToken").value.trim(),
-    welcomeVideo: $("inpWelcomeVideo").value.trim(),
-    welcomeAudio: $("inpWelcomeAudio").value.trim(),
-    uidMessage: $("inpUidMessage").value,
-    customLink: $("inpCustomLink").value.trim(),
-    customLinkText: $("inpCustomLinkText").value.trim(),
-    videoMessage: $("inpVideoMessage").value,
-    header: $("inpHeader").value,
-    footer: $("inpFooter").value.trim(),
-    autoVerifyUid: $("swAutoVerify").classList.contains("on")
+    botToken: $("inpToken") ? $("inpToken").value.trim() : "",
+    customLink: $("inpCustomLink") ? $("inpCustomLink").value.trim() : "",
+    customLinkText: $("inpCustomLinkText") ? $("inpCustomLinkText").value.trim() : "",
+    uidMessage: $("inpUidMessage") ? $("inpUidMessage").value : "",
+    header: $("inpHeader") ? $("inpHeader").value : "",
+    footer: $("inpFooter") ? $("inpFooter").value.trim() : "",
+    autoVerifyUid: $("swAutoVerify") ? $("swAutoVerify").classList.contains("on") : false
   };
   const r = await post("/api/config", body);
   $("cfgNote").textContent = r.ok ? "✅ Settings saved successfully." : "❌ Failed to save settings.";

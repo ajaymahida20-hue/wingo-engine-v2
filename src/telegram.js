@@ -13,7 +13,6 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const WELCOME_FILE = path.join(here, "..", "public", "welcome.jpg");
 const WELCOME_VIDEO_FILE = path.join(here, "..", "public", "welcome-video.mp4");
-const WELCOME_AUDIO_FILE = path.join(here, "..", "public", "welcome-audio.mp4");
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m =>
@@ -166,39 +165,6 @@ export async function sendWelcomeVideo(chatId, caption = "") {
   return sendDirect(chatId, text);
 }
 
-export async function sendWelcomeAudio(chatId) {
-  const audio = (state.cfg.welcomeAudio || "").trim();
-
-  // 1. If we already have a cached Telegram file_id or URL, send it directly
-  if (audio && !fs.existsSync(audio)) {
-    const j = await tg("sendAudio", { chat_id: chatId, audio, parse_mode: "HTML" });
-    if (j.ok) { trackSubMessage(chatId, j.result?.message_id); return { ok: true, result: j.result }; }
-  }
-
-  // 2. Check if a local audio file exists (either custom path or bundled public/welcome-audio.mp4)
-  const targetFile = (audio && fs.existsSync(audio))
-    ? audio
-    : (fs.existsSync(WELCOME_AUDIO_FILE) ? WELCOME_AUDIO_FILE : null);
-
-  if (targetFile) {
-    let j = await tgUpload("sendAudio", { chat_id: chatId }, "audio", targetFile);
-    if (!j.ok) {
-      j = await tgUpload("sendVoice", { chat_id: chatId }, "voice", targetFile);
-    }
-    if (j.ok) {
-      trackSubMessage(chatId, j.result?.message_id);
-      const fileId = j.result?.audio?.file_id || j.result?.voice?.file_id;
-      if (fileId && !state.cfg.welcomeAudio) {
-        state.cfg.welcomeAudio = fileId;
-        persist();
-      }
-      return { ok: true, result: j.result };
-    }
-  }
-
-  return { ok: false };
-}
-
 // ---------------------------------------------------------------- chat cleanup
 
 export async function clearSubscriberChat(sub) {
@@ -239,6 +205,32 @@ function welcomeCaption(from) {
     `<b>WELCOME TO 3 LEVEL NXT WORLD</b>\n\n` +
     `Hello <b>${esc(who)}</b>!`
   );
+}
+
+function buildUidRequestMessage(cfg) {
+  const link = (cfg.customLink || "").trim();
+  const custom = (cfg.uidMessage || "").trim();
+
+  if (link) {
+    if (custom && custom !== DEFAULT_UID_MSG) {
+      if (custom.includes("{link}") || custom.includes("{LINK}")) {
+        return custom.replace(/\{link\}/gi, `<a href="${esc(link)}"><b>${esc(link)}</b></a>`);
+      }
+      return (
+        `${custom}\n\n` +
+        `🔗 <b>Registration Link:</b>\n` +
+        `👉 <a href="${esc(link)}"><b>${esc(link)}</b></a>`
+      );
+    }
+    return (
+      `📹 <b>पहले वीडियो चेक करो, उसके बाद Niche diye gaye link se registration karo and uid number भेजो।</b>\n\n` +
+      `🔗 <b>Registration Link:</b>\n` +
+      `👉 <a href="${esc(link)}"><b>${esc(link)}</b></a>\n\n` +
+      `Apna new created Account UID yahan message me send karein:`
+    );
+  }
+
+  return custom || DEFAULT_UID_MSG;
 }
 
 // ---------------------------------------------------------------- subscriber state management
@@ -358,49 +350,34 @@ async function handleMessage(msg) {
     await sendWelcomePhoto(chatId, welcomeCaption(from));
     await sleep(600);
 
-    // Step 2: Send UID instruction message (with optional custom link button)
-    const uidMsg = (state.cfg.uidMessage || DEFAULT_UID_MSG).trim();
+    // Step 2: Send UID instruction message (with promotion link integrated in message & inline button)
     const link = (state.cfg.customLink || "").trim();
+    const textToSend = buildUidRequestMessage(state.cfg);
     const extra = {};
     if (link) {
-      const btnText = (state.cfg.customLinkText || "🔗 OPEN LINK").trim();
+      const btnText = (state.cfg.customLinkText || "👉 REGISTER / OPEN LINK").trim();
       extra.reply_markup = {
         inline_keyboard: [
           [{ text: btnText, url: link }]
         ]
       };
     }
-    await sendDirect(chatId, uidMsg, extra);
+    await sendDirect(chatId, textToSend, extra);
     persist();
     return;
   }
 
-  // Operator setting commands for Video, Audio & Photo uploads
+  // Operator setting commands for Video & Photo uploads (kept in code for future video enable)
   if (msg.video) {
     const fileId = msg.video.file_id;
     const caption = (msg.caption || "").trim().toLowerCase();
     if (caption === "/setvideo" || text === "/setvideo") {
       state.cfg.welcomeVideo = fileId;
       persist();
-      await sendDirect(chatId, `✅ <b>Instruction Video Saved!</b>\n\nYour welcome instruction video is now active!\n\nFile ID:\n<code>${fileId}</code>`);
+      await sendDirect(chatId, `✅ <b>Instruction Video Saved!</b>\n\nYour welcome instruction video is saved!\n\nFile ID:\n<code>${fileId}</code>`);
       return;
     } else {
-      await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>To set this as your welcome instruction video, send it with caption <code>/setvideo</code> or paste this File ID into your Control Panel.</i>`);
-      return;
-    }
-  }
-
-  if (msg.audio || msg.voice) {
-    const audioObj = msg.audio || msg.voice;
-    const fileId = audioObj.file_id;
-    const caption = (msg.caption || "").trim().toLowerCase();
-    if (caption === "/setaudio" || text === "/setaudio") {
-      state.cfg.welcomeAudio = fileId;
-      persist();
-      await sendDirect(chatId, `✅ <b>Instruction Audio Saved!</b>\n\nYour welcome instruction audio is now active!\n\nFile ID:\n<code>${fileId}</code>`);
-      return;
-    } else {
-      await sendDirect(chatId, `🎵 <b>Audio Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>To set this as your welcome instruction audio, send it with caption <code>/setaudio</code> or paste this File ID into your Control Panel.</i>`);
+      await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>To set this as your instruction video, send it with caption <code>/setvideo</code>.</i>`);
       return;
     }
   }
@@ -417,14 +394,6 @@ async function handleMessage(msg) {
     state.cfg.welcomeVideo = msg.reply_to_message.video.file_id;
     persist();
     await sendDirect(chatId, "✅ Welcome video file_id updated.");
-    return;
-  }
-
-  if (text === "/setaudio" && (msg.reply_to_message?.audio || msg.reply_to_message?.voice)) {
-    const audioObj = msg.reply_to_message.audio || msg.reply_to_message.voice;
-    state.cfg.welcomeAudio = audioObj.file_id;
-    persist();
-    await sendDirect(chatId, "✅ Welcome audio file_id updated.");
     return;
   }
 

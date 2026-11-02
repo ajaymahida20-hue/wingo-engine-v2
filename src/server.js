@@ -70,11 +70,9 @@ function snapshot() {
       footer: state.cfg.footer,
       welcomePhoto: state.cfg.welcomePhoto,
       welcomeVideo: state.cfg.welcomeVideo || "",
-      welcomeAudio: state.cfg.welcomeAudio || "",
-      videoMessage: state.cfg.videoMessage || "",
       uidMessage: state.cfg.uidMessage || "",
       customLink: state.cfg.customLink || "",
-      customLinkText: state.cfg.customLinkText || "🔗 OPEN LINK",
+      customLinkText: state.cfg.customLinkText || "👉 REGISTER / OPEN LINK",
       autoVerifyUid: state.cfg.autoVerifyUid !== false
     },
     subscribers: state.subs.map(s => ({
@@ -126,8 +124,6 @@ async function api(req, res, url) {
     if ("header" in body) state.cfg.header = String(body.header || "");
     if ("footer" in body) state.cfg.footer = String(body.footer || "").trim();
     if ("welcomeVideo" in body) state.cfg.welcomeVideo = String(body.welcomeVideo || "").trim();
-    if ("welcomeAudio" in body) state.cfg.welcomeAudio = String(body.welcomeAudio || "").trim();
-    if ("videoMessage" in body) state.cfg.videoMessage = String(body.videoMessage || "");
     if ("uidMessage" in body) state.cfg.uidMessage = String(body.uidMessage || "");
     if ("customLink" in body) state.cfg.customLink = String(body.customLink || "").trim();
     if ("customLinkText" in body) state.cfg.customLinkText = String(body.customLinkText || "").trim();
@@ -219,8 +215,6 @@ async function api(req, res, url) {
     if (typeof cfg.header === "string") state.cfg.header = cfg.header;
     if (typeof cfg.footer === "string") state.cfg.footer = cfg.footer;
     if (typeof cfg.welcomeVideo === "string") state.cfg.welcomeVideo = cfg.welcomeVideo;
-    if (typeof cfg.welcomeAudio === "string") state.cfg.welcomeAudio = cfg.welcomeAudio;
-    if (typeof cfg.videoMessage === "string") state.cfg.videoMessage = cfg.videoMessage;
     if (typeof cfg.uidMessage === "string") state.cfg.uidMessage = cfg.uidMessage;
     if (typeof cfg.customLink === "string") state.cfg.customLink = cfg.customLink;
     if (typeof cfg.customLinkText === "string") state.cfg.customLinkText = cfg.customLinkText;

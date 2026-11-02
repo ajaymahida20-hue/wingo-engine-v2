@@ -45,7 +45,7 @@
   <nav class="cyber-nav">
     <button class="nav-tab active" data-tab="tab-hud" onclick="switchTab('tab-hud')">⚡ LIVE ENGINE</button>
     <button class="nav-tab" data-tab="tab-subs" onclick="switchTab('tab-subs')">👥 USERS &amp; UID <span class="nav-badge" id="navSubBadge">0</span></button>
-    <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">🤖 BOT &amp; VIDEO SETTINGS</button>
+    <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">🤖 BOT &amp; PROMO SETTINGS</button>
     <button class="nav-tab" data-tab="tab-console" onclick="switchTab('tab-console')">💻 CONSOLE LOGS</button>
   </nav>
 
@@ -159,12 +159,12 @@
     </div>
   </div>
 
-  <!-- ================= TAB 3: BOT & VIDEO SETTINGS ================= -->
+  <!-- ================= TAB 3: BOT & PROMOTION SETTINGS ================= -->
   <div id="tab-bot" class="tab-pane hidden">
-    <!-- Bot Listener Settings -->
+    <!-- Bot Configuration -->
     <div class="card">
       <div class="card-head">
-        <h2>🤖 Bot Configuration <span class="pill" id="listenerPill">—</span></h2>
+        <h2>🤖 Bot &amp; Promotion Settings <span class="pill" id="listenerPill">—</span></h2>
         <div class="row">
           <button onclick="listenerAction('start')">START BOT LISTENER</button>
           <button class="danger" onclick="listenerAction('stop')">STOP</button>
@@ -181,43 +181,27 @@
       </div>
 
       <div class="field">
-        <label>Instruction Video (Telegram file_id, Direct URL, or local path)</label>
-        <input type="text" id="inpWelcomeVideo" placeholder="e.g. BAACAgUAAxkBA... or https://...">
-        <p class="note" style="margin-top:4px;">When enabled, this video is sent to the user.</p>
+        <label>🔗 Promotion / Registration Link (URL)</label>
+        <input type="text" id="inpCustomLink" placeholder="https://... (Enter your registration or promo link)">
+        <p class="note" style="margin-top:4px;">Yeh link welcome photo ke baad second UID request message ke sath ekdam structured format aur clickable button me jayega.</p>
       </div>
 
       <div class="field">
-        <label>Instruction Audio / Voice Note (Telegram file_id, Direct URL, or local path)</label>
-        <input type="text" id="inpWelcomeAudio" placeholder="e.g. AwACAgUAAxkBA... or https://...">
-        <p class="note" style="margin-top:4px;">Delivered directly beneath the video when active.</p>
+        <label>Promotion Button Text (Inline Button)</label>
+        <input type="text" id="inpCustomLinkText" placeholder="👉 REGISTER / OPEN LINK">
       </div>
 
       <div class="field">
-        <label>UID Request Message (Second message sent after welcome banner)</label>
-        <textarea id="inpUidMessage" rows="3" placeholder="📹 पहले वीडियो चेक करो, उसके बाद अपना Account UID भेजो..."></textarea>
-      </div>
-
-      <div class="field">
-        <label>Custom Platform / Registration Link URL (Optional button on UID message)</label>
-        <input type="text" id="inpCustomLink" placeholder="https://example.com/register">
-        <p class="note" style="margin-top:4px;">When configured, a button with this URL is attached to the UID request message in a clean structured format.</p>
-      </div>
-
-      <div class="field">
-        <label>Custom Link Button Text</label>
-        <input type="text" id="inpCustomLinkText" placeholder="🔗 OPEN LINK or 🚀 REGISTER NOW">
-      </div>
-
-      <div class="field">
-        <label>Video Message / Deposit Instructions (Sent with video if enabled)</label>
-        <textarea id="inpVideoMessage" rows="3" placeholder="Watch this video carefully and send your UID..."></textarea>
+        <label>Second Message (UID Request Message Text)</label>
+        <textarea id="inpUidMessage" rows="3" placeholder="📹 पहले वीडियो चेक करो, उसके बाद Niche diye gaye link se registration karo and uid number भेजो..."></textarea>
+        <p class="note" style="margin-top:4px;">User ko welcome photo ke turant baad yeh message bhejkar UID maangi jaati hai.</p>
       </div>
 
       <div class="field">
         <label class="switchline">
           <span class="sw" id="swAutoVerify" onclick="toggleAutoVerify()"></span> Auto-verify UID immediately on server hit
         </label>
-        <p class="note" style="margin-top:4px;">When ON, user UID is automatically verified when sent to server. In next step, connect your server API.</p>
+        <p class="note" style="margin-top:4px;">When ON, user UID is automatically verified. When OFF, admin manually approves from Users tab.</p>
       </div>
 
       <div class="field">
@@ -237,7 +221,6 @@
       </div>
       <p class="note" id="cfgNote">—</p>
     </div>
-
   </div>
 
   <!-- ================= TAB 4: CONSOLE & LOGS ================= -->

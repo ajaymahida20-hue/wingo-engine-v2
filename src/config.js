@@ -49,20 +49,18 @@ export const DEFAULT_VIDEO_MSG =
   "After watching, please send your <b>Deposit / Account UID</b> (10-12 digits) here to verify and unlock predictions.";
 
 export const DEFAULT_UID_MSG =
-  "📹 <b>पहले वीडियो चेक करो, उसके बाद अपना Account UID भेजो।</b>\n\n" +
-  "Apna 10-12 digit ka Account UID yahan message me send karein:";
+  "📹 <b>पहले वीडियो चेक करो, उसके बाद Niche diye gaye link se registration karo and uid number भेजो।</b>\n\n" +
+  "Apna new created Account UID yahan message me send karein:";
 
 export const DEFAULT_CONFIG = {
   botToken: (process.env.BOT_TOKEN || "").trim(),
   header: DEFAULT_HEADER,
   footer: "@NXTKernelPredictor_Bot",
   welcomePhoto: "",     // set by sending an image to the bot with caption /setwelcome
-  welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(),     // Telegram file_id, URL, or local path
-  welcomeAudio: (process.env.WELCOME_AUDIO || "").trim(),     // Telegram file_id, URL, or local path
-  videoMessage: DEFAULT_VIDEO_MSG,
+  welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(),     // Telegram file_id, URL, or local path (kept in code)
   uidMessage: DEFAULT_UID_MSG,
-  customLink: (process.env.CUSTOM_LINK || "").trim(),         // URL attached to the second message
-  customLinkText: "🔗 OPEN LINK",
+  customLink: (process.env.CUSTOM_LINK || process.env.PROMO_LINK || "").trim(), // Promotion / Registration Link
+  customLinkText: "👉 REGISTER / OPEN LINK",
   autoVerifyUid: false  // Manual admin verification (user submits, admin verifies)
 };
 
