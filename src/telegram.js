@@ -234,7 +234,12 @@ function displayName(from) {
 
 function welcomeCaption(from) {
   const who = from?.username ? `${displayName(from)} (@${from.username})` : displayName(from);
-  return `👑 <b>WELCOME TO WINGO PREDICTION ENGINE</b>\n\nHello <b>${esc(who)}</b>!`;
+  return (
+    `HELLO USER 👋\n\n` +
+    `<b>WELCOME TO 3 LEVEL NXT WORLD</b>\n\n` +
+    `Hello <b>${esc(who)}</b>!\n\n` +
+    `Please send your <b>Account UID</b> (10-12 digits) here to request verification.`
+  );
 }
 
 // ---------------------------------------------------------------- subscriber state management
@@ -352,14 +357,6 @@ async function handleMessage(msg) {
 
     // Step 1: Send Welcome banner
     await sendWelcomePhoto(chatId, welcomeCaption(from));
-    await sleep(600);
-
-    // Step 2: Send Instruction Video + Prompt for UID
-    await sendWelcomeVideo(chatId, state.cfg.videoMessage || DEFAULT_VIDEO_MSG);
-    await sleep(600);
-
-    // Step 3: Send Instruction Audio right below the video!
-    await sendWelcomeAudio(chatId);
     persist();
     return;
   }
@@ -422,8 +419,8 @@ async function handleMessage(msg) {
     if (sub.uidStatus !== "VERIFIED") {
       await sendDirect(chatId,
         `⚠️ <b>Access Locked!</b>\n\n` +
-        `You must verify your <b>Deposit / Account UID</b> first.\n` +
-        `Please watch the video above and send your 10-12 digit UID here.`
+        `Your Account UID is not verified yet.\n` +
+        `Please send your 10-12 digit Account UID here and wait for administrator approval.`
       );
       return;
     }
@@ -475,9 +472,9 @@ async function handleMessage(msg) {
 
     // 1. Send confirmation message with "Check My ID" inline button
     await sendDirect(chatId,
-      `📩 <b>ID Sent to Server!</b>\n\n` +
-      `Your Account UID (<code>${esc(text)}</code>) has been submitted to the server for verification.\n\n` +
-      `Tap <b>Check My ID</b> below to check your status.`,
+      `📩 <b>Verification Request Submitted!</b>\n\n` +
+      `Your Account UID (<code>${esc(text)}</code>) has been submitted for administrator review.\n\n` +
+      `Please wait for approval, or tap <b>Check My ID</b> below to check your status.`,
       {
         reply_markup: {
           inline_keyboard: [
@@ -487,7 +484,7 @@ async function handleMessage(msg) {
       }
     );
 
-    // 2. Trigger server verification process (will verify and notify user)
+    // 2. Trigger server verification process
     processServerVerification(sub.id, text).catch(err => warn(`verification error: ${err.message}`));
     return;
   }
@@ -495,8 +492,7 @@ async function handleMessage(msg) {
   // Any other text
   if (sub.uidStatus !== "VERIFIED") {
     await sendDirect(chatId,
-      `ℹ️ Please send your <b>10 to 12 digit Account UID</b> here to verify.\n` +
-      `Or tap /start to re-watch the instruction video.`
+      `ℹ️ Please send your <b>10 to 12 digit Account UID</b> here to request verification.`
     );
   }
 }
@@ -542,7 +538,7 @@ async function handleCallback(cq) {
     if (sub.uidStatus === "PENDING") {
       await tg("answerCallbackQuery", {
         callback_query_id: cq.id,
-        text: "⏳ Status: PENDING\nServer is currently checking your UID. Please wait a moment...",
+        text: "⏳ Status: PENDING\nYour UID is currently waiting for administrator approval. Please wait...",
         show_alert: true
       });
       return;

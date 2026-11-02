@@ -56,7 +56,7 @@ export const DEFAULT_CONFIG = {
   welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(),     // Telegram file_id, URL, or local path
   welcomeAudio: (process.env.WELCOME_AUDIO || "").trim(),     // Telegram file_id, URL, or local path
   videoMessage: DEFAULT_VIDEO_MSG,
-  autoVerifyUid: true   // If true, automatically verifies UID as soon as it hits server
+  autoVerifyUid: false  // Manual admin verification (user submits, admin verifies)
 };
 
 // Fallback panel password. Override it any time by setting PANEL_PASSWORD in the
