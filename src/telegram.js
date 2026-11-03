@@ -14,6 +14,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const WELCOME_FILE = path.join(here, "..", "public", "welcome.jpg");
 const STEP1_VIDEO_FILE = path.join(here, "..", "public", "step1-video.mp4");
 const STEP2_VIDEO_FILE = path.join(here, "..", "public", "step2-video.mp4");
+const DEPOSIT_VIDEO_FILE = path.join(here, "..", "public", "deposit-video.mp4");
+const VERIFIED_VIDEO_FILE = path.join(here, "..", "public", "verified-video.mp4");
 const FINAL_VIDEO_FILE = path.join(here, "..", "public", "welcome-video.mp4");
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -135,10 +137,25 @@ export async function sendWelcomePhoto(chatId, caption, extra = {}) {
   return sendDirect(chatId, caption, extra);
 }
 
-export async function sendStepVideo(chatId, stepNum, caption = "", extra = {}) {
-  const configKey = stepNum === 1 ? "step1Video" : (stepNum === 2 ? "step2Video" : "finalVideo");
-  const defaultFile = stepNum === 1 ? STEP1_VIDEO_FILE : (stepNum === 2 ? STEP2_VIDEO_FILE : FINAL_VIDEO_FILE);
-  const videoVal = (state.cfg[configKey] || (stepNum === 3 ? state.cfg.welcomeVideo : "") || "").trim();
+export async function sendStepVideo(chatId, type, caption = "", extra = {}) {
+  let configKey = "step1Video";
+  let defaultFile = STEP1_VIDEO_FILE;
+
+  if (type === "step1" || type === 1) {
+    configKey = "step1Video";
+    defaultFile = STEP1_VIDEO_FILE;
+  } else if (type === "step2" || type === 2) {
+    configKey = "step2Video";
+    defaultFile = STEP2_VIDEO_FILE;
+  } else if (type === "deposit") {
+    configKey = "depositVideo";
+    defaultFile = DEPOSIT_VIDEO_FILE;
+  } else if (type === "verified" || type === 3) {
+    configKey = "verifiedVideo";
+    defaultFile = fs.existsSync(VERIFIED_VIDEO_FILE) ? VERIFIED_VIDEO_FILE : FINAL_VIDEO_FILE;
+  }
+
+  const videoVal = (state.cfg[configKey] || (type === "verified" || type === 3 ? (state.cfg.finalVideo || state.cfg.welcomeVideo) : "") || "").trim();
 
   // 1. If we already have a cached Telegram file_id or external URL, send it directly
   if (videoVal && !fs.existsSync(videoVal)) {
@@ -304,13 +321,13 @@ export async function setSubscriberUidStatus(userId, status) {
   persist();
 
   if (status === "VERIFIED") {
-    // Send final video (Step 3) if available
+    // Send congratulations video (WhatsApp Video 10.03.41 PM / verified-video.mp4)
     const finalCaption =
       `🎉 <b>CONGRATULATIONS! YOUR ACCOUNT IS FULLY VERIFIED</b>\n\n` +
       `Aapka Account UID <code>${esc(sub.uid || "")}</code> aur Deposit successfully verify ho chuka hai!\n\n` +
       `Tap <b>${BTN_ON}</b> below to start receiving live predictions.`;
 
-    await sendStepVideo(sub.id, 3, finalCaption);
+    await sendStepVideo(sub.id, "verified", finalCaption);
     await sleep(400);
 
     await sendDirect(sub.id,
@@ -319,19 +336,20 @@ export async function setSubscriberUidStatus(userId, status) {
       { reply_markup: MAIN_KEYBOARD }
     );
   } else if (status === "DEPOSIT_PENDING") {
-    await sendDirect(sub.id,
+    // Send deposit video (WhatsApp Video 10.26.35 PM / deposit-video.mp4) along with deposit message & button
+    const depositCaption =
       `⚠️ <b>Account ID Verified, Deposit Pending!</b>\n\n` +
       `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) verify ho gaya hai, lekin aapne abhi tak <b>Deposit</b> complete nahi kiya hai.\n\n` +
       `Kripya registration link se apna deposit complete karein.\n` +
-      `Deposit complete karne ke baad neeche diye gaye <b>💳 I Have Deposited</b> button par click karein:`,
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: "💳 I Have Deposited", callback_data: `deposited|${sub.id}` }]
-          ]
-        }
+      `Deposit complete karne ke baad neeche diye gaye <b>💳 I Have Deposited</b> button par click karein:`;
+
+    await sendStepVideo(sub.id, "deposit", depositCaption, {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "💳 I Have Deposited", callback_data: `deposited|${sub.id}` }]
+        ]
       }
-    );
+    });
   } else if (status === "REJECTED") {
     await sendDirect(sub.id,
       `❌ <b>UID Verification Failed</b>\n\n` +
@@ -401,14 +419,20 @@ async function handleMessage(msg) {
       persist();
       await sendDirect(chatId, `✅ <b>Step 2 Video Saved!</b>\n\nFile ID:\n<code>${fileId}</code>`);
       return;
-    } else if (caption === "/setvideo" || caption === "/setvideo3" || text === "/setvideo") {
+    } else if (caption === "/setdepositvideo" || caption === "/setvideodeposit") {
+      state.cfg.depositVideo = fileId;
+      persist();
+      await sendDirect(chatId, `✅ <b>Deposit Pending Video Saved!</b>\n\nFile ID:\n<code>${fileId}</code>`);
+      return;
+    } else if (caption === "/setverifiedvideo" || caption === "/setvideo" || caption === "/setvideo3" || text === "/setvideo") {
+      state.cfg.verifiedVideo = fileId;
       state.cfg.finalVideo = fileId;
       state.cfg.welcomeVideo = fileId;
       persist();
-      await sendDirect(chatId, `✅ <b>Final Instruction Video Saved!</b>\n\nFile ID:\n<code>${fileId}</code>`);
+      await sendDirect(chatId, `✅ <b>Verified Congratulations Video Saved!</b>\n\nFile ID:\n<code>${fileId}</code>`);
       return;
     } else {
-      await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>Caption commands: <code>/setvideo1</code>, <code>/setvideo2</code>, <code>/setvideo3</code></i>`);
+      await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>Caption commands: <code>/setvideo1</code>, <code>/setvideo2</code>, <code>/setdepositvideo</code>, <code>/setverifiedvideo</code></i>`);
       return;
     }
   }
