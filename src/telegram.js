@@ -150,12 +150,15 @@ export async function sendStepVideo(chatId, type, caption = "", extra = {}) {
   } else if (type === "deposit") {
     configKey = "depositVideo";
     defaultFile = DEPOSIT_VIDEO_FILE;
-  } else if (type === "verified" || type === 3) {
-    configKey = "verifiedVideo";
-    defaultFile = fs.existsSync(VERIFIED_VIDEO_FILE) ? VERIFIED_VIDEO_FILE : FINAL_VIDEO_FILE;
+  } else if (type === "deposit_instructions" || type === "uid_submitted") {
+    configKey = "uidVerifiedVideo";
+    defaultFile = VERIFIED_VIDEO_FILE;
+  } else if (type === "verified" || type === "final" || type === 3) {
+    configKey = "finalVideo";
+    defaultFile = FINAL_VIDEO_FILE;
   }
 
-  const videoVal = (state.cfg[configKey] || (type === "verified" || type === 3 ? (state.cfg.finalVideo || state.cfg.welcomeVideo) : "") || "").trim();
+  const videoVal = (state.cfg[configKey] || (type === "final" || type === 3 ? (state.cfg.finalVideo || state.cfg.welcomeVideo) : "") || "").trim();
 
   // 1. If we already have a cached Telegram file_id or external URL, send it directly
   if (videoVal && !fs.existsSync(videoVal)) {
@@ -346,7 +349,7 @@ export async function setSubscriberUidStatus(userId, status) {
     await sendStepVideo(sub.id, "deposit", depositCaption, {
       reply_markup: {
         inline_keyboard: [
-          [{ text: "💳 I Have Deposited", callback_data: `deposited|${sub.id}` }]
+          [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
         ]
       }
     });
@@ -524,10 +527,10 @@ async function handleMessage(msg) {
       `Aapka Account ID server se verify ho chuka hai. Live prediction unlock karne ke liye apna deposit complete karein.\n\n` +
       `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
 
-    await sendStepVideo(chatId, "verified", depositInstructionCaption, {
+    await sendStepVideo(chatId, "deposit_instructions", depositInstructionCaption, {
       reply_markup: {
         inline_keyboard: [
-          [{ text: "💳 Maine Deposit Kar Liya / I Have Deposited", callback_data: `deposited|${sub.id}` }]
+          [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
         ]
       }
     });

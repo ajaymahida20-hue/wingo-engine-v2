@@ -74,6 +74,7 @@ function snapshot() {
       step2Video: state.cfg.step2Video || "",
       depositVideo: state.cfg.depositVideo || "",
       verifiedVideo: state.cfg.verifiedVideo || "",
+      uidVerifiedVideo: state.cfg.uidVerifiedVideo || state.cfg.verifiedVideo || "",
       finalVideo: state.cfg.finalVideo || state.cfg.welcomeVideo || "",
       uidMessage: state.cfg.uidMessage || "",
       customLink: state.cfg.customLink || "",
@@ -134,6 +135,7 @@ async function api(req, res, url) {
     if ("step2Video" in body) state.cfg.step2Video = String(body.step2Video || "").trim();
     if ("depositVideo" in body) state.cfg.depositVideo = String(body.depositVideo || "").trim();
     if ("verifiedVideo" in body) state.cfg.verifiedVideo = String(body.verifiedVideo || "").trim();
+    if ("uidVerifiedVideo" in body) state.cfg.uidVerifiedVideo = String(body.uidVerifiedVideo || "").trim();
     if ("finalVideo" in body) state.cfg.finalVideo = String(body.finalVideo || "").trim();
     if ("uidMessage" in body) state.cfg.uidMessage = String(body.uidMessage || "");
     if ("customLink" in body) state.cfg.customLink = String(body.customLink || "").trim();

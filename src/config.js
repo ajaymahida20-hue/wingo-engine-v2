@@ -61,6 +61,7 @@ export const DEFAULT_CONFIG = {
   step2Video: "",       // file_id or local path (defaults to public/step2-video.mp4)
   depositVideo: "",     // file_id or local path (defaults to public/deposit-video.mp4)
   verifiedVideo: "",    // file_id or local path (defaults to public/verified-video.mp4)
+  uidVerifiedVideo: "", // WhatsApp Video 10.03.41 PM (defaults to public/verified-video.mp4)
   welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(), // Telegram file_id, URL, or local path for final video
   finalVideo: (process.env.WELCOME_VIDEO || "").trim(),
   uidMessage: DEFAULT_UID_MSG,
