@@ -264,6 +264,17 @@ button.danger:hover:not(:disabled) {
   border-color: transparent;
   box-shadow: 0 0 15px var(--red-glow);
 }
+button.warn-btn {
+  background: rgba(255, 183, 0, 0.15);
+  border-color: rgba(255, 183, 0, 0.4);
+  color: #ffd043;
+}
+button.warn-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: #000;
+  border-color: transparent;
+  box-shadow: 0 0 15px rgba(255, 183, 0, 0.35);
+}
 button:disabled { opacity: 0.4; cursor: not-allowed; }
 
 input, textarea, select {
@@ -315,6 +326,8 @@ input:focus, textarea:focus, select:focus {
 }
 .badge.user { background: rgba(0, 243, 255, 0.15); color: var(--cyan); border: 1px solid rgba(0, 243, 255, 0.25); }
 .badge.ok { background: rgba(0, 255, 136, 0.15); color: var(--green); }
+.badge.warn { background: rgba(255, 183, 0, 0.15); color: var(--gold); border: 1px solid rgba(255, 183, 0, 0.35); }
+.badge.claimed { background: rgba(0, 162, 255, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
 .badge.err { background: rgba(255, 42, 109, 0.15); color: var(--red); }
 .badge.off { background: rgba(116, 139, 167, 0.15); color: var(--muted); }
 

@@ -12,7 +12,9 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const WELCOME_FILE = path.join(here, "..", "public", "welcome.jpg");
-const WELCOME_VIDEO_FILE = path.join(here, "..", "public", "welcome-video.mp4");
+const STEP1_VIDEO_FILE = path.join(here, "..", "public", "step1-video.mp4");
+const STEP2_VIDEO_FILE = path.join(here, "..", "public", "step2-video.mp4");
+const FINAL_VIDEO_FILE = path.join(here, "..", "public", "welcome-video.mp4");
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m =>
@@ -133,28 +135,29 @@ export async function sendWelcomePhoto(chatId, caption, extra = {}) {
   return sendDirect(chatId, caption, extra);
 }
 
-export async function sendWelcomeVideo(chatId, caption = "") {
-  const text = caption || state.cfg.videoMessage || DEFAULT_VIDEO_MSG;
-  const video = (state.cfg.welcomeVideo || "").trim();
+export async function sendStepVideo(chatId, stepNum, caption = "", extra = {}) {
+  const configKey = stepNum === 1 ? "step1Video" : (stepNum === 2 ? "step2Video" : "finalVideo");
+  const defaultFile = stepNum === 1 ? STEP1_VIDEO_FILE : (stepNum === 2 ? STEP2_VIDEO_FILE : FINAL_VIDEO_FILE);
+  const videoVal = (state.cfg[configKey] || (stepNum === 3 ? state.cfg.welcomeVideo : "") || "").trim();
 
   // 1. If we already have a cached Telegram file_id or external URL, send it directly
-  if (video && !fs.existsSync(video)) {
-    const j = await tg("sendVideo", { chat_id: chatId, video, caption: text, parse_mode: "HTML" });
+  if (videoVal && !fs.existsSync(videoVal)) {
+    const j = await tg("sendVideo", { chat_id: chatId, video: videoVal, caption, parse_mode: "HTML", ...extra });
     if (j.ok) { trackSubMessage(chatId, j.result?.message_id); return { ok: true, result: j.result }; }
   }
 
-  // 2. Check if a local file exists (either custom path or bundled public/welcome-video.mp4)
-  const targetFile = (video && fs.existsSync(video))
-    ? video
-    : (fs.existsSync(WELCOME_VIDEO_FILE) ? WELCOME_VIDEO_FILE : null);
+  // 2. Check if local file exists
+  const targetFile = (videoVal && fs.existsSync(videoVal))
+    ? videoVal
+    : (fs.existsSync(defaultFile) ? defaultFile : null);
 
   if (targetFile) {
-    const j = await tgUpload("sendVideo", { chat_id: chatId, caption: text, parse_mode: "HTML" }, "video", targetFile);
+    const j = await tgUpload("sendVideo", { chat_id: chatId, caption, parse_mode: "HTML", ...extra }, "video", targetFile);
     if (j.ok) {
       trackSubMessage(chatId, j.result?.message_id);
       const fileId = j.result?.video?.file_id;
-      if (fileId && !state.cfg.welcomeVideo) {
-        state.cfg.welcomeVideo = fileId;
+      if (fileId && !state.cfg[configKey]) {
+        state.cfg[configKey] = fileId;
         persist();
       }
       return { ok: true, result: j.result };
@@ -162,7 +165,11 @@ export async function sendWelcomeVideo(chatId, caption = "") {
   }
 
   // 3. Fallback to text message if video sending fails
-  return sendDirect(chatId, text);
+  return sendDirect(chatId, caption, extra);
+}
+
+export async function sendWelcomeVideo(chatId, caption = "") {
+  return sendStepVideo(chatId, 3, caption);
 }
 
 // ---------------------------------------------------------------- chat cleanup
@@ -277,27 +284,17 @@ export async function processServerVerification(userId, uid) {
   const sub = state.subs.find(s => s.id === userId);
   if (!sub) return;
 
-  info(`server verification requested for user ${userId}, UID: ${uid}`);
+  info(`server verification check for user ${userId}, UID: ${uid}`);
 
-  // Auto-verify if enabled (completes as soon as it hits server)
-  if (state.cfg.autoVerifyUid !== false) {
-    await sleep(1500); // Natural 1.5s server processing simulation
-    sub.uidStatus = "VERIFIED";
-    persist();
-
-    await sendDirect(userId,
-      `🎉 <b>Verification Complete!</b>\n\n` +
-      `Your Account UID <code>${esc(uid)}</code> has been verified by the server.\n` +
-      `Deposit access is now unlocked!\n\n` +
-      `Tap <b>${BTN_ON}</b> below to start receiving predictions.`,
-      { reply_markup: MAIN_KEYBOARD }
-    );
-    await syncBotProfile();
-    info(`user ${userId} UID ${uid} verified successfully`);
+  // Auto-verify only if explicitly enabled in panel (by default it's false for manual admin review)
+  if (state.cfg.autoVerifyUid === true) {
+    await sleep(1500); // 1.5s server processing simulation
+    await setSubscriberUidStatus(userId, "VERIFIED");
+    info(`user ${userId} UID ${uid} auto-verified successfully`);
   }
 }
 
-// Manual verify/reject function for Web Control Panel
+// Manual verify/reject/deposit-pending function for Web Control Panel
 export async function setSubscriberUidStatus(userId, status) {
   const sub = state.subs.find(s => String(s.id) === String(userId));
   if (!sub) return { ok: false, error: "user not found" };
@@ -307,11 +304,33 @@ export async function setSubscriberUidStatus(userId, status) {
   persist();
 
   if (status === "VERIFIED") {
+    // Send final video (Step 3) if available
+    const finalCaption =
+      `🎉 <b>CONGRATULATIONS! YOUR ACCOUNT IS FULLY VERIFIED</b>\n\n` +
+      `Aapka Account UID <code>${esc(sub.uid || "")}</code> aur Deposit successfully verify ho chuka hai!\n\n` +
+      `Tap <b>${BTN_ON}</b> below to start receiving live predictions.`;
+
+    await sendStepVideo(sub.id, 3, finalCaption);
+    await sleep(400);
+
     await sendDirect(sub.id,
-      `🎉 <b>Your Account UID Has Been Verified!</b>\n\n` +
-      `Your UID <code>${esc(sub.uid || "")}</code> has been approved by the administrator.\n\n` +
-      `Tap <b>${BTN_ON}</b> below to start receiving predictions.`,
+      `⚡ <b>Predictions Access Unlocked!</b>\n\n` +
+      `Live round signals receive karne ke liye neeche <b>${BTN_ON}</b> dabayein:`,
       { reply_markup: MAIN_KEYBOARD }
+    );
+  } else if (status === "DEPOSIT_PENDING") {
+    await sendDirect(sub.id,
+      `⚠️ <b>Account ID Verified, Deposit Pending!</b>\n\n` +
+      `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) verify ho gaya hai, lekin aapne abhi tak <b>Deposit</b> complete nahi kiya hai.\n\n` +
+      `Kripya registration link se apna deposit complete karein.\n` +
+      `Deposit complete karne ke baad neeche diye gaye <b>💳 I Have Deposited</b> button par click karein:`,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "💳 I Have Deposited", callback_data: `deposited|${sub.id}` }]
+          ]
+        }
+      }
     );
   } else if (status === "REJECTED") {
     await sendDirect(sub.id,
@@ -346,23 +365,24 @@ async function handleMessage(msg) {
       return;
     }
 
-    // Step 1: Send Welcome banner (photo + greeting only)
+    // Step 0: Send Welcome banner (photo + greeting only)
     await sendWelcomePhoto(chatId, welcomeCaption(from));
     await sleep(600);
 
-    // Step 2: Send UID instruction message (with promotion link integrated in message & inline button)
-    const link = (state.cfg.customLink || "").trim();
-    const textToSend = buildUidRequestMessage(state.cfg);
-    const extra = {};
-    if (link) {
-      const btnText = (state.cfg.customLinkText || "👉 REGISTER / OPEN LINK").trim();
-      extra.reply_markup = {
-        inline_keyboard: [
-          [{ text: btnText, url: link }]
-        ]
-      };
-    }
-    await sendDirect(chatId, textToSend, extra);
+    // Step 1: Send Video 1 with "I Have Watched The Video" button
+    await sendStepVideo(
+      chatId,
+      1,
+      `👇 <b>WATCH THIS VIDEO CAREFULLY</b> 👇\n\n` +
+      `Is video ko pura dhyan se dekhein aur samajhein. Uske baad neeche diye gaye button par click karein:`,
+      {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "✅ I Have Watched The Video", callback_data: `watched_v1|${chatId}` }]
+          ]
+        }
+      }
+    );
     persist();
     return;
   }
@@ -371,13 +391,24 @@ async function handleMessage(msg) {
   if (msg.video) {
     const fileId = msg.video.file_id;
     const caption = (msg.caption || "").trim().toLowerCase();
-    if (caption === "/setvideo" || text === "/setvideo") {
+    if (caption === "/setvideo1" || text === "/setvideo1") {
+      state.cfg.step1Video = fileId;
+      persist();
+      await sendDirect(chatId, `✅ <b>Step 1 Video Saved!</b>\n\nFile ID:\n<code>${fileId}</code>`);
+      return;
+    } else if (caption === "/setvideo2" || text === "/setvideo2") {
+      state.cfg.step2Video = fileId;
+      persist();
+      await sendDirect(chatId, `✅ <b>Step 2 Video Saved!</b>\n\nFile ID:\n<code>${fileId}</code>`);
+      return;
+    } else if (caption === "/setvideo" || caption === "/setvideo3" || text === "/setvideo") {
+      state.cfg.finalVideo = fileId;
       state.cfg.welcomeVideo = fileId;
       persist();
-      await sendDirect(chatId, `✅ <b>Instruction Video Saved!</b>\n\nYour welcome instruction video is saved!\n\nFile ID:\n<code>${fileId}</code>`);
+      await sendDirect(chatId, `✅ <b>Final Instruction Video Saved!</b>\n\nFile ID:\n<code>${fileId}</code>`);
       return;
     } else {
-      await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>To set this as your instruction video, send it with caption <code>/setvideo</code>.</i>`);
+      await sendDirect(chatId, `📹 <b>Video Received!</b>\n\nTelegram File ID:\n<code>${fileId}</code>\n\n💡 <i>Caption commands: <code>/setvideo1</code>, <code>/setvideo2</code>, <code>/setvideo3</code></i>`);
       return;
     }
   }
@@ -392,6 +423,7 @@ async function handleMessage(msg) {
 
   if (text === "/setvideo" && msg.reply_to_message?.video) {
     state.cfg.welcomeVideo = msg.reply_to_message.video.file_id;
+    state.cfg.finalVideo = msg.reply_to_message.video.file_id;
     persist();
     await sendDirect(chatId, "✅ Welcome video file_id updated.");
     return;
@@ -456,8 +488,9 @@ async function handleMessage(msg) {
     // 1. Send confirmation message with "Check My ID" inline button
     await sendDirect(chatId,
       `📩 <b>Verification Request Submitted!</b>\n\n` +
-      `Your Account UID (<code>${esc(text)}</code>) has been submitted for administrator review.\n\n` +
-      `Please wait for approval, or tap <b>Check My ID</b> below to check your status.`,
+      `Your Account UID: <code>${esc(text)}</code>\n` +
+      `Status: ⏳ <b>Waiting for Administrator Review</b>\n\n` +
+      `Admin aapka Account UID aur Deposit check karke verify karega. Status check karne ke liye <b>Check My ID</b> par tap karein:`,
       {
         reply_markup: {
           inline_keyboard: [
@@ -467,7 +500,7 @@ async function handleMessage(msg) {
       }
     );
 
-    // 2. Trigger server verification process
+    // 2. Trigger server verification process (auto-verify if enabled)
     processServerVerification(sub.id, text).catch(err => warn(`verification error: ${err.message}`));
     return;
   }
@@ -486,6 +519,62 @@ async function handleCallback(cq) {
   const data = cq.data || "";
   const from = cq.from;
   const chatId = cq.message?.chat?.id;
+
+  // Step 1 -> Step 2 transition: user clicked "I Have Watched The Video"
+  if (data.startsWith("watched_v1|")) {
+    await tg("answerCallbackQuery", { callback_query_id: cq.id, text: "Loading next step..." });
+
+    const link = (state.cfg.customLink || "").trim();
+    const linkDisplay = link ? link : "https://example.com/register";
+    const captionText =
+      `👇 <b>REGISTRATION LINK</b> 👇\n\n` +
+      `🔗 :- ${link ? `<a href="${esc(link)}"><b>${esc(link)}</b></a>` : `<b>${linkDisplay}</b>`}\n\n\n` +
+      `👇 <b>-- UID PAST HERE --</b> 👇`;
+
+    const extra = {};
+    if (link) {
+      extra.reply_markup = {
+        inline_keyboard: [
+          [{ text: (state.cfg.customLinkText || "👉 REGISTER / OPEN LINK").trim(), url: link }]
+        ]
+      };
+    }
+
+    await sendStepVideo(chatId, 2, captionText, extra);
+    return;
+  }
+
+  // User clicked "I Have Deposited"
+  if (data.startsWith("deposited|")) {
+    const userId = Number(data.slice("deposited|".length));
+    const sub = state.subs.find(s => s.id === userId) || getOrAddUser(from);
+    if (sub) {
+      sub.uidStatus = "DEPOSIT_CLAIMED";
+      persist();
+      await tg("answerCallbackQuery", {
+        callback_query_id: cq.id,
+        text: "✅ Deposit confirmation submitted! Admin will verify and activate your predictions shortly.",
+        show_alert: true
+      });
+      if (chatId) {
+        await sendDirect(chatId,
+          `💳 <b>Deposit Confirmation Received!</b>\n\n` +
+          `Aapka deposit confirmation admin ko submit ho gaya hai.\n` +
+          `Admin verify karte hi aapka live prediction access unlock ho jayega!`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "🔍 Check My ID", callback_data: `check_uid|${sub.id}` }]
+              ]
+            }
+          }
+        );
+      }
+      await syncBotProfile();
+      info(`user ${userId} submitted deposit claim`);
+    }
+    return;
+  }
 
   if (data.startsWith("check_uid|")) {
     const userId = Number(data.slice("check_uid|".length));
@@ -515,6 +604,24 @@ async function handleCallback(cq) {
           { reply_markup: MAIN_KEYBOARD }
         );
       }
+      return;
+    }
+
+    if (sub.uidStatus === "DEPOSIT_PENDING") {
+      await tg("answerCallbackQuery", {
+        callback_query_id: cq.id,
+        text: "⚠️ Status: DEPOSIT PENDING\nAapka ID check ho gaya hai, par deposit pending hai. Deposit karke 'I Have Deposited' dabayein.",
+        show_alert: true
+      });
+      return;
+    }
+
+    if (sub.uidStatus === "DEPOSIT_CLAIMED") {
+      await tg("answerCallbackQuery", {
+        callback_query_id: cq.id,
+        text: "⏳ Status: DEPOSIT CLAIMED\nAdmin is verifying your deposit. Please wait...",
+        show_alert: true
+      });
       return;
     }
 

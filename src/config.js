@@ -57,7 +57,10 @@ export const DEFAULT_CONFIG = {
   header: DEFAULT_HEADER,
   footer: "@NXTKernelPredictor_Bot",
   welcomePhoto: "",     // set by sending an image to the bot with caption /setwelcome
-  welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(),     // Telegram file_id, URL, or local path (kept in code)
+  step1Video: "",       // file_id or local path (defaults to public/step1-video.mp4)
+  step2Video: "",       // file_id or local path (defaults to public/step2-video.mp4)
+  welcomeVideo: (process.env.WELCOME_VIDEO || "").trim(), // Telegram file_id, URL, or local path for final video
+  finalVideo: (process.env.WELCOME_VIDEO || "").trim(),
   uidMessage: DEFAULT_UID_MSG,
   customLink: (process.env.CUSTOM_LINK || process.env.PROMO_LINK || "").trim(), // Promotion / Registration Link
   customLinkText: "👉 REGISTER / OPEN LINK",

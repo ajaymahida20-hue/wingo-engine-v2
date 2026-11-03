@@ -124,6 +124,7 @@
         <div class="row">
           <button onclick="setSubFilter('all')" class="nav-tab active" id="subFilterAll" style="padding:4px 10px; font-size:11px;">ALL</button>
           <button onclick="setSubFilter('pending')" class="nav-tab" id="subFilterPending" style="padding:4px 10px; font-size:11px;">PENDING UID</button>
+          <button onclick="setSubFilter('deposit')" class="nav-tab" id="subFilterDeposit" style="padding:4px 10px; font-size:11px;">⚠️ DEPOSIT PENDING</button>
           <button onclick="setSubFilter('verified')" class="nav-tab" id="subFilterVerified" style="padding:4px 10px; font-size:11px;">VERIFIED</button>
           <button onclick="setSubFilter('live')" class="nav-tab" id="subFilterLive" style="padding:4px 10px; font-size:11px;">PREDICTING</button>
         </div>
@@ -133,8 +134,8 @@
       <div class="grid" style="margin-bottom:12px;">
         <div class="kv"><label>Total Registered</label><b class="cy" id="kTotalUsers">—</b></div>
         <div class="kv"><label>Verified Members</label><b class="ok" id="kVerifiedUsers">—</b></div>
-        <div class="kv"><label>Pending Verification</label><b class="cy" id="kPendingUsers">—</b></div>
-        <div class="kv"><label>Live Predicting</label><b class="ok" id="kLiveUsers">—</b></div>
+        <div class="kv"><label>Pending Review</label><b class="cy" id="kPendingUsers">—</b></div>
+        <div class="kv"><label>Deposit Pending</label><b style="color:var(--gold);" id="kDepositPendingUsers">—</b></div>
       </div>
 
       <!-- Search Filter -->

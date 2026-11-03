@@ -70,10 +70,13 @@ function snapshot() {
       footer: state.cfg.footer,
       welcomePhoto: state.cfg.welcomePhoto,
       welcomeVideo: state.cfg.welcomeVideo || "",
+      step1Video: state.cfg.step1Video || "",
+      step2Video: state.cfg.step2Video || "",
+      finalVideo: state.cfg.finalVideo || state.cfg.welcomeVideo || "",
       uidMessage: state.cfg.uidMessage || "",
       customLink: state.cfg.customLink || "",
       customLinkText: state.cfg.customLinkText || "👉 REGISTER / OPEN LINK",
-      autoVerifyUid: state.cfg.autoVerifyUid !== false
+      autoVerifyUid: state.cfg.autoVerifyUid === true
     },
     subscribers: state.subs.map(s => ({
       id: s.id,
@@ -88,7 +91,9 @@ function snapshot() {
     totals: {
       users: state.subs.length,
       verified: state.subs.filter(s => s.uidStatus === "VERIFIED").length,
-      pending: state.subs.filter(s => s.uidStatus === "PENDING").length,
+      pending: state.subs.filter(s => s.uidStatus === "PENDING" || s.uidStatus === "DEPOSIT_CLAIMED").length,
+      depositPending: state.subs.filter(s => s.uidStatus === "DEPOSIT_PENDING").length,
+      depositClaimed: state.subs.filter(s => s.uidStatus === "DEPOSIT_CLAIMED").length,
       live: state.subs.filter(s => s.active && s.uidStatus === "VERIFIED").length
     },
     log: state.log.slice(0, 40)
@@ -124,6 +129,9 @@ async function api(req, res, url) {
     if ("header" in body) state.cfg.header = String(body.header || "");
     if ("footer" in body) state.cfg.footer = String(body.footer || "").trim();
     if ("welcomeVideo" in body) state.cfg.welcomeVideo = String(body.welcomeVideo || "").trim();
+    if ("step1Video" in body) state.cfg.step1Video = String(body.step1Video || "").trim();
+    if ("step2Video" in body) state.cfg.step2Video = String(body.step2Video || "").trim();
+    if ("finalVideo" in body) state.cfg.finalVideo = String(body.finalVideo || "").trim();
     if ("uidMessage" in body) state.cfg.uidMessage = String(body.uidMessage || "");
     if ("customLink" in body) state.cfg.customLink = String(body.customLink || "").trim();
     if ("customLinkText" in body) state.cfg.customLinkText = String(body.customLinkText || "").trim();
@@ -176,6 +184,10 @@ async function api(req, res, url) {
 
     if (action === "verify") {
       const r = await tg.setSubscriberUidStatus(id, "VERIFIED");
+      return json(res, 200, r);
+    }
+    if (action === "deposit_pending") {
+      const r = await tg.setSubscriberUidStatus(id, "DEPOSIT_PENDING");
       return json(res, 200, r);
     }
     if (action === "reject") {
