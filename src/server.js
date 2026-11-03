@@ -187,11 +187,15 @@ async function api(req, res, url) {
     const id = body.id;
     const action = body.action;
 
-    if (action === "verify") {
+    if (action === "verify_id") {
+      const r = await tg.sendIdVerifiedDeposit(id);
+      return json(res, 200, r);
+    }
+    if (action === "verify" || action === "full_verify") {
       const r = await tg.setSubscriberUidStatus(id, "VERIFIED");
       return json(res, 200, r);
     }
-    if (action === "deposit_pending") {
+    if (action === "deposit_pending" || action === "ask_deposit") {
       const r = await tg.setSubscriberUidStatus(id, "DEPOSIT_PENDING");
       return json(res, 200, r);
     }

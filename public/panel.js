@@ -277,25 +277,24 @@ function renderSubscribers(subs) {
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else if (s.uidStatus === "DEPOSIT_PENDING") {
-      statusBadge = '<span class="badge warn" style="font-weight:800;">⚠️ DEPOSIT PENDING REVIEW</span>';
+      statusBadge = '<span class="badge warn" style="font-weight:800;">⚠️ DEPOSIT PENDING</span>';
       actionButtons = `
-        <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ APPROVE DEPOSIT</button>
-        <button class="warn-btn" onclick="subAction('deposit_pending','${s.id}')">⚠️ DEPOSIT NOT FOUND</button>
+        <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ FULL VERIFY</button>
+        <button class="warn-btn" onclick="subAction('deposit_pending','${s.id}')">⚠️ ASK DEPOSIT</button>
         <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else if (s.uidStatus === "PENDING") {
       statusBadge = '<span class="badge user">⏳ PENDING UID</span>';
       actionButtons = `
-        <button class="primary" onclick="subAction('verify','${s.id}')">✅ VERIFY FULL</button>
-        <button class="warn-btn" onclick="subAction('deposit_pending','${s.id}')">⚠️ ASK DEPOSIT</button>
+        <button class="primary" style="background:#00e5ff;color:#000;font-weight:700;" onclick="subAction('verify_id','${s.id}')">🔍 VERIFY ID</button>
         <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else if (s.uidStatus === "REJECTED") {
       statusBadge = '<span class="badge err">❌ REJECTED</span>';
       actionButtons = `
-        <button class="primary" onclick="subAction('verify','${s.id}')">✅ RE-VERIFY</button>
+        <button class="primary" style="background:#00e5ff;color:#000;font-weight:700;" onclick="subAction('verify_id','${s.id}')">🔍 VERIFY ID</button>
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else {

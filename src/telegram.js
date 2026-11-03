@@ -315,6 +315,31 @@ export async function processServerVerification(userId, uid) {
 }
 
 // Manual verify/reject/deposit-pending function for Web Control Panel
+export async function sendIdVerifiedDeposit(userId) {
+  const sub = state.subs.find(s => String(s.id) === String(userId));
+  if (!sub) return { ok: false, error: "user not found" };
+
+  sub.uidStatus = "DEPOSIT_PENDING";
+  persist();
+
+  // Send Video WhatsApp Video 10.03.41 PM (which explains: ID is verified by server, now deposit!) with "I Have Deposited" button
+  const depositInstructionCaption =
+    `📹 <b>ID Server Verified — Complete Deposit!</b>\n\n` +
+    `Aapka Account ID server se verify ho chuka hai. Live prediction unlock karne ke liye apna deposit complete karein.\n\n` +
+    `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
+
+  await sendStepVideo(sub.id, "deposit_instructions", depositInstructionCaption, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+      ]
+    }
+  });
+
+  await syncBotProfile();
+  return { ok: true, status: sub.uidStatus };
+}
+
 export async function setSubscriberUidStatus(userId, status) {
   const sub = state.subs.find(s => String(s.id) === String(userId));
   if (!sub) return { ok: false, error: "user not found" };
@@ -519,24 +544,6 @@ async function handleMessage(msg) {
       `Status: ⏳ <b>Waiting for Administrator Review</b>\n\n` +
       `Admin aapki ID ko verify kar raha hai.`
     );
-    await sleep(600);
-
-    // 2. Send Video WhatsApp Video 10.03.41 PM (which explains: ID is verified by server, now deposit!) with "I Have Deposited" button
-    const depositInstructionCaption =
-      `📹 <b>ID Server Verified — Complete Deposit!</b>\n\n` +
-      `Aapka Account ID server se verify ho chuka hai. Live prediction unlock karne ke liye apna deposit complete karein.\n\n` +
-      `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
-
-    await sendStepVideo(chatId, "deposit_instructions", depositInstructionCaption, {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
-        ]
-      }
-    });
-
-    // 3. Trigger server verification process (auto-verify if enabled)
-    processServerVerification(sub.id, text).catch(err => warn(`verification error: ${err.message}`));
     return;
   }
 
@@ -654,7 +661,7 @@ async function handleCallback(cq) {
     if (sub.uidStatus === "PENDING") {
       await tg("answerCallbackQuery", {
         callback_query_id: cq.id,
-        text: "⏳ Status: PENDING UID\nAdmin aapki ID check kar raha hai. Kripya video dekh kar deposit complete karein aur 'I Have Deposited' dabayein.",
+        text: "⏳ Status: PENDING UID\nAdmin aapki ID review kar raha hai. ID verify hone ke baad aapko aage ka instruction milega, kripya intezar karein.",
         show_alert: true
       });
       return;
