@@ -123,8 +123,9 @@
         <h2>👥 Bot Subscribers &amp; UID Verification <span class="pill on" id="subCount">0</span></h2>
         <div class="row">
           <button onclick="setSubFilter('all')" class="nav-tab active" id="subFilterAll" style="padding:6px 12px; font-size:11.5px;">ALL (<span id="cntAll">0</span>)</button>
-          <button onclick="setSubFilter('pending')" class="nav-tab" id="subFilterPending" style="padding:6px 12px; font-size:11.5px;">PENDING UID (<span id="cntPending">0</span>)</button>
+          <button onclick="setSubFilter('pending_uid')" class="nav-tab" id="subFilterPendingUid" style="padding:6px 12px; font-size:11.5px;">PENDING UID (<span id="cntPendingUid">0</span>)</button>
           <button onclick="setSubFilter('deposit')" class="nav-tab" id="subFilterDeposit" style="padding:6px 12px; font-size:11.5px; border-color:rgba(255,183,0,0.4); color:var(--gold);">⚠️ DEPOSIT PENDING (<span id="cntDeposit">0</span>)</button>
+          <button onclick="setSubFilter('pending')" class="nav-tab" id="subFilterPending" style="padding:6px 12px; font-size:11.5px; border-color:rgba(0,229,255,0.4); color:var(--cyan);">⏳ PENDING (<span id="cntPending">0</span>)</button>
           <button onclick="setSubFilter('verified')" class="nav-tab" id="subFilterVerified" style="padding:6px 12px; font-size:11.5px; border-color:rgba(0,255,136,0.4); color:var(--green);">✅ VERIFIED (<span id="cntVerified">0</span>)</button>
           <button onclick="setSubFilter('live')" class="nav-tab" id="subFilterLive" style="padding:6px 12px; font-size:11.5px;">🟢 PREDICTING (<span id="cntLive">0</span>)</button>
         </div>
@@ -133,8 +134,9 @@
       <!-- Quick Metrics -->
       <div class="grid" style="margin-bottom:12px;">
         <div class="kv"><label>Total Registered</label><b class="cy" id="kTotalUsers">—</b></div>
-        <div class="kv"><label>Pending UID</label><b class="cy" id="kPendingUsers">—</b></div>
+        <div class="kv"><label>Pending UID</label><b class="cy" id="kPendingUidUsers">—</b></div>
         <div class="kv"><label>⚠️ Deposit Pending</label><b style="color:var(--gold);" id="kDepositPendingUsers">—</b></div>
+        <div class="kv"><label>⏳ Pending</label><b style="color:var(--cyan);" id="kPendingUsers">—</b></div>
         <div class="kv"><label>Verified Members</label><b class="ok" id="kVerifiedUsers">—</b></div>
       </div>
 

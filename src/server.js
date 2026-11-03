@@ -94,8 +94,9 @@ function snapshot() {
     totals: {
       users: state.subs.length,
       verified: state.subs.filter(s => s.uidStatus === "VERIFIED").length,
-      pendingUid: state.subs.filter(s => s.uidStatus === "PENDING").length,
+      pendingUid: state.subs.filter(s => s.uidStatus === "PENDING_UID").length,
       depositPending: state.subs.filter(s => s.uidStatus === "DEPOSIT_PENDING").length,
+      pending: state.subs.filter(s => s.uidStatus === "PENDING").length,
       live: state.subs.filter(s => s.active && s.uidStatus === "VERIFIED").length
     },
     log: state.log.slice(0, 40)
@@ -196,7 +197,7 @@ async function api(req, res, url) {
       return json(res, 200, r);
     }
     if (action === "deposit_pending" || action === "ask_deposit") {
-      const r = await tg.setSubscriberUidStatus(id, "DEPOSIT_PENDING");
+      const r = await tg.sendAskDeposit(id);
       return json(res, 200, r);
     }
     if (action === "reject") {

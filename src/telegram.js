@@ -314,12 +314,13 @@ export async function processServerVerification(userId, uid) {
   }
 }
 
-// Manual verify/reject/deposit-pending function for Web Control Panel
+// Verification Step 2: Admin verifies UID from Web Panel
+// User moves to "PENDING" (awaiting deposit) and receives the deposit video + "Maine Deposit Kar Liya" button
 export async function sendIdVerifiedDeposit(userId) {
   const sub = state.subs.find(s => String(s.id) === String(userId));
   if (!sub) return { ok: false, error: "user not found" };
 
-  sub.uidStatus = "DEPOSIT_PENDING";
+  sub.uidStatus = "PENDING"; // Moves to "बस PENDING" (awaiting deposit)
   persist();
 
   // Send Video WhatsApp Video 10.03.41 PM (which explains: ID is verified by server, now deposit!) with "I Have Deposited" button
@@ -329,6 +330,34 @@ export async function sendIdVerifiedDeposit(userId) {
     `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
 
   await sendStepVideo(sub.id, "deposit_instructions", depositInstructionCaption, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+      ]
+    }
+  });
+
+  await syncBotProfile();
+  return { ok: true, status: sub.uidStatus };
+}
+
+// Admin asks for deposit / deposit not found:
+// User moves back to "PENDING" (लास्ट का पेंडिंग) and receives deposit reminder message + video
+export async function sendAskDeposit(userId) {
+  const sub = state.subs.find(s => String(s.id) === String(userId));
+  if (!sub) return { ok: false, error: "user not found" };
+
+  sub.uidStatus = "PENDING"; // Moves back to "लास्ट का पेंडिंग"
+  sub.active = false;
+  persist();
+
+  const depositCaption =
+    `⚠️ <b>Account ID Verified, Deposit Pending!</b>\n\n` +
+    `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) verify ho gaya hai, lekin aapne abhi tak <b>Deposit</b> complete nahi kiya hai.\n\n` +
+    `Kripya registration link se apna deposit complete karein.\n` +
+    `Deposit complete karne ke baad neeche diye gaye <b>💳 I Have Deposited</b> button par click karein:`;
+
+  await sendStepVideo(sub.id, "deposit", depositCaption, {
     reply_markup: {
       inline_keyboard: [
         [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
@@ -533,7 +562,7 @@ async function handleMessage(msg) {
     }
 
     sub.uid = text;
-    sub.uidStatus = "PENDING";
+    sub.uidStatus = "PENDING_UID";
     sub.uidSubmittedAt = Date.now();
     persist();
 
@@ -659,6 +688,15 @@ async function handleCallback(cq) {
     }
 
     if (sub.uidStatus === "PENDING") {
+      await tg("answerCallbackQuery", {
+        callback_query_id: cq.id,
+        text: "📹 Status: ID VERIFIED — AWAITING DEPOSIT\nAapka ID verify ho chuka hai. Kripya deposit complete karke 'Maine Deposit Kar Liya' button dabayein.",
+        show_alert: true
+      });
+      return;
+    }
+
+    if (sub.uidStatus === "PENDING_UID") {
       await tg("answerCallbackQuery", {
         callback_query_id: cq.id,
         text: "⏳ Status: PENDING UID\nAdmin aapki ID review kar raha hai. ID verify hone ke baad aapko aage ka instruction milega, kripya intezar karein.",

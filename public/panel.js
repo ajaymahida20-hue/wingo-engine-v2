@@ -143,20 +143,25 @@ function render() {
   renderLog(S.log);
 
   // Totals & Subscriber Counters
-  $("kTotalUsers").textContent = S.totals.users || 0;
-  $("kVerifiedUsers").textContent = S.totals.verified || 0;
-  $("kPendingUsers").textContent = S.totals.pendingUid || 0;
+  if ($("kTotalUsers")) $("kTotalUsers").textContent = S.totals.users || 0;
+  if ($("kPendingUidUsers")) $("kPendingUidUsers").textContent = S.totals.pendingUid || 0;
   if ($("kDepositPendingUsers")) $("kDepositPendingUsers").textContent = S.totals.depositPending || 0;
+  if ($("kPendingUsers")) $("kPendingUsers").textContent = S.totals.pending || 0;
+  if ($("kVerifiedUsers")) $("kVerifiedUsers").textContent = S.totals.verified || 0;
 
   if ($("cntAll")) $("cntAll").textContent = S.totals.users || 0;
-  if ($("cntPending")) $("cntPending").textContent = S.totals.pendingUid || 0;
+  if ($("cntPendingUid")) $("cntPendingUid").textContent = S.totals.pendingUid || 0;
   if ($("cntDeposit")) $("cntDeposit").textContent = S.totals.depositPending || 0;
+  if ($("cntPending")) $("cntPending").textContent = S.totals.pending || 0;
   if ($("cntVerified")) $("cntVerified").textContent = S.totals.verified || 0;
   if ($("cntLive")) $("cntLive").textContent = S.totals.live || 0;
 
-  $("navSubBadge").textContent = (S.totals.depositPending || S.totals.pendingUid)
-    ? `${(S.totals.depositPending || 0) + (S.totals.pendingUid || 0)} PENDING`
-    : (S.totals.users || 0);
+  const totalActionNeeded = (S.totals.depositPending || 0) + (S.totals.pendingUid || 0) + (S.totals.pending || 0);
+  if ($("navSubBadge")) {
+    $("navSubBadge").textContent = totalActionNeeded
+      ? `${totalActionNeeded} PENDING`
+      : (S.totals.users || 0);
+  }
 
   // Bot & Media Settings Form
   if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpUidMessage", "inpCustomLink", "inpCustomLinkText"].includes(document.activeElement.id)) {
@@ -215,11 +220,12 @@ function onSubSearch(val) {
 function setSubFilter(filter) {
   subFilter = filter;
   subPage = 1;
-  $("subFilterAll").classList.toggle("active", filter === "all");
-  $("subFilterPending").classList.toggle("active", filter === "pending");
-  if ($("subFilterDeposit")) $("subFilterDeposit").classList.toggle("active", filter === "deposit");
-  $("subFilterVerified").classList.toggle("active", filter === "verified");
-  $("subFilterLive").classList.toggle("active", filter === "live");
+  $("subFilterAll")?.classList.toggle("active", filter === "all");
+  $("subFilterPendingUid")?.classList.toggle("active", filter === "pending_uid");
+  $("subFilterDeposit")?.classList.toggle("active", filter === "deposit");
+  $("subFilterPending")?.classList.toggle("active", filter === "pending");
+  $("subFilterVerified")?.classList.toggle("active", filter === "verified");
+  $("subFilterLive")?.classList.toggle("active", filter === "live");
   if (S) renderSubscribers(S.subscribers);
 }
 
@@ -239,8 +245,9 @@ function renderSubscribers(subs) {
 
   // Filter
   const filtered = subs.filter(s => {
-    if (subFilter === "pending" && s.uidStatus !== "PENDING") return false;
+    if (subFilter === "pending_uid" && s.uidStatus !== "PENDING_UID") return false;
     if (subFilter === "deposit" && s.uidStatus !== "DEPOSIT_PENDING") return false;
+    if (subFilter === "pending" && s.uidStatus !== "PENDING") return false;
     if (subFilter === "verified" && s.uidStatus !== "VERIFIED") return false;
     if (subFilter === "live" && !(s.active && s.uidStatus === "VERIFIED")) return false;
     if (!subSearch) return true;
@@ -277,14 +284,22 @@ function renderSubscribers(subs) {
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else if (s.uidStatus === "DEPOSIT_PENDING") {
-      statusBadge = '<span class="badge warn" style="font-weight:800;">⚠️ DEPOSIT PENDING</span>';
+      statusBadge = '<span class="badge warn" style="font-weight:800;">⚠️ DEPOSIT CLAIMED REVIEW</span>';
       actionButtons = `
-        <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ FULL VERIFY</button>
-        <button class="warn-btn" onclick="subAction('deposit_pending','${s.id}')">⚠️ ASK DEPOSIT</button>
+        <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ ACCEPT / FULL VERIFY</button>
+        <button class="warn-btn" onclick="subAction('ask_deposit','${s.id}')">⚠️ ASK DEPOSIT</button>
         <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else if (s.uidStatus === "PENDING") {
+      statusBadge = '<span class="badge" style="background:rgba(0,229,255,0.15);color:var(--cyan);border:1px solid rgba(0,229,255,0.3);font-weight:700;">⏳ PENDING</span>';
+      actionButtons = `
+        <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ FULL VERIFY</button>
+        <button class="warn-btn" onclick="subAction('ask_deposit','${s.id}')">⚠️ ASK DEPOSIT</button>
+        <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
+        <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+      `;
+    } else if (s.uidStatus === "PENDING_UID") {
       statusBadge = '<span class="badge user">⏳ PENDING UID</span>';
       actionButtons = `
         <button class="primary" style="background:#00e5ff;color:#000;font-weight:700;" onclick="subAction('verify_id','${s.id}')">🔍 VERIFY ID</button>
