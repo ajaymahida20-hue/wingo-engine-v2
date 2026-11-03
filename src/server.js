@@ -93,9 +93,8 @@ function snapshot() {
     totals: {
       users: state.subs.length,
       verified: state.subs.filter(s => s.uidStatus === "VERIFIED").length,
-      pending: state.subs.filter(s => s.uidStatus === "PENDING" || s.uidStatus === "DEPOSIT_CLAIMED").length,
+      pendingUid: state.subs.filter(s => s.uidStatus === "PENDING").length,
       depositPending: state.subs.filter(s => s.uidStatus === "DEPOSIT_PENDING").length,
-      depositClaimed: state.subs.filter(s => s.uidStatus === "DEPOSIT_CLAIMED").length,
       live: state.subs.filter(s => s.active && s.uidStatus === "VERIFIED").length
     },
     log: state.log.slice(0, 40)

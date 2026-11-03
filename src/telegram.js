@@ -509,22 +509,30 @@ async function handleMessage(msg) {
     sub.uidSubmittedAt = Date.now();
     persist();
 
-    // 1. Send confirmation message with "Check My ID" inline button
+    // 1. Send confirmation message
     await sendDirect(chatId,
       `📩 <b>Verification Request Submitted!</b>\n\n` +
       `Your Account UID: <code>${esc(text)}</code>\n` +
       `Status: ⏳ <b>Waiting for Administrator Review</b>\n\n` +
-      `Admin aapka Account UID aur Deposit check karke verify karega. Status check karne ke liye <b>Check My ID</b> par tap karein:`,
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: "🔍 Check My ID", callback_data: `check_uid|${sub.id}` }]
-          ]
-        }
-      }
+      `Admin aapki ID ko verify kar raha hai.`
     );
+    await sleep(600);
 
-    // 2. Trigger server verification process (auto-verify if enabled)
+    // 2. Send Video WhatsApp Video 10.03.41 PM (which explains: ID is verified by server, now deposit!) with "I Have Deposited" button
+    const depositInstructionCaption =
+      `📹 <b>ID Server Verified — Complete Deposit!</b>\n\n` +
+      `Aapka Account ID server se verify ho chuka hai. Live prediction unlock karne ke liye apna deposit complete karein.\n\n` +
+      `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
+
+    await sendStepVideo(chatId, "verified", depositInstructionCaption, {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "💳 Maine Deposit Kar Liya / I Have Deposited", callback_data: `deposited|${sub.id}` }]
+        ]
+      }
+    });
+
+    // 3. Trigger server verification process (auto-verify if enabled)
     processServerVerification(sub.id, text).catch(err => warn(`verification error: ${err.message}`));
     return;
   }
@@ -573,11 +581,11 @@ async function handleCallback(cq) {
     const userId = Number(data.slice("deposited|".length));
     const sub = state.subs.find(s => s.id === userId) || getOrAddUser(from);
     if (sub) {
-      sub.uidStatus = "DEPOSIT_CLAIMED";
+      sub.uidStatus = "DEPOSIT_PENDING";
       persist();
       await tg("answerCallbackQuery", {
         callback_query_id: cq.id,
-        text: "✅ Deposit confirmation submitted! Admin will verify and activate your predictions shortly.",
+        text: "✅ Deposit claim submitted! Admin will verify and activate your predictions shortly.",
         show_alert: true
       });
       if (chatId) {
@@ -595,7 +603,7 @@ async function handleCallback(cq) {
         );
       }
       await syncBotProfile();
-      info(`user ${userId} submitted deposit claim`);
+      info(`user ${userId} submitted deposit claim (status: DEPOSIT_PENDING)`);
     }
     return;
   }
@@ -634,16 +642,7 @@ async function handleCallback(cq) {
     if (sub.uidStatus === "DEPOSIT_PENDING") {
       await tg("answerCallbackQuery", {
         callback_query_id: cq.id,
-        text: "⚠️ Status: DEPOSIT PENDING\nAapka ID check ho gaya hai, par deposit pending hai. Deposit karke 'I Have Deposited' dabayein.",
-        show_alert: true
-      });
-      return;
-    }
-
-    if (sub.uidStatus === "DEPOSIT_CLAIMED") {
-      await tg("answerCallbackQuery", {
-        callback_query_id: cq.id,
-        text: "⏳ Status: DEPOSIT CLAIMED\nAdmin is verifying your deposit. Please wait...",
+        text: "⏳ Status: DEPOSIT PENDING\nAapka deposit verification request admin ke paas review me hai. Admin verify kar raha hai, kripya intezar karein...",
         show_alert: true
       });
       return;
@@ -652,7 +651,7 @@ async function handleCallback(cq) {
     if (sub.uidStatus === "PENDING") {
       await tg("answerCallbackQuery", {
         callback_query_id: cq.id,
-        text: "⏳ Status: PENDING\nYour UID is currently waiting for administrator approval. Please wait...",
+        text: "⏳ Status: PENDING UID\nAdmin aapki ID check kar raha hai. Kripya video dekh kar deposit complete karein aur 'I Have Deposited' dabayein.",
         show_alert: true
       });
       return;

@@ -145,9 +145,18 @@ function render() {
   // Totals & Subscriber Counters
   $("kTotalUsers").textContent = S.totals.users || 0;
   $("kVerifiedUsers").textContent = S.totals.verified || 0;
-  $("kPendingUsers").textContent = S.totals.pending || 0;
+  $("kPendingUsers").textContent = S.totals.pendingUid || 0;
   if ($("kDepositPendingUsers")) $("kDepositPendingUsers").textContent = S.totals.depositPending || 0;
-  $("navSubBadge").textContent = S.totals.pending ? `${S.totals.pending} PENDING` : (S.totals.users || 0);
+
+  if ($("cntAll")) $("cntAll").textContent = S.totals.users || 0;
+  if ($("cntPending")) $("cntPending").textContent = S.totals.pendingUid || 0;
+  if ($("cntDeposit")) $("cntDeposit").textContent = S.totals.depositPending || 0;
+  if ($("cntVerified")) $("cntVerified").textContent = S.totals.verified || 0;
+  if ($("cntLive")) $("cntLive").textContent = S.totals.live || 0;
+
+  $("navSubBadge").textContent = (S.totals.depositPending || S.totals.pendingUid)
+    ? `${(S.totals.depositPending || 0) + (S.totals.pendingUid || 0)} PENDING`
+    : (S.totals.users || 0);
 
   // Bot & Media Settings Form
   if (!document.activeElement || !["inpToken", "inpHeader", "inpFooter", "inpUidMessage", "inpCustomLink", "inpCustomLinkText"].includes(document.activeElement.id)) {
@@ -230,10 +239,10 @@ function renderSubscribers(subs) {
 
   // Filter
   const filtered = subs.filter(s => {
-    if (subFilter === "pending" && !(s.uidStatus === "PENDING" || s.uidStatus === "DEPOSIT_CLAIMED")) return false;
+    if (subFilter === "pending" && s.uidStatus !== "PENDING") return false;
     if (subFilter === "deposit" && s.uidStatus !== "DEPOSIT_PENDING") return false;
     if (subFilter === "verified" && s.uidStatus !== "VERIFIED") return false;
-    if (subFilter === "live" && !s.active) return false;
+    if (subFilter === "live" && !(s.active && s.uidStatus === "VERIFIED")) return false;
     if (!subSearch) return true;
     return String(s.name || "").toLowerCase().includes(subSearch) ||
            String(s.username || "").toLowerCase().includes(subSearch) ||
@@ -259,28 +268,55 @@ function renderSubscribers(subs) {
   }
 
   box.innerHTML = pageItems.map(s => {
-    let statusBadge = '<span class="badge off">NO UID</span>';
-    if (s.uidStatus === "VERIFIED") statusBadge = '<span class="badge ok">✅ VERIFIED</span>';
-    else if (s.uidStatus === "PENDING") statusBadge = '<span class="badge user">⏳ PENDING</span>';
-    else if (s.uidStatus === "DEPOSIT_PENDING") statusBadge = '<span class="badge warn">⚠️ DEPOSIT PENDING</span>';
-    else if (s.uidStatus === "DEPOSIT_CLAIMED") statusBadge = '<span class="badge claimed">💳 DEPOSIT CLAIMED</span>';
-    else if (s.uidStatus === "REJECTED") statusBadge = '<span class="badge err">❌ REJECTED</span>';
+    let statusBadge = '<span class="badge off">NO UID YET</span>';
+    let actionButtons = '';
 
-    const liveBadge = s.active
+    if (s.uidStatus === "VERIFIED") {
+      statusBadge = '<span class="badge ok">✅ VERIFIED</span>';
+      actionButtons = `
+        <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+      `;
+    } else if (s.uidStatus === "DEPOSIT_PENDING") {
+      statusBadge = '<span class="badge warn" style="font-weight:800;">⚠️ DEPOSIT PENDING REVIEW</span>';
+      actionButtons = `
+        <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ APPROVE DEPOSIT</button>
+        <button class="warn-btn" onclick="subAction('deposit_pending','${s.id}')">⚠️ DEPOSIT NOT FOUND</button>
+        <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
+        <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+      `;
+    } else if (s.uidStatus === "PENDING") {
+      statusBadge = '<span class="badge user">⏳ PENDING UID</span>';
+      actionButtons = `
+        <button class="primary" onclick="subAction('verify','${s.id}')">✅ VERIFY FULL</button>
+        <button class="warn-btn" onclick="subAction('deposit_pending','${s.id}')">⚠️ ASK DEPOSIT</button>
+        <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
+        <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+      `;
+    } else if (s.uidStatus === "REJECTED") {
+      statusBadge = '<span class="badge err">❌ REJECTED</span>';
+      actionButtons = `
+        <button class="primary" onclick="subAction('verify','${s.id}')">✅ RE-VERIFY</button>
+        <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+      `;
+    } else {
+      statusBadge = '<span class="badge off">NO UID YET</span>';
+      actionButtons = `
+        <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+      `;
+    }
+
+    const liveBadge = (s.active && s.uidStatus === "VERIFIED")
       ? '<span class="badge ok">🟢 LIVE SIGNALS</span>'
       : '<span class="badge off">⏸ PAUSED</span>';
 
-    return `<div class="ch">
+    return `<div class="ch" style="${s.uidStatus === 'DEPOSIT_PENDING' ? 'border-color:rgba(255,183,0,0.5);' : ''}">
       <div class="top">
         <div>
           <div class="lbl">${esc(s.name)} ${statusBadge} ${liveBadge}</div>
           <div class="id">TG ID: <b>${s.id}</b> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
         </div>
         <div class="row">
-          ${s.uidStatus !== "VERIFIED" ? `<button class="primary" onclick="subAction('verify','${s.id}')">✅ VERIFY FULL</button>` : ''}
-          ${s.uidStatus !== "VERIFIED" && s.uidStatus !== "DEPOSIT_PENDING" ? `<button class="warn-btn" onclick="subAction('deposit_pending','${s.id}')">⚠️ DEPOSIT NOT DONE</button>` : ''}
-          ${s.uidStatus !== "REJECTED" ? `<button onclick="subAction('reject','${s.id}')">❌ REJECT</button>` : ''}
-          <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
+          ${actionButtons}
         </div>
       </div>
       <div class="meta" style="margin-top:6px;">
