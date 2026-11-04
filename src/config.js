@@ -1,6 +1,6 @@
 // Every tuneable constant and the shape of the saved config live here.
 
-export const HISTORY_MAX = 10;        // rolling rounds kept (trimmed to match feed)
+export const HISTORY_MAX = 500;        // rolling rounds kept (increased to support 3-level strategy simulation)
 export const COLOR_STAGE_AFTER = 4;   // losses in a row before the call switches to colour
 export const MSG_TRACK_MAX = 1000;    // newest DM message ids remembered per subscriber
 export const CAPTION_LIMIT = 1024;    // Telegram's photo-caption ceiling

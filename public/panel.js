@@ -88,8 +88,10 @@ async function refresh() {
 function signalText(run) {
   const p = run.prediction;
   if (!p) return "—";
+  if (p === "SKIP") return "⏳ SKIP (PAUSED)";
+  const lvl = (run.level && run.level > 0) ? ` [L${run.level}]` : "";
   const balls = (run.numbers || []).join(", ");
-  return balls ? `${p} [${balls}]` : p;
+  return balls ? `${p}${lvl} [${balls}]` : `${p}${lvl}`;
 }
 
 function render() {
@@ -197,7 +199,8 @@ function renderLog(log) {
   b.innerHTML = log.map(r => {
     let tagClass = "off";
     if (r.resultText.includes("WIN") || r.resultText.includes("JACKPOT")) tagClass = "ok";
-    else if (r.resultText.includes("LOSE")) tagClass = "err";
+    else if (r.resultText.includes("LOSE") || r.resultText.includes("LOSS")) tagClass = "err";
+    else if (r.resultText.includes("SKIP")) tagClass = "warn";
     else if (r.resultText.includes("PENDING")) tagClass = "user";
 
     return `<tr>

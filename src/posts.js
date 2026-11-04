@@ -5,16 +5,27 @@ import { PAST_RESULT_LINES, DEFAULT_HEADER } from "./config.js";
 import { state } from "./store.js";
 import { isColourCall } from "./engine.js";
 
-export function buildTargetBox(period, prediction, numbers) {
-  const p = String(prediction).toUpperCase();
-  const balls = numbers && numbers.length ? numbers.join(" , ") : "—";
+export function buildTargetBox(period, prediction, numbers, level) {
+  const p = String(prediction || "").toUpperCase();
   const p4 = String(period || "").slice(-4);
 
-  return [
+  if (p === "SKIP") {
+    return [
+      "        ⏬ NEXT PREDICTION ⏬",
+      `               ${p4} : [ ⏳ SKIP ]`,
+      "               STATUS - [ PAUSED / WAIT ]"
+    ].join("\n");
+  }
+
+  const lvlPart = (level && level > 0) ? ` [L${level}]` : "";
+  const lines = [
     "        ⏬ NEXT PREDICTION ⏬",
-    `               ${p4} : [ ${p} ]`,
-    `               NUMBER - [ ${balls} ]`
-  ].join("\n");
+    `               ${p4} : [ ${p} ]${lvlPart}`
+  ];
+  if (numbers && numbers.length) {
+    lines.push(`               NUMBER - [ ${numbers.join(" , ")} ]`);
+  }
+  return lines.join("\n");
 }
 
 export function footerLine() {
@@ -27,15 +38,17 @@ export function footerLine() {
 
 const sideWord = prediction => {
   const p = String(prediction || "").toUpperCase();
-  if (p === "BIG") return "BIGG";
-  if (p === "SMALL") return "SMAL";
+  if (p.startsWith("BIG")) return "BIGG";
+  if (p.startsWith("SMAL")) return "SMAL";
+  if (p.startsWith("SKIP")) return "SKIP";
   return p;
 };
 
 const statusWord = resultText => {
   if (resultText.includes("JACKPOT")) return "JACK 🍾";
   if (resultText.includes("WIN")) return "WINN 🍾";
-  if (resultText.includes("LOSE")) return "LOSS 🙈";
+  if (resultText.includes("LOSE") || resultText.includes("LOSS")) return "LOSS 🙈";
+  if (resultText.includes("SKIP")) return "SKIP ⏳";
   return "";
 };
 
@@ -45,20 +58,20 @@ function pastResultLines() {
     if (lines.length >= PAST_RESULT_LINES) break;
     const status = statusWord(entry.resultText || "");
     if (!status) continue;
-    const [side, ...rest] = String(entry.label || "").split(" ");
-    const number = rest.join(" ").trim();
-    const numPart = number ? `${number} ` : "";
     const p4 = String(entry.period || "").slice(-4);
-    lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${numPart}${status}`);
+    const [side, ...rest] = String(entry.label || "").split(" ");
+    const restText = rest.join(" ").trim();
+    const extraPart = restText ? `${restText} ` : "";
+    lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${extraPart}${status}`);
   }
   return lines.reverse();
 }
 
 // Builds the complete prediction post text (pure text formatted for Telegram HTML)
-export function buildPost(period, prediction, numbers) {
+export function buildPost(period, prediction, numbers, level) {
   const header = (state.cfg.header || DEFAULT_HEADER).trim();
   const allLines = pastResultLines();
-  const box = buildTargetBox(period, prediction, numbers);
+  const box = buildTargetBox(period, prediction, numbers, level);
   const footer = footerLine();
 
   const sections = [];

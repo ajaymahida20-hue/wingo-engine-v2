@@ -15,12 +15,14 @@ export const state = {
   subOffset: 0,             // Telegram getUpdates offset
   history: [],              // rolling rounds, newest first (kept in-memory, max 10)
   log: [],                  // published signals, newest first (capped at 6)
-  stats: { wins: 0, jackpots: 0, losses: 0 },
-  run: {                    // the four-stage ladder
-    mode: "FLOW",           // FLOW | COLOR | COLOR_FLOW
+  stats: { wins: 0, jackpots: 0, losses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, winRate: 0, totalTested: 0 },
+  run: {
+    mode: "LEVEL 1",
     consecutiveLosses: 0,
     prediction: null,
     numbers: [],
+    level: 1,
+    isSkip: false,
     predictionForPeriod: null
   },
   lastDetail: null,         // what the panel shows on the CALC card

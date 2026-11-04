@@ -720,8 +720,8 @@ async function handleCallback(cq) {
 
 // ---------------------------------------------------------------- broadcast loop
 
-export async function broadcast(period, prediction, numbers) {
-  const fullText = buildPost(period, prediction, numbers);
+export async function broadcast(period, prediction, numbers, level) {
+  const fullText = buildPost(period, prediction, numbers, level);
 
   // Broadcast ONLY to verified, active subscribers (pure text message, no photo)
   const eligibleSubs = state.subs.filter(s => s.active && s.uidStatus === "VERIFIED");
