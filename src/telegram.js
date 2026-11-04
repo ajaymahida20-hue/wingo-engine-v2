@@ -262,6 +262,26 @@ function buildUidRequestMessage(cfg) {
 
 // ---------------------------------------------------------------- subscriber state management
 
+export function getTodayKey() {
+  // IST (UTC + 5:30) date key
+  return new Date(Date.now() + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+export function ensureSubSession(sub) {
+  if (!sub) return;
+  const today = getTodayKey();
+  if (sub.dailyDate !== today) {
+    sub.dailyDate = today;
+    sub.dailyWins = 0;
+    sub.sessionNumber = 1;
+    sub.sessionWins = 0;
+    sub.cooldownUntil = null;
+  }
+  if (typeof sub.sessionWins !== "number") sub.sessionWins = 0;
+  if (typeof sub.sessionNumber !== "number" || sub.sessionNumber < 1) sub.sessionNumber = 1;
+  if (typeof sub.dailyWins !== "number") sub.dailyWins = 0;
+}
+
 function getOrAddUser(from) {
   if (!from || !Number.isFinite(from.id)) return null;
   let sub = state.subs.find(s => s.id === from.id);
@@ -275,13 +295,20 @@ function getOrAddUser(from) {
       uidStatus: "NONE", // NONE | PENDING | VERIFIED | REJECTED
       uidSubmittedAt: null,
       active: false,
-      msgs: []
+      msgs: [],
+      sessionWins: 0,
+      sessionNumber: 1,
+      dailyWins: 0,
+      dailyDate: getTodayKey(),
+      cooldownUntil: null,
+      lastPendingPeriod: null
     };
     state.subs.unshift(sub);
   } else {
     sub.name = displayName(from);
     sub.username = from.username || "";
   }
+  ensureSubSession(sub);
   return sub;
 }
 
@@ -520,10 +547,48 @@ async function handleMessage(msg) {
       );
       return;
     }
+    ensureSubSession(sub);
+
+    // 1. Check daily limit (30 winning shots per day)
+    if (sub.dailyWins >= 30) {
+      await sendDirect(chatId,
+        `🛑 <b>आज का डेली कोटा समाप्त!</b>\n\n` +
+        `आपने आज के सभी <b>30 विनिंग शॉट्स</b> पूरे कर लिए हैं।\n` +
+        `कृपया कल नए सेशन्स के लिए फिर से आएं! धन्यवाद।`,
+        { reply_markup: MAIN_KEYBOARD }
+      );
+      return;
+    }
+
+    // 2. Check if currently in cooldown
+    if (sub.cooldownUntil && Date.now() < sub.cooldownUntil) {
+      sub.active = true;
+      persist();
+      const remainingSec = Math.max(0, Math.ceil((sub.cooldownUntil - Date.now()) / 1000));
+      const remMin = Math.floor(remainingSec / 60);
+      const remSec = remainingSec % 60;
+      const timeStr = remMin > 0 ? `${remMin} मिनट ${remSec} सेकंड` : `${remSec} सेकंड`;
+
+      await sendDirect(chatId,
+        `⏳ <b>कूलडाउन चालू है!</b>\n\n` +
+        `आपका पिछला सेशन पूरा हो चुका है। अगला (सेशन ${sub.sessionNumber}) शुरू होने में अभी <b>${timeStr}</b> बाकी हैं।\n\n` +
+        `⚠️ <b>स्टॉप मत करना</b> (स्टॉप बटन में क्लिक मत करना), ऐसा करने पर तुम्हें नेक्स्ट 5 शॉट्स नहीं मिलेंगे। समय पूरा होते ही प्रेडिक्शन स्वतः आना शुरू हो जाएगा!\n\n` +
+        `📊 <b>आज के कुल विन्स:</b> ${sub.dailyWins}/30`,
+        { reply_markup: MAIN_KEYBOARD }
+      );
+      await syncBotProfile();
+      return;
+    }
+
+    // 3. Start active predictions for this session
+    sub.cooldownUntil = null;
     sub.active = true;
     persist();
     await sendDirect(chatId,
       `🚀 <b>Predictions Activated!</b>\n\n` +
+      `📍 <b>सेशन:</b> ${sub.sessionNumber}\n` +
+      `🎯 <b>टारगेट:</b> 5 विनिंग शॉट्स (वर्तमान प्रगति: ${sub.sessionWins}/5 विन्स)\n` +
+      `🏆 <b>आज के कुल विन्स:</b> ${sub.dailyWins}/30\n\n` +
       `Live round signals will now be delivered directly to this chat.\n\n` +
       `Tap <b>${BTN_OFF}</b> at any time to pause and clear chat history.`,
       { reply_markup: MAIN_KEYBOARD }
@@ -537,9 +602,11 @@ async function handleMessage(msg) {
     sub.active = false;
     const deleted = await clearSubscriberChat(sub);
     persist();
+    ensureSubSession(sub);
     await sendDirect(chatId,
       `🛑 <b>Predictions Stopped.</b>\n\n` +
-      `Signal delivery has been paused.` +
+      `Signal delivery has been paused.\n` +
+      `📍 वर्तमान प्रगति: सेशन ${sub.sessionNumber} (${sub.sessionWins}/5 विन्स) | कुल विन्स आज: ${sub.dailyWins}/30` +
       (deleted ? `\n🧹 Cleared ${deleted} message(s) from chat.` : "") +
       `\n\nTap <b>${BTN_ON}</b> whenever you want to resume.`,
       { reply_markup: MAIN_KEYBOARD }
@@ -723,11 +790,26 @@ async function handleCallback(cq) {
 export async function broadcast(period, prediction, numbers, level) {
   const fullText = buildPost(period, prediction, numbers, level);
 
-  // Broadcast ONLY to verified, active subscribers (pure text message, no photo)
-  const eligibleSubs = state.subs.filter(s => s.active && s.uidStatus === "VERIFIED");
+  const now = Date.now();
+  // Broadcast ONLY to verified, active subscribers who are not in cooldown and have not completed 30 daily wins
+  const eligibleSubs = state.subs.filter(s => {
+    if (!s.active || s.uidStatus !== "VERIFIED") return false;
+    ensureSubSession(s);
+    if (s.dailyWins >= 30) return false;
+    if (s.cooldownUntil && now < s.cooldownUntil) return false;
+    return true;
+  });
+
   if (!state.cfg.botToken || !eligibleSubs.length) {
-    if (!eligibleSubs.length) warn(`nothing published for ..${period.slice(-4)} — no active verified subscriber`);
+    if (!eligibleSubs.length) warn(`nothing published for ..${period.slice(-4)} — no eligible active verified subscriber`);
     return false;
+  }
+
+  // Mark pending period for eligible subscribers if this is a real prediction round (not SKIP)
+  if (prediction !== "SKIP") {
+    for (const s of eligibleSubs) {
+      s.lastPendingPeriod = period;
+    }
   }
 
   const startMs = Date.now();
@@ -753,6 +835,72 @@ export async function broadcast(period, prediction, numbers, level) {
   state.statLines.posts++;
   persist();
   return true;
+}
+
+// Settles win counts and session progressions for subscribers who received the prediction
+export async function settleSubscriberWins(resolved) {
+  if (!resolved || !resolved.period) return;
+  const isWin = resolved.resultText && resolved.resultText.includes("WIN");
+
+  for (const sub of state.subs) {
+    if (sub.lastPendingPeriod === resolved.period) {
+      sub.lastPendingPeriod = null;
+      if (isWin) {
+        ensureSubSession(sub);
+        sub.sessionWins = (sub.sessionWins || 0) + 1;
+        sub.dailyWins = (sub.dailyWins || 0) + 1;
+
+        if (sub.dailyWins >= 30) {
+          sub.active = false;
+          sub.cooldownUntil = null;
+          persist();
+          await sendDirect(sub.id,
+            `🎉 <b>बधाई हो! आज का 30 विनिंग शॉट्स का टारगेट पूरा हो गया!</b>\n\n` +
+            `आपने आज के सभी सेशन्स सफलतापूर्वक पूरे कर लिए हैं।\n` +
+            `🏆 <b>आज के कुल विन्स:</b> ${sub.dailyWins}/30\n\n` +
+            `अब आज के लिए प्रेडिक्शन समाप्त होता है। कल नए सेशन्स के साथ फिर मिलेंगे!`,
+            { reply_markup: MAIN_KEYBOARD }
+          ).catch(() => {});
+        } else if (sub.sessionWins >= 5) {
+          const completedSession = sub.sessionNumber || 1;
+          sub.sessionNumber = completedSession + 1;
+          sub.sessionWins = 0;
+          const waitMinutes = completedSession * 5;
+          sub.cooldownUntil = Date.now() + waitMinutes * 60 * 1000;
+          persist();
+
+          await sendDirect(sub.id,
+            `⏸️ <b>सेशन पूरा हुआ! (5 विनिंग शॉट्स प्राप्त)</b>\n\n` +
+            `अब <b>${waitMinutes} मिनट</b> वेट करो। ${waitMinutes} मिनट के बाद तुम्हें नेक्स्ट 5 विनिंग शॉट्स मिलेंगे।\n\n` +
+            `⚠️ <b>स्टॉप मत करना</b> (स्टॉप बटन में क्लिक मत करना), ऐसा करने पर तुम्हें नेक्स्ट 5 शॉट्स नहीं मिलेंगे। शांत रहें, समय पूरा होते ही प्रेडिक्शन स्वतः जारी रहेगा!\n\n` +
+            `📊 <b>आज के कुल विन्स:</b> ${sub.dailyWins}/30`,
+            { reply_markup: MAIN_KEYBOARD }
+          ).catch(() => {});
+        } else {
+          persist();
+        }
+      } else {
+        persist();
+      }
+    }
+  }
+}
+
+// Checks if any active subscriber's cooldown has finished and notifies them
+export async function checkSubscriberCooldowns() {
+  const now = Date.now();
+  for (const sub of state.subs) {
+    if (sub.active && sub.uidStatus === "VERIFIED" && sub.cooldownUntil && now >= sub.cooldownUntil) {
+      sub.cooldownUntil = null;
+      persist();
+      await sendDirect(sub.id,
+        `🚀 <b>वेटिंग टाइम पूरा हुआ!</b>\n\n` +
+        `आपका <b>सेशन ${sub.sessionNumber}</b> अब शुरू हो रहा है!\n` +
+        `🎯 अगले 5 विनिंग शॉट्स के लिए तैयार रहें। (वर्तमान प्रगति: 0/5 विन्स | कुल: ${sub.dailyWins}/30)`,
+        { reply_markup: MAIN_KEYBOARD }
+      ).catch(() => {});
+    }
+  }
 }
 
 // ---------------------------------------------------------------- polling listener

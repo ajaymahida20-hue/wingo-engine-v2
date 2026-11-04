@@ -89,7 +89,11 @@ function snapshot() {
       uidStatus: s.uidStatus || "NONE",
       uidSubmittedAt: s.uidSubmittedAt || null,
       active: s.active === true,
-      tracked: (s.msgs || []).length
+      tracked: (s.msgs || []).length,
+      sessionNumber: s.sessionNumber || 1,
+      sessionWins: s.sessionWins || 0,
+      dailyWins: s.dailyWins || 0,
+      cooldownUntil: s.cooldownUntil || null
     })),
     totals: {
       users: state.subs.length,

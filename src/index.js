@@ -5,7 +5,7 @@ import { POLL_MS } from "./config.js";
 import { state, load, persist, dataFile, initRemoteStore, syncToRemote } from "./store.js";
 import { fetchHistory, mergeHistory, noteRound, nextPeriod } from "./history.js";
 import { computePrediction, resolvePending, isColourCall } from "./engine.js";
-import { broadcast, startListener, syncBotProfile } from "./telegram.js";
+import { broadcast, startListener, syncBotProfile, settleSubscriberWins, checkSubscriberCooldowns } from "./telegram.js";
 import { startServer } from "./server.js";
 import { info, warn, error, log } from "./logger.js";
 
@@ -42,7 +42,13 @@ async function tick() {
       else { state.log.unshift({ period: resolved.period, label: resolved.label, actual: resolved.actualText, resultText: resolved.resultText }); trimLog(); }
       const s = state.stats;
       info(`${resolved.period.slice(-4)} | ${resolved.label.padEnd(14)} | ${resolved.actualText.padEnd(8)} | ${resolved.resultText}   (W${s.wins} L${s.losses} Rate:${s.winRate || 0}%)`);
+
+      // Settle wins and session progression for subscribers who received this prediction
+      await settleSubscriberWins(resolved);
     }
+
+    // Check if any subscriber's cooldown has finished
+    await checkSubscriberCooldowns();
 
     // 2. publish the next signal, once per round
     const calc = computePrediction();

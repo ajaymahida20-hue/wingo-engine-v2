@@ -326,10 +326,15 @@ function renderSubscribers(subs) {
       ? '<span class="badge ok">🟢 LIVE SIGNALS</span>'
       : '<span class="badge off">⏸ PAUSED</span>';
 
+    const now = Date.now();
+    const cooldownBadge = (s.cooldownUntil && now < s.cooldownUntil)
+      ? `<span class="badge warn">⏳ COOLDOWN (${Math.ceil((s.cooldownUntil - now)/60000)}m left)</span>`
+      : '';
+
     return `<div class="ch" style="${s.uidStatus === 'DEPOSIT_PENDING' ? 'border-color:rgba(255,183,0,0.5);' : ''}">
       <div class="top">
         <div>
-          <div class="lbl">${esc(s.name)} ${statusBadge} ${liveBadge}</div>
+          <div class="lbl">${esc(s.name)} ${statusBadge} ${liveBadge} ${cooldownBadge}</div>
           <div class="id">TG ID: <b>${s.id}</b> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
         </div>
         <div class="row">
@@ -339,6 +344,8 @@ function renderSubscribers(subs) {
       <div class="meta" style="margin-top:6px;">
         Account UID: <b style="color:var(--cyan); font-size:13px;">${esc(s.uid || "None submitted")}</b>
         ${s.uidSubmittedAt ? ' · Submitted ' + new Date(s.uidSubmittedAt).toLocaleTimeString() : ''}
+        · <b>Session ${s.sessionNumber || 1}</b> (${s.sessionWins || 0}/5 wins)
+        · <b>Daily:</b> ${s.dailyWins || 0}/30 wins
         · ${s.tracked || 0} messages tracked in DM
       </div>
     </div>`;

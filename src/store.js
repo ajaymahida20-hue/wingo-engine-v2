@@ -52,6 +52,12 @@ function applySaved(saved) {
       uidSubmittedAt: null,
       active: false,
       msgs: [],
+      sessionWins: 0,
+      sessionNumber: 1,
+      dailyWins: 0,
+      dailyDate: null,
+      cooldownUntil: null,
+      lastPendingPeriod: null,
       ...s
     }));
   }
