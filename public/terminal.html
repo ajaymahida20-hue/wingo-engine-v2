@@ -1037,13 +1037,8 @@
               status: "LOSS"
             });
 
-            if (consecutiveLosses >= 4) {
-              shadowMode = true;
-              shadowPrediction = refOppositeType;
-              level = 1;
-            } else {
-              level = consecutiveLosses + 1;
-            }
+            // Advance level to whatever it reaches (L1 -> L2 -> L3 -> L4 -> L5 ...)
+            level = consecutiveLosses + 1;
           }
         }
       }
@@ -1162,7 +1157,7 @@
           predResultEl.className = "pred-small";
           predResultEl.innerHTML = `🔴 ${p.predictedType}`;
         }
-        levelBadgeEl.textContent = `Level: ${p.level} of 4`;
+        levelBadgeEl.textContent = `Level: ${p.level}`;
         anchorBadgeEl.textContent = `Ref: ${p.refNumber} (${p.refColor || p.refOppositeType})`;
       }
     }
@@ -1192,22 +1187,20 @@
           <div><span class="calc-highlight">Reason:</span> ${p.reason}</div>
           <div><span class="calc-highlight">Remaining Skips:</span> ${p.skipCount} round(s)</div>
           <hr style="border-color: var(--border-color); margin: 12px 0; border-style: dashed;">
-          <div><span class="calc-highlight">10th History Record:</span> Period ${p.ref10Period} ➜ Outcome: <span class="${p.ref10Type === 'BIG' ? 'calc-green' : 'calc-red'}">${p.ref10Type}</span></div>
-          <div><span class="calc-highlight">Current Session Wins:</span> ${p.sessionWins} of 10</div>
+          <div><span class="calc-highlight">Target Number in History:</span> Number ${p.targetNumber}</div>
+          <div><span class="calc-highlight">Strategy:</span> WinGo Dynamic Pattern Strategy</div>
           <div style="margin-top: 10px; font-weight: bold; color: var(--accent-yellow);">⚡ Next Action: Skip this round. Strategy will resume automatically.</div>
         `;
       } else {
         stepsContainer.innerHTML = `
           <div><span class="calc-highlight">Current Mode:</span> <span class="calc-green">ACTIVE BETTING</span></div>
-          <div><span class="calc-highlight">Sequence Level:</span> <strong>Level ${p.level}</strong> of 3</div>
-          <div><span class="calc-highlight">10th History Record:</span> Period ${p.anchorPeriod} ➜ Outcome: <span class="${p.anchorType === 'BIG' ? 'calc-green' : 'calc-red'}"><strong>${p.anchorType}</strong></span></div>
+          <div><span class="calc-highlight">Sequence Level:</span> <strong>Level ${p.level}</strong></div>
+          <div><span class="calc-highlight">Reference Round:</span> Period ${p.refPeriod} ➜ Number: ${p.refNumber}</div>
           <hr style="border-color: var(--border-color); margin: 12px 0; border-style: dashed;">
-          <div><span class="calc-highlight">Strategy Rule:</span> 10th record was <strong>${p.anchorType}</strong> ➜ Bet <strong>${p.anchorType}</strong> for up to 3 consecutive rounds.</div>
-          <div><span class="calc-highlight">Target Prediction:</span> <span class="${p.predictedType === 'BIG' ? 'calc-green' : 'calc-red'}" style="font-size: 18px; font-weight:800;">${p.predictedType}</span> (Level ${p.level})</div>
-          <div><span class="calc-highlight">Session Wins Achieved:</span> ${p.sessionWins} / 10</div>
+          <div><span class="calc-highlight">Target Prediction:</span> <span class="${p.predictedType === 'BIG' || p.predictedType === 'GREEN' ? 'calc-green' : 'calc-red'}" style="font-size: 18px; font-weight:800;">${p.predictedType}</span> (Level ${p.level})</div>
           <div style="margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
-            💡 If this round WINS: 1 Skip applied, Session Wins +1.<br>
-            💡 If this round LOSSES: Continues to Level ${p.level < 3 ? p.level + 1 : 'RESET (fresh 10th record)'}.
+            💡 If this round WINS: 2 Skips applied, resets to Level 1 (Color).<br>
+            💡 If this round LOSSES: Continues to Level ${p.level + 1} (Opposite Big/Small).
           </div>
         `;
       }

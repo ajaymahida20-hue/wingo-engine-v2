@@ -5,13 +5,16 @@ import { PAST_RESULT_LINES, DEFAULT_HEADER } from "./config.js";
 import { state } from "./store.js";
 import { isColourCall } from "./engine.js";
 
-export function buildTargetBox(period, prediction, numbers, level) {
+export function buildTargetBox(period, prediction, numbers, level, sessionWins) {
   const p = String(prediction || "").toUpperCase();
   const p4 = String(period || "").slice(-4);
+  const winCount = (typeof sessionWins === "number") ? sessionWins : 0;
+  const headerLine = `[ ${winCount} WINNING ] NEXT PREDICTION [ ${winCount} WINNING ]`;
 
   if (p === "SKIP") {
     return [
-      "        ⏬ NEXT PREDICTION ⏬",
+      `        ${headerLine}`,
+      "",
       `               ${p4} : [ ⏳ SKIP ]`,
       "               STATUS - [ PAUSED / WAIT ]"
     ].join("\n");
@@ -23,7 +26,8 @@ export function buildTargetBox(period, prediction, numbers, level) {
   else if (p === "RED" || p === "SMALL") icon = "🔴 ";
 
   const lines = [
-    "        ⏬ NEXT PREDICTION ⏬",
+    `        ${headerLine}`,
+    "",
     `               ${p4} : [ ${icon}${p} ]${lvlPart}`
   ];
   if (numbers && numbers.length) {
@@ -33,11 +37,7 @@ export function buildTargetBox(period, prediction, numbers, level) {
 }
 
 export function footerLine() {
-  const f = (state.cfg.footer || "@NXTKernelPredictor_Bot").trim();
-  if (!f) return "";
-  const url = /^https?:\/\//i.test(f) ? f : "https://t.me/" + (f.startsWith("@") ? f.slice(1) : f);
-  const handle = f.startsWith("@") ? f : (f.startsWith("http") ? f : "@" + f);
-  return `\n\n\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 ᴼᵖᵉⁿ ᶠᵒʳ ᵖʳⁱᵛᵃᵗᵉ ˢᵉˢⁱᵒⁿ\u00A0\u00A0 <a href="${url}">${handle}</a>\u00A0\u00A0\u00A0\u00A0\u00A0 ↩️`;
+  return "";
 }
 
 const sideWord = prediction => {
@@ -51,10 +51,10 @@ const sideWord = prediction => {
 };
 
 const statusWord = resultText => {
-  if (resultText.includes("JACKPOT")) return "JACK 🍾";
-  if (resultText.includes("WIN")) return "WINN 🍾";
-  if (resultText.includes("LOSE") || resultText.includes("LOSS")) return "LOSS 🙈";
-  if (resultText.includes("SKIP")) return "SKIP ⏳";
+  if (resultText.includes("JACKPOT")) return "JACK";
+  if (resultText.includes("WIN")) return "WINN";
+  if (resultText.includes("LOSE") || resultText.includes("LOSS")) return "LOSS";
+  if (resultText.includes("SKIP")) return "SKIP";
   return "";
 };
 
@@ -74,18 +74,17 @@ function pastResultLines() {
 }
 
 // Builds the complete prediction post text (pure text formatted for Telegram HTML)
-export function buildPost(period, prediction, numbers, level) {
+export function buildPost(period, prediction, numbers, level, sessionWins) {
   const header = (state.cfg.header || DEFAULT_HEADER).trim();
   const allLines = pastResultLines();
-  const box = buildTargetBox(period, prediction, numbers, level);
-  const footer = footerLine();
+  const box = buildTargetBox(period, prediction, numbers, level, sessionWins);
 
   const sections = [];
   if (header) sections.push(header);
   if (allLines.length) sections.push(allLines.join("\n"));
   sections.push(box);
 
-  return `<b>${sections.join("\n\n")}</b>${footer}`;
+  return `<b>${sections.join("\n\n")}</b>`;
 }
 
 export { isColourCall };

@@ -239,13 +239,8 @@ export function simulateStrategy(historyList = state.history) {
           status: "LOSS"
         });
 
-        if (consecutiveLosses >= 4) {
-          shadowMode = true;
-          shadowPrediction = refOppositeType;
-          level = 1;
-        } else {
-          level = consecutiveLosses + 1;
-        }
+        // Advance level to whatever it reaches (L1 -> L2 -> L3 -> L4 -> L5 ...)
+        level = consecutiveLosses + 1;
       }
     }
   }
@@ -595,13 +590,9 @@ export function resolvePending(newest) {
       state.stats.losses++;
       strat.consecutiveLosses++;
 
-      if (strat.consecutiveLosses >= 4) {
-        // 4 consecutive losses reached! Enter shadow mode
-        strat.shadowMode = true;
-        strat.level = 1;
-      } else {
-        strat.level = strat.consecutiveLosses + 1;
-      }
+      // Advance level to whatever it reaches (L1 -> L2 -> L3 -> L4 -> L5 ...)
+      strat.level = strat.consecutiveLosses + 1;
+      strat.shadowMode = false;
     }
   }
 

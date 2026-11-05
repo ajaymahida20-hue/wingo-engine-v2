@@ -49,7 +49,7 @@ export const DEFAULT_VIDEO_MSG =
   "After watching, please send your <b>Deposit / Account UID</b> (10-12 digits) here to verify and unlock predictions.";
 
 export const DEFAULT_UID_MSG =
-  "📹 <b>पहले वीडियो चेक करो, उसके बाद Niche diye gaye link se registration karo and uid number भेजो।</b>\n\n" +
+  "📹 <b>Pehle video check karo, uske baad niche diye gaye link se registration karo and UID number bhejo.</b>\n\n" +
   "Apna new created Account UID yahan message me send karein:";
 
 export const DEFAULT_CONFIG = {
