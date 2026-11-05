@@ -58,14 +58,15 @@
         674,
         675,
         676,
-        677
+        677,
+        678
       ],
-      "sessionWins": 4,
-      "sessionNumber": 1,
-      "dailyWins": 4,
+      "sessionWins": 0,
+      "sessionNumber": 2,
+      "dailyWins": 5,
       "dailyDate": "2026-11-05",
-      "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100051388",
+      "cooldownUntil": 1793878738874,
+      "lastPendingPeriod": null,
       "id": 7226120418,
       "name": "C M 𝐃 AGENT SAHIL ×͜×",
       "username": "Tradarbysahij",
@@ -74,6 +75,12 @@
   ],
   "subOffset": 167087759,
   "history": [
+    {
+      "period": "20261105100051388",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261105100051387",
       "number": 9,
@@ -970,10 +977,10 @@
     }
   ],
   "strategy": {
-    "level": 3,
+    "level": 1,
     "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -984,10 +991,16 @@
   },
   "log": [
     {
-      "period": "20261105100051388",
-      "label": "SMALL (L3)",
+      "period": "20261105100051389",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051388",
+      "label": "SMALL (L3)",
+      "actual": "SMALL 1 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100051387",
@@ -1012,35 +1025,29 @@
       "label": "SKIP",
       "actual": "BIG 7 (green)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100051383",
-      "label": "GREEN (L1)",
-      "actual": "BIG 5 (green)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
-    "wins": 39,
+    "wins": 40,
     "jackpots": 0,
     "losses": 21,
     "l1Wins": 32,
     "l2Wins": 4,
-    "l3Wins": 0,
-    "winRate": 65,
-    "totalTested": 60
+    "l3Wins": 1,
+    "winRate": 66,
+    "totalTested": 61
   },
   "run": {
-    "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "prediction": "SMALL",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 3,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100051388"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100051389"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793878430629
+  "savedAt": 1793878439511
 }
