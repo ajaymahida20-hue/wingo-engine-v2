@@ -217,6 +217,10 @@ async function api(req, res, url) {
     return json(res, 400, { ok: false, error: "unknown action" });
   }
 
+  if (route === "/api/history" && req.method === "GET") {
+    return json(res, 200, { ok: true, history: state.history, strategy: state.strategy });
+  }
+
   if (route === "/api/clear-history" && req.method === "POST") {
     state.history = [];
     resetStrategy();

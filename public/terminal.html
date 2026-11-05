@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🚀 WinGo 30S Pro Terminal (3-Level Strategy & Laptop Pro Chart)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Roboto+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0d14;
+      --bg-secondary: #121721;
+      --card-bg: #18202c;
+      --card-border: #263345;
+      --border-color: #263345;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b9bb0;
+      --accent-blue: #388bfd;
+      --accent-cyan: #39c5cf;
+      --accent-green: #2ea043;
+      --accent-green-bright: #3fb950;
+      --accent-red: #f85149;
+      --accent-purple: #a371f7;
+      --accent-yellow: #d29922;
+      --line-color: #58a6ff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { 
+      background-color: var(--bg-primary); 
+      color: var(--text-primary); 
+      font-family: 'Nunito', sans-serif; 
+      padding: 15px; 
+      padding-bottom: 85px; 
+      position: relative; 
+      min-height: 100vh;
+    }
+    
+    .container { 
+      width: 100%; 
+      max-width: 1280px; 
+      margin: 0 auto; 
+    }
+    
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.25s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* App Header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .app-title { font-size: 19px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 10px; }
+    .app-badge { font-size: 11px; background: rgba(57, 197, 207, 0.15); color: var(--accent-cyan); padding: 4px 10px; border-radius: 20px; font-weight: 700; border: 1px solid rgba(57, 197, 207, 0.3); }
+
+    /* Home Layout Grid */
+    .home-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 880px) {
+      .home-grid {
+        grid-template-columns: 420px 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      body {
+        padding-top: 15px;
+        padding-bottom: 25px;
+      }
+    }
+
+    /* Live Panel */
+    .live-panel {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .live-panel .label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 700; }
+    .live-panel .value { font-family: 'Roboto Mono', monospace; }
+    #period { font-size: 19px; font-weight: 700; color: var(--accent-cyan); word-break: break-all; }
+    #timer { font-size: 58px; font-weight: 800; color: #fff; margin: 8px 0; letter-spacing: 2px; text-shadow: 0 0 20px rgba(57,197,207,0.4); }
+    .time-footer {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--text-secondary);
+    }
+
+    /* Prediction Card (Pure Big/Small Strategy) */
+    #new-prediction-panel {
+      background: linear-gradient(145deg, #121824, #1b2435);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+    }
+    .pred-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .pred-header .label { font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); }
+    .session-badge {
+      font-size: 11px;
+      font-family: 'Roboto Mono', monospace;
+      background: rgba(63, 185, 80, 0.15);
+      color: var(--accent-green-bright);
+      border: 1px solid rgba(63, 185, 80, 0.3);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+    #new-prediction-result {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 10px 0;
+      transition: all 0.3s ease;
+    }
+    .pred-big { color: var(--accent-green-bright); text-shadow: 0 0 20px rgba(63, 185, 80, 0.5); }
+    .pred-small { color: var(--accent-red); text-shadow: 0 0 20px rgba(248, 81, 73, 0.5); }
+    .pred-skip { color: var(--accent-yellow); text-shadow: 0 0 20px rgba(210, 153, 34, 0.5); }
+    
+    .pred-meta {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-family: 'Roboto Mono', monospace;
+    }
+    .pred-meta-badge {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 6px;
+    }
+
+    /* History Section */
+    .history-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    }
+    .section-header {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 15px;
+      color: var(--text-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    #history-list::-webkit-scrollbar { width: 5px; }
+    #history-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    .history-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-left: 5px solid;
+    }
+    .history-card.big { border-left-color: var(--accent-green-bright); }
+    .history-card.small { border-left-color: var(--accent-red); }
+    .card-result { display: flex; align-items: center; gap: 12px; }
+    .result-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .result-number.green-bg { background-color: var(--accent-green); }
+    .result-number.red-bg { background-color: var(--accent-red); }
+    .result-number.purple-bg { background: linear-gradient(135deg, var(--accent-purple), var(--accent-red)); }
+    .result-text { font-size: 13px; font-weight: 800; }
+    .result-text.green { color: var(--accent-green-bright); }
+    .result-text.red { color: var(--accent-red); }
+    .result-text.purple { color: var(--accent-purple); }
+    .card-details { text-align: right; font-family: 'Roboto Mono', monospace; }
+    .card-details .period { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .card-details .time { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+    /* ========================================================
+       📈 PRO ANALYSIS CHART (LAPTOP RIGHT-TO-LEFT HORIZONTAL)
+       ======================================================== */
+    .analysis-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .chart-controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .chart-mode-toggles {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toggle-pill-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-family: 'Nunito', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-pill-btn:hover { color: #fff; border-color: var(--accent-blue); }
+    .toggle-pill-btn.active { background: rgba(57, 197, 207, 0.15); color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+    .chart-legend {
+      display: flex;
+      gap: 15px;
+      font-size: 12px;
+      font-family: 'Roboto Mono', monospace;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    .chart-wrapper {
+      position: relative;
+      background: radial-gradient(circle at 50% 50%, #101622 0%, #080c12 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+    }
+    .chart-wrapper::-webkit-scrollbar { height: 8px; }
+    .chart-wrapper::-webkit-scrollbar-thumb { background: #263345; border-radius: 4px; }
+
+    #analysis-chart-svg {
+      display: block;
+      width: 100%;
+      min-width: 950px;
+      height: 480px;
+      touch-action: none;
+    }
+
+    .chart-line { 
+      stroke: var(--accent-cyan); 
+      stroke-width: 2.8; 
+      stroke-linecap: round; 
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 6px rgba(57, 197, 207, 0.6));
+    }
+    .winner-circle { 
+      stroke-width: 2.5; 
+      stroke: rgba(255,255,255,0.9); 
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .winner-circle:hover { transform: scale(1.15); }
+    .winner-circle.green { fill: var(--accent-green); color: var(--accent-green-bright); }
+    .winner-circle.red { fill: var(--accent-red); color: var(--accent-red); }
+    .winner-circle.purple { fill: var(--accent-purple); color: var(--accent-purple); }
+    
+    .winner-number-text { 
+      font-family: 'Roboto Mono', monospace; 
+      font-size: 14px; 
+      font-weight: 800; 
+      fill: #ffffff; 
+      text-anchor: middle; 
+      dominant-baseline: central; 
+      pointer-events: none;
+    }
+    .period-col-text {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      fill: var(--text-secondary);
+      text-anchor: middle;
+    }
+    .zone-indicator-text {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      opacity: 0.15;
+      text-anchor: middle;
+      dominant-baseline: central;
+      pointer-events: none;
+    }
+
+    #chart-countdown-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 12vw;
+      font-weight: 900;
+      font-family: 'Roboto Mono', monospace;
+      color: rgba(56, 139, 253, 0.05);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Floating Draggable Tools */
+    #drawing-tools-container {
+      position: fixed;
+      top: 140px;
+      left: 20px;
+      z-index: 101;
+      background: rgba(18, 23, 33, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 8px 6px;
+      cursor: move;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    }
+    #drawing-tools { display: flex; flex-direction: column; gap: 6px; }
+    #drawing-tools .nav-btn {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 7px 10px;
+      min-width: 50px;
+      text-align: center;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+    #drawing-tools .nav-btn.active { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(57,197,207,0.12); }
+    #drawing-tools .nav-btn.danger { color: var(--accent-red); font-size: 14px; }
+    #delete-buttons-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1002; }
+    .line-delete-button { pointer-events: all; position: absolute; background-color: var(--accent-red); color: white; border: 1px solid white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transform: translate(-50%, -50%); }
+
+    /* Calculator Page */
+    .calculator-content {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .strategy-info-box {
+      background: var(--card-bg);
+      border-left: 4px solid var(--accent-cyan);
+      padding: 14px 16px;
+      border-radius: 6px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .calc-step-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+    .calc-highlight { color: var(--accent-cyan); font-weight: 700; }
+    .calc-green { color: var(--accent-green-bright); font-weight: 700; }
+    .calc-red { color: var(--accent-red); font-weight: 700; }
+    .calc-yellow { color: var(--accent-yellow); font-weight: 700; }
+
+    .progress-bar-container {
+      margin: 15px 0;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      height: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green-bright));
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+
+    /* Result History Page */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .metric-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    .metric-card .label { font-size: 11px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 5px; }
+    .metric-card .val { font-size: 20px; font-weight: 800; font-family: 'Roboto Mono', monospace; }
+    #result-history-list { display: flex; flex-direction: column; gap: 10px; }
+    .result-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'Roboto Mono', monospace;
+      border-left: 5px solid;
+    }
+    .result-card .info { display: flex; flex-direction: column; gap: 4px; }
+    .result-card .info .period { font-size: 12px; color: var(--text-secondary); }
+    .result-card .info .prediction { font-size: 14px; font-weight: 700; }
+    .result-card .status { font-size: 15px; font-weight: 800; padding: 4px 10px; border-radius: 6px; }
+    .result-card.win { border-left-color: var(--accent-green-bright); }
+    .result-card.win .status { color: var(--accent-green-bright); background: rgba(63,185,80,0.1); }
+    .result-card.loss { border-left-color: var(--accent-red); }
+    .result-card.loss .status { color: var(--accent-red); background: rgba(248,81,73,0.1); }
+    .result-card.skip { border-left-color: var(--accent-yellow); }
+    .result-card.skip .status { color: var(--accent-yellow); background: rgba(210,153,34,0.1); }
+
+    /* Navigation Bar */
+    .nav-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(18, 23, 33, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 15px;
+      z-index: 100;
+    }
+    .nav-button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-grow: 1;
+      max-width: 140px;
+    }
+    .nav-button:hover { color: var(--text-primary); }
+    .nav-button.active { color: var(--accent-cyan); background-color: rgba(57, 197, 207, 0.12); }
+
+    @media (min-width: 880px) {
+      .nav-container {
+        position: static;
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin-bottom: 18px;
+        justify-content: flex-start;
+        gap: 12px;
+      }
+      .nav-button {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        max-width: none;
+        flex-grow: 0;
+        padding: 10px 24px;
+      }
+      .nav-button.active {
+        background-color: var(--accent-cyan);
+        color: #0b0e14;
+        border-color: var(--accent-cyan);
+      }
+    }
+
+    #status {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: 'Roboto Mono', monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="app-title">
+        <span>🚀 WinGo 30S Pro Terminal</span>
+        <span class="app-badge">WinGo 30 Seconds Live</span>
+      </div>
+      <div id="status">Connecting...</div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-container">
+      <button id="home-btn" class="nav-button active">Home</button>
+      <button id="analysis-btn" class="nav-button">Analysis Chart</button>
+      <button id="calculator-btn" class="nav-button">Calculator</button>
+      <button id="result-btn" class="nav-button">Result History</button>
+    </nav>
+
+    <!-- HOME PAGE -->
+    <div id="home-page" class="page active">
+      <div class="home-grid">
+        <!-- Left Column: Live 30S & Strategy -->
+        <div>
+          <div class="live-panel">
+            <div class="label">Current Active Period (30S)</div>
+            <div class="value" id="period">Loading...</div>
+            <div class="value" id="timer">--</div>
+            <div class="time-footer">
+              <span>UTC: <span id="utc">--:--:--</span></span>
+              <span>Local: <span id="local">--:--:--</span></span>
+            </div>
+          </div>
+
+          <div id="new-prediction-panel">
+            <div class="pred-header">
+              <span class="label">Next Round Strategy</span>
+              <span class="session-badge" id="sessionWinsBadge">Wins: 0/10</span>
+            </div>
+            <div id="new-prediction-result">Analyzing History...</div>
+            <div class="pred-meta">
+              <span class="pred-meta-badge" id="strategyLevelBadge">Level: --</span>
+              <span class="pred-meta-badge" id="anchorRecordBadge">Ref #10: --</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Recent History List -->
+        <div class="history-container">
+          <div class="section-header">
+            <span id="historyHeader">History Records (30S)</span>
+            <span style="font-size: 12px; color: var(--text-secondary); font-family: 'Roboto Mono';">Auto Sync (1.5s)</span>
+          </div>
+          <div id="history-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSIS PAGE (LAPTOP HORIZONTAL RIGHT-TO-LEFT) -->
+    <div id="analysis-page" class="page">
+      <div id="drawing-tools-container">
+        <div id="drawing-tools">
+          <button class="nav-btn" data-tool="trendline">Trend</button>
+          <button class="nav-btn" data-tool="snapline">S/R</button>
+          <button class="nav-btn" data-tool="horizontal">H</button>
+          <button class="nav-btn active" data-tool="none">Sel</button>
+          <button id="delete-mode-btn" class="nav-btn danger" title="Delete Line">🗑️</button>
+        </div>
+      </div>
+      
+      <div class="analysis-container">
+        <div class="chart-controls-bar">
+          <div class="chart-mode-toggles">
+            <button id="btn-chart-rtl" class="toggle-pill-btn active" title="Right to Left Mode (Laptop Standard)">Right ➜ Left (Newest on Right)</button>
+            <button id="btn-chart-ltr" class="toggle-pill-btn" title="Left to Right Mode">Left ➜ Right</button>
+            <button id="btn-chart-vert" class="toggle-pill-btn" title="Mobile Vertical Mode">Vertical View</button>
+          </div>
+
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-dot" style="background: var(--accent-green-bright);"></span> Green</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--accent-red);"></span> Red</div>
+            <div class="legend-item"><span class="legend-dot" style="background: var(--accent-purple);"></span> Violet</div>
+          </div>
+        </div>
+
+        <div class="chart-wrapper">
+          <div id="chart-countdown-bg">00</div>
+          <svg id="analysis-chart-svg"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALCULATOR PAGE -->
+    <div id="calculator-page" class="page">
+      <div class="calculator-content">
+        <div class="strategy-info-box">
+          <strong>📌 3-Level Auto Strategy Rules:</strong><br>
+          1. <strong>Anchor:</strong> Top-10 history ka 10th record (page ke sabse niche wala) dekha jata hai.<br>
+          2. <strong>3-Level Sequence:</strong> 10th record jo tha (BIG ya SMALL), wahi lagatar max 3 rounds tak predict hoga (L1 ➜ L2 ➜ L3).<br>
+          3. <strong>Win Skip:</strong> 3 rounds ke andar win hone par agla <strong>1 round SKIP</strong> hoga.<br>
+          4. <strong>10 Wins Cycle:</strong> Total 10 Wins poore hone par <strong>2 rounds SKIP</strong> honge.<br>
+          5. <strong>3 Consecutive Losses:</strong> Agar 3 rounds back-to-back loss ho jayein to cycle reset hokar fresh 10th record se shuru hoga.
+        </div>
+        
+        <div class="section-header">
+          <span>Target Progress (10 Wins Goal)</span>
+          <span id="calcCycleText" style="font-size: 13px; font-family: 'Roboto Mono'; color: var(--accent-green-bright);">0 / 10 Wins</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="calcProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+
+        <div id="auto-calculation-steps" class="calc-step-card">
+          Waiting for live round calculation...
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT HISTORY PAGE -->
+    <div id="result-page" class="page">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="label">Total Tested</div>
+          <div class="val" id="metricTotalRounds">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Total Wins</div>
+          <div class="val" id="metricTotalWins" style="color: var(--accent-green-bright);">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">Win Rate</div>
+          <div class="val" id="metricWinRate" style="color: var(--accent-cyan);">0%</div>
+        </div>
+        <div class="metric-card">
+          <div class="label">L1 / L2 / L3 Wins</div>
+          <div class="val" id="metricLevelBreakdown" style="font-size: 15px;">0 / 0 / 0</div>
+        </div>
+      </div>
+
+      <div class="history-container">
+        <div class="section-header">
+          <span>Strategy Backtest Simulation</span>
+          <span style="font-size: 12px; color: var(--text-secondary); font-family: 'Roboto Mono';">Chronological Flow</span>
+        </div>
+        <div id="result-history-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-buttons-container"></div>
+
+  <script>
+    // Navigation Tabs
+    const homePage = document.getElementById("home-page");
+    const analysisPage = document.getElementById("analysis-page");
+    const calculatorPage = document.getElementById("calculator-page");
+    const resultPage = document.getElementById("result-page");
+
+    const homeBtn = document.getElementById("home-btn");
+    const analysisBtn = document.getElementById("analysis-btn");
+    const calculatorBtn = document.getElementById("calculator-btn");
+    const resultBtn = document.getElementById("result-btn");
+
+    let comprehensiveHistory = [];
+    const MAX_HISTORY_SIZE = 2000;
+
+    // Restore saved history from localStorage to prevent loss on page refresh
+    try {
+      const savedHist = localStorage.getItem("wingo_pro_history");
+      if (savedHist) {
+        const parsed = JSON.parse(savedHist);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          comprehensiveHistory = parsed;
+        }
+      }
+    } catch(e) {}
+
+    let nodeCoordinates = [];
+    const SNAP_RADIUS = 30;
+
+    // Chart Mode: 'horizontal-rtl' (default for laptop), 'horizontal-ltr', 'vertical'
+    let currentChartMode = 'horizontal-rtl';
+
+    const btnRtl = document.getElementById("btn-chart-rtl");
+    const btnLtr = document.getElementById("btn-chart-ltr");
+    const btnVert = document.getElementById("btn-chart-vert");
+
+    btnRtl.addEventListener("click", () => {
+      currentChartMode = 'horizontal-rtl';
+      updateChartModeButtons();
+      drawAnalysisChart();
+    });
+    btnLtr.addEventListener("click", () => {
+      currentChartMode = 'horizontal-ltr';
+      updateChartModeButtons();
+      drawAnalysisChart();
+    });
+    btnVert.addEventListener("click", () => {
+      currentChartMode = 'vertical';
+      updateChartModeButtons();
+      drawAnalysisChart();
+    });
+
+    function updateChartModeButtons() {
+      [btnRtl, btnLtr, btnVert].forEach(b => b.classList.remove('active'));
+      if (currentChartMode === 'horizontal-rtl') btnRtl.classList.add('active');
+      else if (currentChartMode === 'horizontal-ltr') btnLtr.classList.add('active');
+      else btnVert.classList.add('active');
+    }
+
+    // Switch Page View
+    function showPage(pageName) {
+      [homePage, analysisPage, calculatorPage, resultPage].forEach(p => p.classList.remove("active"));
+      [homeBtn, analysisBtn, calculatorBtn, resultBtn].forEach(b => b.classList.remove("active"));
+      const drawingTools = document.getElementById('drawing-tools-container');
+      drawingTools.style.display = 'none';
+
+      if (pageName === "home") {
+        homePage.classList.add("active");
+        homeBtn.classList.add("active");
+      } else if (pageName === "analysis") {
+        analysisPage.classList.add("active");
+        analysisBtn.classList.add("active");
+        drawingTools.style.display = 'block';
+        drawAnalysisChart();
+      } else if (pageName === "calculator") {
+        calculatorPage.classList.add("active");
+        calculatorBtn.classList.add("active");
+        renderCalculatorSteps();
+      } else if (pageName === "result") {
+        resultPage.classList.add("active");
+        resultBtn.classList.add("active");
+        renderResultHistory();
+      }
+    }
+
+    homeBtn.addEventListener("click", () => showPage("home"));
+    analysisBtn.addEventListener("click", () => showPage("analysis"));
+    calculatorBtn.addEventListener("click", () => showPage("calculator"));
+    resultBtn.addEventListener("click", () => showPage("result"));
+
+    function pad(n, len = 2) { return String(n).padStart(len, "0"); }
+
+    function updateTimes() {
+      const now = new Date();
+      document.getElementById("utc").textContent = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
+      document.getElementById("local").textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      requestAnimationFrame(updateTimes);
+    }
+
+    // ⏱️ 30-SECOND TIMER & PERIOD UPDATE
+    function updatePeriodAndTimer() {
+      const now = new Date();
+      const seconds = now.getUTCSeconds();
+
+      // 30-second countdown (29 down to 00)
+      const timerValue = (seconds >= 30) ? (59 - seconds) : (29 - seconds);
+      const formattedTimer = pad(timerValue < 0 ? 0 : timerValue);
+
+      document.getElementById('timer').textContent = formattedTimer;
+      if (document.getElementById('chart-countdown-bg')) {
+        document.getElementById('chart-countdown-bg').textContent = formattedTimer;
+      }
+
+      // If we have latest completed period from server, active period is latest + 1
+      if (comprehensiveHistory.length > 0) {
+        try {
+          const latestIssue = String(comprehensiveHistory[0].issueNumber || comprehensiveHistory[0].Period);
+          const nextIssueBig = BigInt(latestIssue) + 1n;
+          document.getElementById('period').textContent = nextIssueBig.toString();
+        } catch (e) {
+          computeLocal30SPeriod(now);
+        }
+      } else {
+        computeLocal30SPeriod(now);
+      }
+    }
+
+    function computeLocal30SPeriod(now) {
+      const year = now.getUTCFullYear();
+      const month = now.getUTCMonth() + 1;
+      const day = now.getUTCDate();
+      const hours = now.getUTCHours();
+      const minutes = now.getUTCMinutes();
+      const seconds = now.getUTCSeconds();
+
+      // 2880 periods per day in 30S
+      const periodOfTheDay = (hours * 60 + minutes) * 2 + (seconds >= 30 ? 2 : 1);
+      const periodString = `${year}${pad(month)}${pad(day)}10005${pad(periodOfTheDay, 4)}`;
+      document.getElementById('period').textContent = periodString;
+    }
+
+    function getWinnerColorName(n) {
+      if (n === 0 || n === 5) return "purple";
+      return n % 2 !== 0 ? "green" : "red";
+    }
+
+    function calculateTimeFromPeriod(period) {
+      period = String(period);
+      try {
+        const shortP = parseInt(period.slice(-4), 10);
+        if (isNaN(shortP)) return "---";
+        // Each 30S round is 30 seconds
+        const totalSecs = (shortP - 1) * 30;
+        const h = Math.floor(totalSecs / 3600);
+        const m = Math.floor((totalSecs % 3600) / 60);
+        const s = totalSecs % 60;
+        return `${pad(h)}:${pad(m)}:${pad(s)}`;
+      } catch (e) {
+        return "---";
+      }
+    }
+
+    function renderHistoryList() {
+      const container = document.getElementById("history-list");
+      container.innerHTML = "";
+      comprehensiveHistory.forEach(item => {
+        const period = item.issueNumber || item.Period;
+        const num = parseInt(item.number || item.Number, 10);
+        const color = getWinnerColorName(num);
+        const type = num >= 5 ? "BIG" : "SMALL";
+
+        const card = document.createElement("div");
+        card.className = `history-card ${type.toLowerCase()}`;
+        card.innerHTML = `
+          <div class="card-result">
+            <div class="result-number ${color}-bg">${num}</div>
+            <div class="result-text ${color}">${type} (${color.toUpperCase()})</div>
+          </div>
+          <div class="card-details">
+            <div class="period">${period}</div>
+            <div class="time">${calculateTimeFromPeriod(period)}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+      document.getElementById("historyHeader").textContent = `History Records (30S: ${comprehensiveHistory.length})`;
+      document.getElementById("status").textContent = `Synced: ${new Date().toLocaleTimeString()}`;
+    }
+
+    // ==========================================
+    // 🧠 3-LEVEL MARTINGALE (PURE BIG / SMALL STRATEGY)
+    // ==========================================
+    function simulateStrategy() {
+      if (comprehensiveHistory.length < 10) {
+        return {
+          canPredict: false,
+          reason: "Need at least 10 history rounds to calculate.",
+          simulatedRecords: [],
+          stats: { totalTested: 0, totalWins: 0, totalLosses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, winRate: 0 },
+          nextLivePrediction: null
+        };
+      }
+
+      const chronoHistory = [...comprehensiveHistory].reverse();
+      let sessionWins = 0;
+      let skipRemaining = 0;
+      let targetType = null;
+      let currentLevel = 1;
+      let anchorItem = null;
+
+      const simulatedRecords = [];
+      const stats = {
+        totalTested: 0,
+        totalWins: 0,
+        totalLosses: 0,
+        l1Wins: 0,
+        l2Wins: 0,
+        l3Wins: 0,
+        winRate: 0
+      };
+
+      for (let i = 10; i < chronoHistory.length; i++) {
+        const currentRoundItem = chronoHistory[i];
+        const actualNum = parseInt(currentRoundItem.number || currentRoundItem.Number, 10);
+        const actualType = actualNum >= 5 ? "BIG" : "SMALL";
+        const currentPeriod = currentRoundItem.issueNumber || currentRoundItem.Period;
+
+        const ref10Item = chronoHistory[i - 10];
+        const ref10Num = parseInt(ref10Item.number || ref10Item.Number, 10);
+        const ref10Type = ref10Num >= 5 ? "BIG" : "SMALL";
+
+        if (skipRemaining > 0) {
+          simulatedRecords.unshift({
+            period: currentPeriod,
+            actualNumber: actualNum,
+            actualType: actualType,
+            predictedType: "SKIP",
+            level: 0,
+            status: "SKIP",
+            sessionWins: sessionWins,
+            refPeriod: ref10Item.issueNumber || ref10Item.Period,
+            refType: ref10Type
+          });
+          skipRemaining--;
+        } else {
+          if (!targetType) {
+            targetType = ref10Type;
+            currentLevel = 1;
+            anchorItem = ref10Item;
+          }
+
+          const predictedType = targetType;
+          const levelUsed = currentLevel;
+          const isWin = (actualType === predictedType);
+
+          stats.totalTested++;
+
+          if (isWin) {
+            sessionWins++;
+            stats.totalWins++;
+            if (levelUsed === 1) stats.l1Wins++;
+            else if (levelUsed === 2) stats.l2Wins++;
+            else if (levelUsed === 3) stats.l3Wins++;
+
+            simulatedRecords.unshift({
+              period: currentPeriod,
+              actualNumber: actualNum,
+              actualType: actualType,
+              predictedType: predictedType,
+              level: levelUsed,
+              status: "WIN",
+              sessionWins: sessionWins,
+              refPeriod: anchorItem ? (anchorItem.issueNumber || anchorItem.Period) : ref10Item.issueNumber,
+              refType: predictedType
+            });
+
+            if (sessionWins >= 10) {
+              skipRemaining = 2; // Skip 2 rounds after 10 wins
+              sessionWins = 0;
+            } else {
+              skipRemaining = 1; // Skip 1 round after 1 win
+            }
+
+            targetType = null;
+            currentLevel = 1;
+            anchorItem = null;
+          } else {
+            stats.totalLosses++;
+            simulatedRecords.unshift({
+              period: currentPeriod,
+              actualNumber: actualNum,
+              actualType: actualType,
+              predictedType: predictedType,
+              level: levelUsed,
+              status: "LOSS",
+              sessionWins: sessionWins,
+              refPeriod: anchorItem ? (anchorItem.issueNumber || anchorItem.Period) : ref10Item.issueNumber,
+              refType: predictedType
+            });
+
+            if (currentLevel < 3) {
+              currentLevel++;
+            } else {
+              // 3 losses back-to-back: reset to initial state
+              targetType = null;
+              currentLevel = 1;
+              anchorItem = null;
+            }
+          }
+        }
+      }
+
+      stats.winRate = stats.totalTested > 0 ? Math.round((stats.totalWins / stats.totalTested) * 100) : 0;
+
+      // Current 10th history record from top
+      const currentRef10 = comprehensiveHistory[9];
+      const currentRef10Num = parseInt(currentRef10.number || currentRef10.Number, 10);
+      const currentRef10Type = currentRef10Num >= 5 ? "BIG" : "SMALL";
+
+      let nextLivePrediction = {};
+
+      if (skipRemaining > 0) {
+        nextLivePrediction = {
+          isSkip: true,
+          skipCount: skipRemaining,
+          reason: skipRemaining === 2 ? "10 Wins Reached! Skipping 2 Rounds." : "Round Won! Skipping 1 Round.",
+          sessionWins: sessionWins,
+          level: 0,
+          predictedType: "SKIP",
+          ref10Period: currentRef10.issueNumber || currentRef10.Period,
+          ref10Type: currentRef10Type
+        };
+      } else {
+        if (!targetType) {
+          targetType = currentRef10Type;
+          currentLevel = 1;
+          anchorItem = currentRef10;
+        }
+
+        nextLivePrediction = {
+          isSkip: false,
+          skipCount: 0,
+          sessionWins: sessionWins,
+          level: currentLevel,
+          predictedType: targetType,
+          anchorPeriod: anchorItem ? (anchorItem.issueNumber || anchorItem.Period) : (currentRef10.issueNumber || currentRef10.Period),
+          anchorType: targetType
+        };
+      }
+
+      return {
+        canPredict: true,
+        simulatedRecords,
+        stats,
+        nextLivePrediction
+      };
+    }
+
+    // Update Home Page Prediction (PURE BIG / SMALL / SKIP DISPLAY)
+    function updateLivePredictionUI() {
+      const predResultEl = document.getElementById("new-prediction-result");
+      const sessionBadgeEl = document.getElementById("sessionWinsBadge");
+      const levelBadgeEl = document.getElementById("strategyLevelBadge");
+      const anchorBadgeEl = document.getElementById("anchorRecordBadge");
+
+      const engine = simulateStrategy();
+
+      if (!engine.canPredict) {
+        predResultEl.className = "";
+        predResultEl.textContent = engine.reason;
+        sessionBadgeEl.textContent = "Wins: 0/10";
+        levelBadgeEl.textContent = "Level: --";
+        anchorBadgeEl.textContent = "Ref #10: --";
+        return;
+      }
+
+      const p = engine.nextLivePrediction;
+      sessionBadgeEl.textContent = `Wins: ${p.sessionWins}/10`;
+
+      if (p.isSkip) {
+        predResultEl.className = "pred-skip";
+        predResultEl.innerHTML = `⏳ SKIP (${p.skipCount} left)`;
+        levelBadgeEl.textContent = "Level: SKIP";
+        anchorBadgeEl.textContent = `10th Ref: ${p.ref10Type}`;
+      } else {
+        predResultEl.className = p.predictedType === "BIG" ? "pred-big" : "pred-small";
+        predResultEl.innerHTML = `${p.predictedType === "BIG" ? "🟢" : "🔴"} ${p.predictedType}`;
+        levelBadgeEl.textContent = `Level: ${p.level} of 3`;
+        anchorBadgeEl.textContent = `10th Ref: ${p.anchorType}`;
+      }
+    }
+
+    // Render Calculator Tab (Pure Strategy Breakdown)
+    function renderCalculatorSteps() {
+      const stepsContainer = document.getElementById("auto-calculation-steps");
+      const progressBar = document.getElementById("calcProgressBar");
+      const cycleText = document.getElementById("calcCycleText");
+
+      const engine = simulateStrategy();
+      if (!engine.canPredict) {
+        stepsContainer.textContent = "Waiting for at least 10 rounds of history...";
+        progressBar.style.width = "0%";
+        cycleText.textContent = "0 / 10 Wins";
+        return;
+      }
+
+      const p = engine.nextLivePrediction;
+      const progressPercent = Math.min(100, Math.round((p.sessionWins / 10) * 100));
+      progressBar.style.width = `${progressPercent}%`;
+      cycleText.textContent = `${p.sessionWins} / 10 Wins (${progressPercent}%)`;
+
+      if (p.isSkip) {
+        stepsContainer.innerHTML = `
+          <div><span class="calc-highlight">Current Mode:</span> <span class="calc-yellow">PAUSE / SKIP ACTIVE</span></div>
+          <div><span class="calc-highlight">Reason:</span> ${p.reason}</div>
+          <div><span class="calc-highlight">Remaining Skips:</span> ${p.skipCount} round(s)</div>
+          <hr style="border-color: var(--border-color); margin: 12px 0; border-style: dashed;">
+          <div><span class="calc-highlight">10th History Record:</span> Period ${p.ref10Period} ➜ Outcome: <span class="${p.ref10Type === 'BIG' ? 'calc-green' : 'calc-red'}">${p.ref10Type}</span></div>
+          <div><span class="calc-highlight">Current Session Wins:</span> ${p.sessionWins} of 10</div>
+          <div style="margin-top: 10px; font-weight: bold; color: var(--accent-yellow);">⚡ Next Action: Skip this round. Strategy will resume automatically.</div>
+        `;
+      } else {
+        stepsContainer.innerHTML = `
+          <div><span class="calc-highlight">Current Mode:</span> <span class="calc-green">ACTIVE BETTING</span></div>
+          <div><span class="calc-highlight">Sequence Level:</span> <strong>Level ${p.level}</strong> of 3</div>
+          <div><span class="calc-highlight">10th History Record:</span> Period ${p.anchorPeriod} ➜ Outcome: <span class="${p.anchorType === 'BIG' ? 'calc-green' : 'calc-red'}"><strong>${p.anchorType}</strong></span></div>
+          <hr style="border-color: var(--border-color); margin: 12px 0; border-style: dashed;">
+          <div><span class="calc-highlight">Strategy Rule:</span> 10th record was <strong>${p.anchorType}</strong> ➜ Bet <strong>${p.anchorType}</strong> for up to 3 consecutive rounds.</div>
+          <div><span class="calc-highlight">Target Prediction:</span> <span class="${p.predictedType === 'BIG' ? 'calc-green' : 'calc-red'}" style="font-size: 18px; font-weight:800;">${p.predictedType}</span> (Level ${p.level})</div>
+          <div><span class="calc-highlight">Session Wins Achieved:</span> ${p.sessionWins} / 10</div>
+          <div style="margin-top: 10px; color: var(--text-secondary); font-size: 12px;">
+            💡 If this round WINS: 1 Skip applied, Session Wins +1.<br>
+            💡 If this round LOSSES: Continues to Level ${p.level < 3 ? p.level + 1 : 'RESET (fresh 10th record)'}.
+          </div>
+        `;
+      }
+    }
+
+    // Render Result Tab
+    function renderResultHistory() {
+      const listContainer = document.getElementById("result-history-list");
+      const engine = simulateStrategy();
+
+      document.getElementById("metricTotalRounds").textContent = engine.stats.totalTested;
+      document.getElementById("metricTotalWins").textContent = engine.stats.totalWins;
+      document.getElementById("metricWinRate").textContent = `${engine.stats.winRate}%`;
+      document.getElementById("metricLevelBreakdown").textContent = `${engine.stats.l1Wins} / ${engine.stats.l2Wins} / ${engine.stats.l3Wins}`;
+
+      listContainer.innerHTML = "";
+      if (engine.simulatedRecords.length === 0) {
+        listContainer.innerHTML = "<div style='text-align:center; padding: 20px; color: var(--text-secondary);'>Waiting for data...</div>";
+        return;
+      }
+
+      engine.simulatedRecords.slice(0, 80).forEach(rec => {
+        const card = document.createElement("div");
+        card.className = `result-card ${rec.status.toLowerCase()}`;
+
+        if (rec.status === "SKIP") {
+          card.innerHTML = `
+            <div class="info">
+              <div class="period">Period ${rec.period}</div>
+              <div class="prediction" style="color: var(--accent-yellow);">Mode: SKIPPED (Rule Applied) | Actual: ${rec.actualType}</div>
+            </div>
+            <div class="status">SKIP</div>
+          `;
+        } else {
+          card.innerHTML = `
+            <div class="info">
+              <div class="period">Period ${rec.period} • L${rec.level}</div>
+              <div class="prediction">Predicted: <strong>${rec.predictedType}</strong> | Actual: <strong>${rec.actualType} (${rec.actualNumber})</strong></div>
+            </div>
+            <div class="status">${rec.status}</div>
+          `;
+        }
+        listContainer.appendChild(card);
+      });
+    }
+
+    // ========================================================
+    // 📊 ADVANCED LAPTOP / PC CHART ENGINE (HORIZONTAL & RTL)
+    // ========================================================
+    function drawAnalysisChart() {
+      const svg = document.getElementById("analysis-chart-svg");
+      let dataGroup = svg.querySelector("#chart-data-group");
+      dataGroup || (dataGroup = document.createElementNS("http://www.w3.org/2000/svg", "g"), dataGroup.id = "chart-data-group", svg.appendChild(dataGroup));
+      
+      let autoDrawingGroup = svg.querySelector("#auto-drawings-group");
+      autoDrawingGroup || (autoDrawingGroup = document.createElementNS("http://www.w3.org/2000/svg", "g"), autoDrawingGroup.id = "auto-drawings-group", svg.insertBefore(autoDrawingGroup, dataGroup));
+      
+      let userDrawingGroup = svg.querySelector("#user-drawings-group");
+      userDrawingGroup || (userDrawingGroup = document.createElementNS("http://www.w3.org/2000/svg", "g"), userDrawingGroup.id = "user-drawings-group", svg.appendChild(userDrawingGroup));
+
+      dataGroup.innerHTML = "";
+      autoDrawingGroup.innerHTML = "";
+      nodeCoordinates = [];
+
+      const totalItems = comprehensiveHistory.length;
+      if (totalItems === 0) return;
+
+      if (currentChartMode === 'horizontal-rtl' || currentChartMode === 'horizontal-ltr') {
+        const svgHeight = 440;
+        const visibleRounds = Math.min(totalItems, 22);
+        const roundsToDraw = comprehensiveHistory.slice(0, visibleRounds);
+
+        const clientW = svg.parentElement.clientWidth || 1000;
+        const svgWidth = Math.max(clientW, visibleRounds * 55 + 120);
+
+        svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+        svg.style.height = `${svgHeight}px`;
+
+        const padLeft = 65;
+        const padRight = 65;
+        const padTop = 38;
+        const padBottom = 48;
+        const chartHeightUsable = svgHeight - padTop - padBottom;
+        const rowStep = chartHeightUsable / 9;
+
+        const chartWidthUsable = svgWidth - padLeft - padRight;
+        const colStep = chartWidthUsable / (visibleRounds - 1 || 1);
+
+        const getY = (num) => padTop + (9 - num) * rowStep;
+
+        const gridGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        // Big Zone tint (5 to 9)
+        const bigZoneRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        bigZoneRect.setAttribute("x", padLeft);
+        bigZoneRect.setAttribute("y", padTop);
+        bigZoneRect.setAttribute("width", chartWidthUsable);
+        bigZoneRect.setAttribute("height", getY(5) - padTop + rowStep/2);
+        bigZoneRect.setAttribute("fill", "rgba(63, 185, 80, 0.04)");
+        gridGroup.appendChild(bigZoneRect);
+
+        // Small Zone tint (0 to 4)
+        const smallZoneRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        smallZoneRect.setAttribute("x", padLeft);
+        smallZoneRect.setAttribute("y", getY(4) - rowStep/2);
+        smallZoneRect.setAttribute("width", chartWidthUsable);
+        smallZoneRect.setAttribute("height", getY(0) - getY(4) + rowStep/2);
+        smallZoneRect.setAttribute("fill", "rgba(248, 81, 73, 0.04)");
+        gridGroup.appendChild(smallZoneRect);
+
+        const bigText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        bigText.setAttribute("x", svgWidth / 2);
+        bigText.setAttribute("y", padTop + (getY(5) - padTop)/2);
+        bigText.setAttribute("class", "zone-indicator-text");
+        bigText.textContent = "▲ BIG ZONE (5 - 9)";
+        gridGroup.appendChild(bigText);
+
+        const smallText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        smallText.setAttribute("x", svgWidth / 2);
+        smallText.setAttribute("y", getY(4) + (getY(0) - getY(4))/2);
+        smallText.setAttribute("class", "zone-indicator-text");
+        smallText.textContent = "▼ SMALL ZONE (0 - 4)";
+        gridGroup.appendChild(smallText);
+
+        for (let num = 0; num <= 9; num++) {
+          const y = getY(num);
+          const hLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          hLine.setAttribute("x1", padLeft);
+          hLine.setAttribute("y1", y);
+          hLine.setAttribute("x2", svgWidth - padRight);
+          hLine.setAttribute("y2", y);
+          
+          if (num === 4) {
+            hLine.setAttribute("stroke", "rgba(57, 197, 207, 0.45)");
+            hLine.setAttribute("stroke-width", "2");
+            hLine.setAttribute("stroke-dasharray", "6, 4");
+          } else {
+            hLine.setAttribute("stroke", "rgba(38, 51, 69, 0.5)");
+            hLine.setAttribute("stroke-width", "1");
+            hLine.setAttribute("stroke-dasharray", "2, 4");
+          }
+          gridGroup.appendChild(hLine);
+
+          const leftLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          leftLabel.setAttribute("x", padLeft - 18);
+          leftLabel.setAttribute("y", y);
+          leftLabel.setAttribute("class", "period-col-text");
+          leftLabel.setAttribute("font-weight", "800");
+          leftLabel.setAttribute("fill", num >= 5 ? "var(--accent-green-bright)" : "var(--accent-red)");
+          leftLabel.textContent = num;
+          gridGroup.appendChild(leftLabel);
+
+          const rightLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          rightLabel.setAttribute("x", svgWidth - padRight + 18);
+          rightLabel.setAttribute("y", y);
+          rightLabel.setAttribute("class", "period-col-text");
+          rightLabel.setAttribute("font-weight", "800");
+          rightLabel.setAttribute("fill", num >= 5 ? "var(--accent-green-bright)" : "var(--accent-red)");
+          rightLabel.textContent = num;
+          gridGroup.appendChild(rightLabel);
+        }
+        autoDrawingGroup.appendChild(gridGroup);
+
+        const getX = (idx) => {
+          if (currentChartMode === 'horizontal-rtl') {
+            return (svgWidth - padRight) - idx * colStep;
+          } else {
+            return padLeft + idx * colStep;
+          }
+        };
+
+        const linesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const nodesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const periodLabelsGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        let prevPoint = null;
+
+        roundsToDraw.forEach((item, idx) => {
+          const x = getX(idx);
+          const vLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          vLine.setAttribute("x1", x);
+          vLine.setAttribute("y1", padTop);
+          vLine.setAttribute("x2", x);
+          vLine.setAttribute("y2", svgHeight - padBottom);
+          vLine.setAttribute("stroke", idx === 0 ? "rgba(57,197,207,0.3)" : "rgba(38, 51, 69, 0.4)");
+          vLine.setAttribute("stroke-width", idx === 0 ? "2" : "1");
+          vLine.setAttribute("stroke-dasharray", "3, 3");
+          gridGroup.appendChild(vLine);
+
+          const periodStr = String(item.issueNumber || item.Period);
+          const shortPeriod = periodStr.slice(-4);
+          const colLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          colLabel.setAttribute("x", x);
+          colLabel.setAttribute("y", svgHeight - padBottom + 20);
+          colLabel.setAttribute("class", "period-col-text");
+          if (idx === 0) {
+            colLabel.setAttribute("fill", "var(--accent-cyan)");
+            colLabel.setAttribute("font-weight", "800");
+          }
+          colLabel.textContent = `${shortPeriod}`;
+          periodLabelsGroup.appendChild(colLabel);
+
+          const num = parseInt(item.number || item.Number, 10);
+          const y = getY(num);
+          const currentPoint = { x, y, num, period: periodStr };
+          nodeCoordinates.push(currentPoint);
+
+          if (prevPoint) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", prevPoint.x);
+            line.setAttribute("y1", prevPoint.y);
+            line.setAttribute("x2", currentPoint.x);
+            line.setAttribute("y2", currentPoint.y);
+            line.setAttribute("class", "chart-line");
+            linesGroup.appendChild(line);
+          }
+
+          const nodeGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          const colorName = getWinnerColorName(num);
+
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", x);
+          circle.setAttribute("cy", y);
+          circle.setAttribute("r", 15);
+          circle.setAttribute("class", `winner-circle ${colorName}`);
+
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", x);
+          text.setAttribute("y", y);
+          text.setAttribute("class", "winner-number-text");
+          text.textContent = num;
+
+          nodeGroup.appendChild(circle);
+          nodeGroup.appendChild(text);
+          nodesGroup.appendChild(nodeGroup);
+
+          prevPoint = currentPoint;
+        });
+
+        dataGroup.appendChild(periodLabelsGroup);
+        dataGroup.appendChild(linesGroup);
+        dataGroup.appendChild(nodesGroup);
+
+      } else {
+        const reversed = [...comprehensiveHistory].reverse();
+        const rowHeight = 48;
+        const svgWidth = Math.max(svg.clientWidth || 600, 600);
+        const svgHeight = (reversed.length + 8) * rowHeight;
+
+        svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+        svg.style.height = `${svgHeight}px`;
+
+        const padX = 45;
+        const contentW = svgWidth - 2 * padX;
+        const colStep = contentW / 9;
+
+        let prevCoord = null;
+        const linesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const nodesGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        reversed.forEach((item, index) => {
+          const num = parseInt(item.number || item.Number, 10);
+          const coord = {
+            x: padX + num * colStep,
+            y: index * rowHeight + rowHeight / 2
+          };
+          nodeCoordinates.push(coord);
+
+          if (prevCoord) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", prevCoord.x);
+            line.setAttribute("y1", prevCoord.y);
+            line.setAttribute("x2", coord.x);
+            line.setAttribute("y2", coord.y);
+            line.setAttribute("class", "chart-line");
+            linesGroup.appendChild(line);
+          }
+
+          const nodeGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          const colorName = getWinnerColorName(num);
+
+          const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          circle.setAttribute("cx", coord.x);
+          circle.setAttribute("cy", coord.y);
+          circle.setAttribute("r", 15);
+          circle.setAttribute("class", `winner-circle ${colorName}`);
+
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", coord.x);
+          text.setAttribute("y", coord.y);
+          text.setAttribute("class", "winner-number-text");
+          text.textContent = num;
+
+          nodeGroup.appendChild(circle);
+          nodeGroup.appendChild(text);
+          nodesGroup.appendChild(nodeGroup);
+
+          prevCoord = coord;
+        });
+
+        dataGroup.appendChild(linesGroup);
+        dataGroup.appendChild(nodesGroup);
+      }
+
+      hideAllDeleteButtons();
+    }
+
+    // ==========================================
+    // 🌐 FETCH & MERGE DATA (30-SECOND API: WinGo_30S)
+    // ==========================================
+    async function fetchAndMergeHistory() {
+      // Direct CDN endpoint for WinGo_30S (30 Seconds Draw)
+      const endpoint = `https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json?ts=${Date.now()}`;
+      try {
+        const res = await fetch(endpoint);
+        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+        const json = await res.json();
+        const list = json.data?.list || json.data || [];
+        const existingSet = new Set(comprehensiveHistory.map(e => String(e.issueNumber || e.Period)));
+        let newItemsCount = 0;
+
+        list.reverse().forEach(item => {
+          const id = String(item.issueNumber || item.Period);
+          if (!existingSet.has(id)) {
+            comprehensiveHistory.unshift(item);
+            newItemsCount++;
+          }
+        });
+
+        if (comprehensiveHistory.length > MAX_HISTORY_SIZE) {
+          comprehensiveHistory = comprehensiveHistory.slice(0, MAX_HISTORY_SIZE);
+        }
+
+        if (newItemsCount > 0) {
+          try {
+            localStorage.setItem("wingo_pro_history", JSON.stringify(comprehensiveHistory.slice(0, 1000)));
+          } catch(e) {}
+          renderHistoryList();
+          updateLivePredictionUI();
+          if (analysisPage.classList.contains("active")) drawAnalysisChart();
+          if (calculatorPage.classList.contains("active")) renderCalculatorSteps();
+          if (resultPage.classList.contains("active")) renderResultHistory();
+        } else {
+          document.getElementById("status").textContent = `30S Synced: ${new Date().toLocaleTimeString()}`;
+        }
+      } catch (err) {
+        document.getElementById("status").textContent = "❌ Network / Sync Error";
+        console.error("Fetch Error:", err);
+      }
+    }
+
+    // Try syncing server history if hosted on Render / Node service
+    async function loadServerHistory() {
+      try {
+        const res = await fetch("/api/history");
+        if (res.ok) {
+          const j = await res.json();
+          if (j.ok && Array.isArray(j.history) && j.history.length > 0) {
+            const existingSet = new Set(comprehensiveHistory.map(e => String(e.issueNumber || e.Period || e.period)));
+            let added = 0;
+            j.history.forEach(item => {
+              const id = String(item.period || item.issueNumber || item.Period);
+              if (!existingSet.has(id)) {
+                comprehensiveHistory.push({
+                  issueNumber: id,
+                  Period: id,
+                  number: item.number,
+                  Number: item.number,
+                  color: item.color,
+                  Color: item.color
+                });
+                existingSet.add(id);
+                added++;
+              }
+            });
+            if (added > 0) {
+              comprehensiveHistory.sort((a,b) => BigInt(b.issueNumber || b.Period) > BigInt(a.issueNumber || a.Period) ? 1 : -1);
+              try { localStorage.setItem("wingo_pro_history", JSON.stringify(comprehensiveHistory.slice(0, 1000))); } catch(e) {}
+              renderHistoryList();
+              updateLivePredictionUI();
+            }
+          }
+        }
+      } catch(e) {}
+    }
+    loadServerHistory();
+
+    // Initialize 30-sec timers & 1.5s sync
+    updateTimes();
+    fetchAndMergeHistory();
+    setInterval(fetchAndMergeHistory, 1500); // 1.5s fast polling for 30S game
+    setInterval(updatePeriodAndTimer, 1000);
+
+    window.addEventListener("resize", () => {
+      if (analysisPage.classList.contains("active")) drawAnalysisChart();
+      hideAllDeleteButtons();
+    });
+
+    // ==========================================
+    // ✏️ CHART DRAWING & LINE TOOLS
+    // ==========================================
+    const svgCanvas = document.getElementById('analysis-chart-svg');
+    const toolButtonsContainer = document.getElementById('drawing-tools-container');
+    const deleteModeBtn = document.getElementById('delete-mode-btn');
+    const deleteButtonsContainer = document.getElementById('delete-buttons-container');
+    let selectedTool = 'none';
+    let isDrawing = false;
+    let startCoords = {};
+    let tempLine = null;
+
+    toolButtonsContainer.addEventListener('click', (e) => {
+      hideAllDeleteButtons();
+      if (e.target.tagName === 'BUTTON' && e.target.dataset.tool) {
+        toolButtonsContainer.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        selectedTool = e.target.dataset.tool;
+        svgCanvas.style.cursor = selectedTool !== 'none' ? 'crosshair' : 'default';
+      }
+    });
+
+    deleteModeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (deleteButtonsContainer.hasChildNodes()) {
+        hideAllDeleteButtons();
+        return;
+      }
+      const userDrawingsGroup = svgCanvas.querySelector('#user-drawings-group');
+      if (!userDrawingsGroup) return;
+      const lines = userDrawingsGroup.querySelectorAll('line');
+      lines.forEach(line => {
+        const x1 = parseFloat(line.getAttribute('x1'));
+        const y1 = parseFloat(line.getAttribute('y1'));
+        const x2 = parseFloat(line.getAttribute('x2'));
+        const y2 = parseFloat(line.getAttribute('y2'));
+        const svgPoint = svgCanvas.createSVGPoint();
+        svgPoint.x = (x1 + x2) / 2;
+        svgPoint.y = (y1 + y2) / 2;
+        const screenPoint = svgPoint.matrixTransform(svgCanvas.getScreenCTM());
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '⨯';
+        deleteBtn.className = 'line-delete-button';
+        deleteBtn.style.left = `${screenPoint.x}px`;
+        deleteBtn.style.top = `${screenPoint.y}px`;
+        deleteBtn.onclick = (event) => {
+          event.stopPropagation();
+          line.remove();
+          deleteBtn.remove();
+        };
+        deleteButtonsContainer.appendChild(deleteBtn);
+      });
+    });
+
+    function getEventCoordinates(event) {
+      let point = event;
+      if (event.touches && event.touches.length > 0) point = event.touches[0];
+      else if (event.changedTouches && event.changedTouches.length > 0) point = event.changedTouches[0];
+      const CTM = svgCanvas.getScreenCTM();
+      const svgPoint = svgCanvas.createSVGPoint();
+      svgPoint.x = point.clientX;
+      svgPoint.y = point.clientY;
+      return { svg: svgPoint.matrixTransform(CTM.inverse()), client: { x: point.clientX, y: point.clientY } };
+    }
+
+    function findClosestNode(targetCoords) {
+      let closestNode = null;
+      let minDistance = SNAP_RADIUS * SNAP_RADIUS;
+      for (const nodeCoord of nodeCoordinates) {
+        const dx = targetCoords.x - nodeCoord.x;
+        const dy = targetCoords.y - nodeCoord.y;
+        if (dx * dx + dy * dy < minDistance) {
+          minDistance = dx * dx + dy * dy;
+          closestNode = nodeCoord;
+        }
+      }
+      return closestNode;
+    }
+
+    function hideAllDeleteButtons() {
+      deleteButtonsContainer.innerHTML = '';
+    }
+
+    function onDrawStart(event) {
+      if (deleteButtonsContainer.hasChildNodes()) {
+        if (!event.target.classList.contains('line-delete-button')) hideAllDeleteButtons();
+        event.preventDefault();
+        return;
+      }
+      if (selectedTool === 'none') return;
+      event.preventDefault();
+      isDrawing = true;
+      const { svg: rawCoords } = getEventCoordinates(event);
+      startCoords = (selectedTool === 'snapline') ? (findClosestNode(rawCoords) || rawCoords) : rawCoords;
+      tempLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      tempLine.setAttribute('x1', startCoords.x);
+      tempLine.setAttribute('y1', startCoords.y);
+      tempLine.setAttribute('x2', startCoords.x);
+      tempLine.setAttribute('y2', startCoords.y);
+      tempLine.setAttribute('stroke', 'var(--accent-purple)');
+      tempLine.setAttribute('stroke-width', '2.5');
+      tempLine.setAttribute('stroke-dasharray', '5,5');
+      tempLine.style.pointerEvents = 'none';
+      svgCanvas.appendChild(tempLine);
+    }
+
+    function onDrawMove(event) {
+      if (!isDrawing || !tempLine) return;
+      event.preventDefault();
+      const { svg: currentCoords } = getEventCoordinates(event);
+      let displayCoords = currentCoords;
+      if (selectedTool === 'snapline') {
+        displayCoords = findClosestNode(currentCoords) || currentCoords;
+      }
+      if (selectedTool === 'trendline' || selectedTool === 'snapline') {
+        tempLine.setAttribute('x2', displayCoords.x);
+        tempLine.setAttribute('y2', displayCoords.y);
+      } else if (selectedTool === 'horizontal') {
+        const viewBoxWidth = svgCanvas.viewBox.baseVal.width;
+        tempLine.setAttribute('x1', 0);
+        tempLine.setAttribute('x2', viewBoxWidth);
+        tempLine.setAttribute('y1', startCoords.y);
+        tempLine.setAttribute('y2', startCoords.y);
+      }
+    }
+
+    function onDrawEnd(event) {
+      if (!isDrawing) return;
+      event.preventDefault();
+      isDrawing = false;
+      const { svg: endCoords } = getEventCoordinates(event);
+      let finalCoords = (selectedTool === 'snapline') ? (findClosestNode(endCoords) || endCoords) : endCoords;
+      const userDrawingsGroup = svgCanvas.querySelector('#user-drawings-group');
+      if (!userDrawingsGroup) return;
+
+      const permanentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      permanentLine.setAttribute('stroke', 'var(--accent-purple)');
+      permanentLine.setAttribute('stroke-width', '3');
+      permanentLine.setAttribute('stroke-linecap', 'round');
+
+      if (selectedTool === 'trendline' || selectedTool === 'snapline') {
+        permanentLine.setAttribute('x1', startCoords.x);
+        permanentLine.setAttribute('y1', startCoords.y);
+        permanentLine.setAttribute('x2', finalCoords.x);
+        permanentLine.setAttribute('y2', finalCoords.y);
+      } else if (selectedTool === 'horizontal') {
+        const viewBoxWidth = svgCanvas.viewBox.baseVal.width;
+        permanentLine.setAttribute('x1', 0);
+        permanentLine.setAttribute('y1', startCoords.y);
+        permanentLine.setAttribute('x2', viewBoxWidth);
+        permanentLine.setAttribute('y2', startCoords.y);
+      }
+
+      if (selectedTool !== 'none' && (startCoords.x !== finalCoords.x || startCoords.y !== finalCoords.y)) {
+        userDrawingsGroup.appendChild(permanentLine);
+      }
+      if (tempLine) {
+        svgCanvas.removeChild(tempLine);
+        tempLine = null;
+      }
+    }
+
+    document.body.addEventListener('click', (e) => {
+      if (e.target.id !== 'delete-mode-btn' && !e.target.classList.contains('line-delete-button')) {
+        hideAllDeleteButtons();
+      }
+    }, true);
+
+    svgCanvas.addEventListener('mousedown', onDrawStart);
+    document.addEventListener('mousemove', onDrawMove);
+    document.addEventListener('mouseup', onDrawEnd);
+    document.addEventListener('mouseleave', onDrawEnd);
+
+    svgCanvas.addEventListener('touchstart', onDrawStart, { passive: false });
+    document.addEventListener('touchmove', onDrawMove, { passive: false });
+    document.addEventListener('touchend', onDrawEnd);
+    document.addEventListener('touchcancel', onDrawEnd);
+
+    // Draggable Tool Box
+    const draggableContainer = document.getElementById('drawing-tools-container');
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    const startDragging = (e) => {
+      if (e.target.closest('.nav-btn')) return;
+      isDragging = true;
+      draggableContainer.style.cursor = 'grabbing';
+      const rect = draggableContainer.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      offsetX = clientX - rect.left;
+      offsetY = clientY - rect.top;
+      e.preventDefault();
+    };
+
+    const dragElement = (e) => {
+      if (!isDragging) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      let newLeft = clientX - offsetX;
+      let newTop = clientY - offsetY;
+      const containerWidth = draggableContainer.offsetWidth;
+      const containerHeight = draggableContainer.offsetHeight;
+      newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - containerWidth));
+      newTop = Math.max(0, Math.min(newTop, window.innerHeight - containerHeight));
+      draggableContainer.style.left = `${newLeft}px`;
+      draggableContainer.style.top = `${newTop}px`;
+    };
+
+    const stopDragging = () => {
+      isDragging = false;
+      draggableContainer.style.cursor = 'move';
+    };
+
+    draggableContainer.addEventListener('mousedown', startDragging);
+    document.addEventListener('mousemove', dragElement);
+    document.addEventListener('mouseup', stopDragging);
+    draggableContainer.addEventListener('touchstart', startDragging, { passive: false });
+    document.addEventListener('touchmove', dragElement, { passive: false });
+    document.addEventListener('touchend', stopDragging);
+  </script>
+</body>
+</html>

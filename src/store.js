@@ -13,7 +13,15 @@ export const state = {
   cfg: structuredClone(DEFAULT_CONFIG),
   subs: [],                 // [{ id, name, username, since, msgs: [messageId] }]
   subOffset: 0,             // Telegram getUpdates offset
-  history: [],              // rolling rounds, newest first (kept in-memory, max 10)
+  history: [],              // rolling rounds, newest first (up to 500 rounds)
+  strategy: {
+    level: 1,
+    targetType: null,
+    anchorPeriod: null,
+    anchorType: null,
+    skipRemaining: 0,
+    sessionWins: 0
+  },
   log: [],                  // published signals, newest first (capped at 6)
   stats: { wins: 0, jackpots: 0, losses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, winRate: 0, totalTested: 0 },
   run: {
@@ -45,6 +53,12 @@ function applySaved(saved) {
   if (!saved || typeof saved !== "object") return;
   if (saved.cfg) state.cfg = { ...structuredClone(DEFAULT_CONFIG), ...state.cfg, ...saved.cfg };
   if (!state.cfg.botToken && process.env.BOT_TOKEN) state.cfg.botToken = process.env.BOT_TOKEN.trim();
+  if (Array.isArray(saved.history) && saved.history.length) {
+    state.history = saved.history.slice(0, 500);
+  }
+  if (saved.strategy && typeof saved.strategy === "object") {
+    state.strategy = { ...state.strategy, ...saved.strategy };
+  }
   if (Array.isArray(saved.subs) && saved.subs.length) {
     state.subs = saved.subs.map(s => ({
       uid: null,
@@ -135,6 +149,8 @@ export async function syncToRemote(force = false) {
       cfg: state.cfg,
       subs: state.subs,
       subOffset: state.subOffset,
+      history: state.history.slice(0, 500),
+      strategy: state.strategy,
       log: state.log.slice(0, 6),
       stats: state.stats,
       run: state.run,
@@ -175,13 +191,15 @@ export async function syncToRemote(force = false) {
   }
 }
 
-function saveLocalNow() {
+export function saveLocalNow() {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     const payload = {
       cfg: state.cfg,
       subs: state.subs,
       subOffset: state.subOffset,
+      history: state.history.slice(0, 500),
+      strategy: state.strategy,
       log: state.log.slice(0, 6),
       stats: state.stats,
       run: state.run,

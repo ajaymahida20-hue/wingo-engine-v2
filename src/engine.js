@@ -219,22 +219,68 @@ export function computePrediction() {
   const sim = simulateStrategy(history);
   if (!sim.canPredict || !sim.nextLivePrediction) return null;
 
-  const next = sim.nextLivePrediction;
-  const prediction = next.predictedType; // "BIG", "SMALL", or "SKIP"
-  const numbers = []; // Pure Big/Small strategy
-  const level = next.level;
+  if (!state.strategy) {
+    state.strategy = {
+      level: 1,
+      targetType: null,
+      anchorPeriod: null,
+      anchorType: null,
+      skipRemaining: 0,
+      sessionWins: 0
+    };
+  }
+
+  // Current 10th history record from top (0-indexed: index 9)
+  const currentRef10 = history[9];
+  const currentRef10Num = parseInt(currentRef10.number ?? currentRef10.Number, 10);
+  const currentRef10Type = currentRef10Num >= 5 ? "BIG" : "SMALL";
+  const currentRef10Period = String(currentRef10.period ?? currentRef10.issueNumber ?? currentRef10.Period);
+
+  // If live strategy has not yet initialized its target or skip, take from sim.nextLivePrediction
+  if (!state.strategy.targetType && state.strategy.skipRemaining === 0) {
+    if (sim.nextLivePrediction.isSkip) {
+      state.strategy.skipRemaining = sim.nextLivePrediction.skipCount || 1;
+      state.strategy.sessionWins = sim.nextLivePrediction.sessionWins || 0;
+      state.strategy.level = 0;
+      state.strategy.targetType = null;
+    } else {
+      state.strategy.level = sim.nextLivePrediction.level || 1;
+      state.strategy.targetType = sim.nextLivePrediction.predictedType || currentRef10Type;
+      state.strategy.anchorPeriod = sim.nextLivePrediction.anchorPeriod || currentRef10Period;
+      state.strategy.anchorType = sim.nextLivePrediction.anchorType || currentRef10Type;
+      state.strategy.sessionWins = sim.nextLivePrediction.sessionWins || 0;
+    }
+  }
+
+  let prediction, level, isSkip;
+
+  if (state.strategy.skipRemaining > 0) {
+    prediction = "SKIP";
+    level = 0;
+    isSkip = true;
+  } else {
+    if (!state.strategy.targetType) {
+      state.strategy.targetType = currentRef10Type;
+      state.strategy.anchorPeriod = currentRef10Period;
+      state.strategy.anchorType = currentRef10Type;
+      state.strategy.level = 1;
+    }
+    prediction = state.strategy.targetType;
+    level = state.strategy.level;
+    isSkip = false;
+  }
 
   const detail = {
-    mode: next.isSkip ? "SKIP" : `LEVEL ${next.level}`,
+    mode: isSkip ? "SKIP" : `LEVEL ${level}`,
     prediction,
-    numbers,
-    isSkip: next.isSkip,
-    level: next.level,
-    sessionWins: next.sessionWins,
-    skipCount: next.skipCount,
-    anchorPeriod: next.anchorPeriod || next.ref10Period,
-    anchorType: next.anchorType || next.ref10Type,
-    consecutiveLosses: next.isSkip ? 0 : (next.level - 1),
+    numbers: [],
+    isSkip,
+    level,
+    sessionWins: state.strategy.sessionWins || 0,
+    skipCount: state.strategy.skipRemaining || 0,
+    anchorPeriod: state.strategy.anchorPeriod || currentRef10Period,
+    anchorType: state.strategy.anchorType || currentRef10Type,
+    consecutiveLosses: isSkip ? 0 : (level - 1),
     stats: sim.stats
   };
   state.lastDetail = detail;
@@ -250,10 +296,10 @@ export function computePrediction() {
 
   return {
     prediction,
-    numbers,
+    numbers: [],
     level,
-    isSkip: next.isSkip,
-    sessionWins: next.sessionWins,
+    isSkip,
+    sessionWins: state.strategy.sessionWins || 0,
     detail
   };
 }
@@ -283,6 +329,11 @@ export function resolvePending(newest) {
       resultClass: "value"
     };
     run.predictionForPeriod = null;
+    if (state.strategy) {
+      state.strategy.targetType = null;
+      state.strategy.level = 1;
+      state.strategy.skipRemaining = 0;
+    }
     persist();
     return entry;
   }
@@ -293,15 +344,51 @@ export function resolvePending(newest) {
 
   let resultText, resultClass;
 
+  if (!state.strategy) {
+    state.strategy = {
+      level: 1,
+      targetType: null,
+      anchorPeriod: null,
+      anchorType: null,
+      skipRemaining: 0,
+      sessionWins: 0
+    };
+  }
+
   if (predicted === "SKIP") {
     resultText = "⏳ SKIP";
     resultClass = "small";
+    if (state.strategy.skipRemaining > 0) {
+      state.strategy.skipRemaining--;
+    }
   } else if (predicted === actual) {
     resultText = "✅ WIN";
     resultClass = "big";
+    state.strategy.sessionWins = (state.strategy.sessionWins || 0) + 1;
+    if (state.strategy.sessionWins >= 10) {
+      state.strategy.skipRemaining = 2; // 2 skips after 10 wins
+      state.strategy.sessionWins = 0;
+    } else {
+      state.strategy.skipRemaining = 1; // 1 skip after each win
+    }
+    state.strategy.level = 1;
+    state.strategy.targetType = null;
+    state.strategy.anchorPeriod = null;
+    state.strategy.anchorType = null;
   } else {
     resultText = "❌ LOSE";
     resultClass = "small";
+    if (state.strategy.level < 3) {
+      state.strategy.level++;
+      // Same targetType maintained for Martingale progression
+    } else {
+      // 3 consecutive losses: reset to initial state
+      state.strategy.level = 1;
+      state.strategy.targetType = null;
+      state.strategy.anchorPeriod = null;
+      state.strategy.anchorType = null;
+      state.strategy.skipRemaining = 0;
+    }
   }
 
   run.predictionForPeriod = null;
@@ -317,6 +404,14 @@ export function resolvePending(newest) {
 }
 
 export function resetStrategy() {
+  state.strategy = {
+    level: 1,
+    targetType: null,
+    anchorPeriod: null,
+    anchorType: null,
+    skipRemaining: 0,
+    sessionWins: 0
+  };
   state.run = {
     mode: "LEVEL 1",
     consecutiveLosses: 0,
