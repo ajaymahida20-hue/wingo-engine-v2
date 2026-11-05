@@ -46,12 +46,12 @@
         662,
         663
       ],
-      "sessionWins": 1,
+      "sessionWins": 2,
       "sessionNumber": 1,
-      "dailyWins": 1,
+      "dailyWins": 2,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100051374",
+      "lastPendingPeriod": null,
       "id": 7226120418,
       "name": "C M 𝐃 AGENT SAHIL ×͜×",
       "username": "Tradarbysahij",
@@ -60,6 +60,12 @@
   ],
   "subOffset": 167087759,
   "history": [
+    {
+      "period": "20261105100051374",
+      "number": 5,
+      "result": "BIG",
+      "color": "green,violet"
+    },
     {
       "period": "20261105100051373",
       "number": 8,
@@ -872,10 +878,10 @@
     }
   ],
   "strategy": {
-    "level": 7,
+    "level": 1,
     "mode": "LEVEL 7",
-    "consecutiveLosses": 6,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -886,10 +892,16 @@
   },
   "log": [
     {
-      "period": "20261105100051374",
-      "label": "BIG (L7)",
+      "period": "20261105100051375",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051374",
+      "label": "BIG (L7)",
+      "actual": "BIG 5 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100051373",
@@ -914,35 +926,29 @@
       "label": "SMALL (L3) 1,2,3,4",
       "actual": "BIG 9 (green)",
       "resultText": "❌ LOSE"
-    },
-    {
-      "period": "20261105100051369",
-      "label": "SMALL (L2) 1,2,3,4",
-      "actual": "BIG 7 (green)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
-    "wins": 36,
+    "wins": 37,
     "jackpots": 0,
     "losses": 16,
     "l1Wins": 31,
     "l2Wins": 4,
     "l3Wins": 0,
-    "winRate": 69,
-    "totalTested": 52
+    "winRate": 70,
+    "totalTested": 53
   },
   "run": {
-    "mode": "LEVEL 7",
-    "consecutiveLosses": 6,
-    "prediction": "BIG",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 7,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100051374"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100051375"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793878010576
+  "savedAt": 1793878019027
 }
