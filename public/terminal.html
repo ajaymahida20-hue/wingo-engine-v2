@@ -871,25 +871,40 @@
     }
 
     // ==========================================
-    // 🧠 3-LEVEL MARTINGALE (PURE BIG / SMALL STRATEGY)
+    // 🧠 DYNAMIC PATTERN STRATEGY (COLOR & BIG/SMALL)
     // ==========================================
+    function findPreviousOccurrence(targetNum, list) {
+      if (!list || list.length < 2) return null;
+      for (let i = 1; i < list.length; i++) {
+        const n = parseInt(list[i].number || list[i].Number, 10);
+        if (n === targetNum) {
+          return {
+            occurrenceIndex: i,
+            occurrenceRound: list[i],
+            aboveRound: list[i - 1]
+          };
+        }
+      }
+      return null;
+    }
+
     function simulateStrategy() {
-      if (comprehensiveHistory.length < 10) {
+      if (comprehensiveHistory.length < 2) {
         return {
           canPredict: false,
-          reason: "Need at least 10 history rounds to calculate.",
+          reason: "Need at least 2 history rounds to calculate.",
           simulatedRecords: [],
-          stats: { totalTested: 0, totalWins: 0, totalLosses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, winRate: 0 },
+          stats: { totalTested: 0, totalWins: 0, totalLosses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, l4Wins: 0, winRate: 0 },
           nextLivePrediction: null
         };
       }
 
       const chronoHistory = [...comprehensiveHistory].reverse();
-      let sessionWins = 0;
+      let level = 1;
+      let consecutiveLosses = 0;
       let skipRemaining = 0;
-      let targetType = null;
-      let currentLevel = 1;
-      let anchorItem = null;
+      let shadowMode = false;
+      let shadowPrediction = null;
 
       const simulatedRecords = [];
       const stats = {
@@ -899,18 +914,47 @@
         l1Wins: 0,
         l2Wins: 0,
         l3Wins: 0,
+        l4Wins: 0,
+        skips: 0,
         winRate: 0
       };
 
-      for (let i = 10; i < chronoHistory.length; i++) {
-        const currentRoundItem = chronoHistory[i];
-        const actualNum = parseInt(currentRoundItem.number || currentRoundItem.Number, 10);
+      for (let i = 2; i < chronoHistory.length; i++) {
+        const currentRound = chronoHistory[i];
+        const actualNum = parseInt(currentRound.number || currentRound.Number, 10);
         const actualType = actualNum >= 5 ? "BIG" : "SMALL";
-        const currentPeriod = currentRoundItem.issueNumber || currentRoundItem.Period;
+        const actualColor = getWinnerColorName(actualNum);
+        const currentPeriod = currentRound.issueNumber || currentRound.Period;
 
-        const ref10Item = chronoHistory[i - 10];
-        const ref10Num = parseInt(ref10Item.number || ref10Item.Number, 10);
-        const ref10Type = ref10Num >= 5 ? "BIG" : "SMALL";
+        const prevRound = chronoHistory[i - 1];
+        const targetNum = parseInt(prevRound.number || prevRound.Number, 10);
+
+        let refRound = null;
+        for (let k = i - 2; k >= 0; k--) {
+          const pastNum = parseInt(chronoHistory[k].number || chronoHistory[k].Number, 10);
+          if (pastNum === targetNum) {
+            refRound = chronoHistory[k + 1];
+            break;
+          }
+        }
+
+        if (!refRound) {
+          simulatedRecords.unshift({
+            period: currentPeriod,
+            actualNumber: actualNum,
+            actualType: actualType,
+            predictedType: "SKIP",
+            level: 0,
+            status: "SKIP"
+          });
+          stats.skips++;
+          continue;
+        }
+
+        const refNum = parseInt(refRound.number || refRound.Number, 10);
+        const refColor = getWinnerColorName(refNum).toUpperCase();
+        const refType = refNum >= 5 ? "BIG" : "SMALL";
+        const refOppositeType = refType === "BIG" ? "SMALL" : "BIG";
 
         if (skipRemaining > 0) {
           simulatedRecords.unshift({
@@ -919,75 +963,86 @@
             actualType: actualType,
             predictedType: "SKIP",
             level: 0,
-            status: "SKIP",
-            sessionWins: sessionWins,
-            refPeriod: ref10Item.issueNumber || ref10Item.Period,
-            refType: ref10Type
+            status: "SKIP"
           });
+          stats.skips++;
           skipRemaining--;
-        } else {
-          if (!targetType) {
-            targetType = ref10Type;
-            currentLevel = 1;
-            anchorItem = ref10Item;
+        } else if (shadowMode) {
+          const shadowWon = (shadowPrediction === "BIG" && actualNum >= 5) ||
+                            (shadowPrediction === "SMALL" && actualNum < 5);
+          simulatedRecords.unshift({
+            period: currentPeriod,
+            actualNumber: actualNum,
+            actualType: actualType,
+            predictedType: "SKIP",
+            level: 0,
+            status: shadowWon ? "VIRTUAL_WIN" : "SHADOW"
+          });
+          stats.skips++;
+          if (shadowWon) {
+            shadowMode = false;
+            consecutiveLosses = 0;
+            level = 1;
+            skipRemaining = 2;
+          } else {
+            consecutiveLosses++;
+            shadowPrediction = refOppositeType;
           }
+        } else {
+          let predictedType = "";
+          let isWin = false;
 
-          const predictedType = targetType;
-          const levelUsed = currentLevel;
-          const isWin = (actualType === predictedType);
+          if (level === 1) {
+            predictedType = refColor;
+            isWin = (refColor === "GREEN")
+              ? (actualColor === "green" || (actualColor === "purple" && actualNum === 5))
+              : (actualColor === "red" || (actualColor === "purple" && actualNum === 0));
+          } else {
+            predictedType = refOppositeType;
+            isWin = (actualType === predictedType);
+          }
 
           stats.totalTested++;
 
           if (isWin) {
-            sessionWins++;
             stats.totalWins++;
-            if (levelUsed === 1) stats.l1Wins++;
-            else if (levelUsed === 2) stats.l2Wins++;
-            else if (levelUsed === 3) stats.l3Wins++;
+            if (level === 1) stats.l1Wins++;
+            else if (level === 2) stats.l2Wins++;
+            else if (level === 3) stats.l3Wins++;
+            else if (level === 4) stats.l4Wins++;
 
             simulatedRecords.unshift({
               period: currentPeriod,
               actualNumber: actualNum,
               actualType: actualType,
-              predictedType: predictedType,
-              level: levelUsed,
-              status: "WIN",
-              sessionWins: sessionWins,
-              refPeriod: anchorItem ? (anchorItem.issueNumber || anchorItem.Period) : ref10Item.issueNumber,
-              refType: predictedType
+              predictedType,
+              level,
+              status: "WIN"
             });
 
-            if (sessionWins >= 10) {
-              skipRemaining = 2; // Skip 2 rounds after 10 wins
-              sessionWins = 0;
-            } else {
-              skipRemaining = 1; // Skip 1 round after 1 win
-            }
-
-            targetType = null;
-            currentLevel = 1;
-            anchorItem = null;
+            consecutiveLosses = 0;
+            level = 1;
+            skipRemaining = 2;
+            shadowMode = false;
           } else {
             stats.totalLosses++;
+            consecutiveLosses++;
+
             simulatedRecords.unshift({
               period: currentPeriod,
               actualNumber: actualNum,
               actualType: actualType,
-              predictedType: predictedType,
-              level: levelUsed,
-              status: "LOSS",
-              sessionWins: sessionWins,
-              refPeriod: anchorItem ? (anchorItem.issueNumber || anchorItem.Period) : ref10Item.issueNumber,
-              refType: predictedType
+              predictedType,
+              level,
+              status: "LOSS"
             });
 
-            if (currentLevel < 3) {
-              currentLevel++;
+            if (consecutiveLosses >= 4) {
+              shadowMode = true;
+              shadowPrediction = refOppositeType;
+              level = 1;
             } else {
-              // 3 losses back-to-back: reset to initial state
-              targetType = null;
-              currentLevel = 1;
-              anchorItem = null;
+              level = consecutiveLosses + 1;
             }
           }
         }
@@ -995,40 +1050,74 @@
 
       stats.winRate = stats.totalTested > 0 ? Math.round((stats.totalWins / stats.totalTested) * 100) : 0;
 
-      // Current 10th history record from top
-      const currentRef10 = comprehensiveHistory[9];
-      const currentRef10Num = parseInt(currentRef10.number || currentRef10.Number, 10);
-      const currentRef10Type = currentRef10Num >= 5 ? "BIG" : "SMALL";
+      // Next live prediction from top round of comprehensiveHistory
+      const topRound = comprehensiveHistory[0];
+      const topNum = parseInt(topRound.number || topRound.Number, 10);
+      const found = findPreviousOccurrence(topNum, comprehensiveHistory);
 
       let nextLivePrediction = {};
 
-      if (skipRemaining > 0) {
+      if (!found) {
         nextLivePrediction = {
           isSkip: true,
-          skipCount: skipRemaining,
-          reason: skipRemaining === 2 ? "10 Wins Reached! Skipping 2 Rounds." : "Round Won! Skipping 1 Round.",
-          sessionWins: sessionWins,
+          skipCount: 0,
+          reason: `Number ${topNum} not found in available history. Paused / waiting.`,
           level: 0,
           predictedType: "SKIP",
-          ref10Period: currentRef10.issueNumber || currentRef10.Period,
-          ref10Type: currentRef10Type
+          isShadow: false
         };
       } else {
-        if (!targetType) {
-          targetType = currentRef10Type;
-          currentLevel = 1;
-          anchorItem = currentRef10;
-        }
+        const refRound = found.aboveRound;
+        const refNum = parseInt(refRound.number || refRound.Number, 10);
+        const refColor = getWinnerColorName(refNum).toUpperCase();
+        const refType = refNum >= 5 ? "BIG" : "SMALL";
+        const refOppositeType = refType === "BIG" ? "SMALL" : "BIG";
 
-        nextLivePrediction = {
-          isSkip: false,
-          skipCount: 0,
-          sessionWins: sessionWins,
-          level: currentLevel,
-          predictedType: targetType,
-          anchorPeriod: anchorItem ? (anchorItem.issueNumber || anchorItem.Period) : (currentRef10.issueNumber || currentRef10.Period),
-          anchorType: targetType
-        };
+        if (skipRemaining > 0) {
+          nextLivePrediction = {
+            isSkip: true,
+            skipCount: skipRemaining,
+            reason: `Round Won! Skipping 2 rounds (${skipRemaining} left).`,
+            level: 0,
+            predictedType: "SKIP",
+            isShadow: false
+          };
+        } else if (shadowMode) {
+          nextLivePrediction = {
+            isSkip: true,
+            skipCount: 0,
+            reason: "4 Losses Reached. Pausing (Shadow Mode until virtual win).",
+            level: 0,
+            predictedType: "SKIP",
+            isShadow: true,
+            shadowPrediction: refOppositeType
+          };
+        } else if (level === 1) {
+          nextLivePrediction = {
+            isSkip: false,
+            skipCount: 0,
+            level: 1,
+            predictedType: refColor,
+            isShadow: false,
+            mode: "COLOR",
+            refPeriod: refRound.issueNumber || refRound.Period,
+            refNumber: refNum,
+            refColor
+          };
+        } else {
+          nextLivePrediction = {
+            isSkip: false,
+            skipCount: 0,
+            level,
+            predictedType: refOppositeType,
+            isShadow: false,
+            mode: `LEVEL ${level}`,
+            refPeriod: refRound.issueNumber || refRound.Period,
+            refNumber: refNum,
+            refType,
+            refOppositeType
+          };
+        }
       }
 
       return {
@@ -1039,7 +1128,7 @@
       };
     }
 
-    // Update Home Page Prediction (PURE BIG / SMALL / SKIP DISPLAY)
+    // Update Home Page Prediction (PURE COLOR / BIG / SMALL / SKIP DISPLAY)
     function updateLivePredictionUI() {
       const predResultEl = document.getElementById("new-prediction-result");
       const sessionBadgeEl = document.getElementById("sessionWinsBadge");
@@ -1051,25 +1140,30 @@
       if (!engine.canPredict) {
         predResultEl.className = "";
         predResultEl.textContent = engine.reason;
-        sessionBadgeEl.textContent = "Wins: 0/10";
+        sessionBadgeEl.textContent = "Wins: 0";
         levelBadgeEl.textContent = "Level: --";
-        anchorBadgeEl.textContent = "Ref #10: --";
+        anchorBadgeEl.textContent = "Ref: --";
         return;
       }
 
       const p = engine.nextLivePrediction;
-      sessionBadgeEl.textContent = `Wins: ${p.sessionWins}/10`;
+      sessionBadgeEl.textContent = `Wins: ${engine.stats.totalWins}`;
 
       if (p.isSkip) {
         predResultEl.className = "pred-skip";
-        predResultEl.innerHTML = `⏳ SKIP (${p.skipCount} left)`;
-        levelBadgeEl.textContent = "Level: SKIP";
-        anchorBadgeEl.textContent = `10th Ref: ${p.ref10Type}`;
+        predResultEl.innerHTML = p.isShadow ? "⏳ SHADOW (PAUSED)" : `⏳ SKIP ${p.skipCount > 0 ? `(${p.skipCount} left)` : ''}`;
+        levelBadgeEl.textContent = p.isShadow ? "Level: SHADOW" : "Level: SKIP";
+        anchorBadgeEl.textContent = p.reason ? "WAITING" : "SKIP";
       } else {
-        predResultEl.className = p.predictedType === "BIG" ? "pred-big" : "pred-small";
-        predResultEl.innerHTML = `${p.predictedType === "BIG" ? "🟢" : "🔴"} ${p.predictedType}`;
-        levelBadgeEl.textContent = `Level: ${p.level} of 3`;
-        anchorBadgeEl.textContent = `10th Ref: ${p.anchorType}`;
+        if (p.predictedType === "GREEN" || p.predictedType === "BIG") {
+          predResultEl.className = "pred-big";
+          predResultEl.innerHTML = `🟢 ${p.predictedType}`;
+        } else {
+          predResultEl.className = "pred-small";
+          predResultEl.innerHTML = `🔴 ${p.predictedType}`;
+        }
+        levelBadgeEl.textContent = `Level: ${p.level} of 4`;
+        anchorBadgeEl.textContent = `Ref: ${p.refNumber} (${p.refColor || p.refOppositeType})`;
       }
     }
 

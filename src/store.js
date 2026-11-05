@@ -16,11 +16,14 @@ export const state = {
   history: [],              // rolling rounds, newest first (up to 500 rounds)
   strategy: {
     level: 1,
-    targetType: null,
-    anchorPeriod: null,
-    anchorType: null,
+    mode: "COLOR",
+    consecutiveLosses: 0,
     skipRemaining: 0,
-    sessionWins: 0
+    shadowMode: false,
+    shadowPrediction: null,
+    targetNumber: null,
+    refPeriod: null,
+    refNumber: null
   },
   log: [],                  // published signals, newest first (capped at 6)
   stats: { wins: 0, jackpots: 0, losses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, winRate: 0, totalTested: 0 },

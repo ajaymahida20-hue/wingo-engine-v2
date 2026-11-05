@@ -18,9 +18,13 @@ export function buildTargetBox(period, prediction, numbers, level) {
   }
 
   const lvlPart = (level && level > 0) ? ` [L${level}]` : "";
+  let icon = "";
+  if (p === "GREEN" || p === "BIG") icon = "🟢 ";
+  else if (p === "RED" || p === "SMALL") icon = "🔴 ";
+
   const lines = [
     "        ⏬ NEXT PREDICTION ⏬",
-    `               ${p4} : [ ${p} ]${lvlPart}`
+    `               ${p4} : [ ${icon}${p} ]${lvlPart}`
   ];
   if (numbers && numbers.length) {
     lines.push(`               NUMBER - [ ${numbers.join(" , ")} ]`);
@@ -40,6 +44,8 @@ const sideWord = prediction => {
   const p = String(prediction || "").toUpperCase();
   if (p.startsWith("BIG")) return "BIGG";
   if (p.startsWith("SMAL")) return "SMAL";
+  if (p.startsWith("GREE")) return "GREN";
+  if (p.startsWith("RED")) return "RED ";
   if (p.startsWith("SKIP")) return "SKIP";
   return p;
 };
