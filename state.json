@@ -416,23 +416,30 @@
         896,
         900,
         902,
-        911
+        911,
+        943
       ],
       "sessionWins": 0,
       "sessionNumber": 3,
       "dailyWins": 10,
       "dailyDate": "2026-11-05",
-      "cooldownUntil": 1793882667719,
+      "cooldownUntil": null,
       "lastPendingPeriod": null,
       "id": 1952722932,
       "name": "OFFICIAL_NXT_369",
       "username": "NXT_PRIME_369",
       "since": 1793880533442,
-      "waitingForWin": false
+      "waitingForWin": true
     }
   ],
   "subOffset": 167087846,
   "history": [
+    {
+      "period": "20261105100051529",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261105100051528",
       "number": 0,
@@ -2178,7 +2185,7 @@
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 1,
+    "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -2189,10 +2196,16 @@
   },
   "log": [
     {
-      "period": "20261105100051529",
-      "label": "SKIP",
+      "period": "20261105100051530",
+      "label": "RED (L1)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051529",
+      "label": "SKIP",
+      "actual": "SMALL 0 (red)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100051528",
@@ -2217,12 +2230,6 @@
       "label": "SKIP",
       "actual": "SMALL 2 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100051524",
-      "label": "SMALL (L7)",
-      "actual": "SMALL 0 (red)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -2236,16 +2243,16 @@
     "totalTested": 132
   },
   "run": {
-    "mode": "SKIP",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "prediction": "SKIP",
+    "prediction": "RED",
     "numbers": [],
-    "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261105100051529"
+    "level": 1,
+    "isSkip": false,
+    "predictionForPeriod": "20261105100051530"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793882659623
+  "savedAt": 1793882668701
 }
