@@ -23,7 +23,7 @@
       "username": "Tradarbysahij",
       "since": 1793878793285,
       "uid": "616",
-      "uidStatus": "DEPOSIT_PENDING",
+      "uidStatus": "VERIFIED",
       "uidSubmittedAt": 1793878803369,
       "active": false,
       "msgs": [
@@ -44,6 +44,12 @@
   ],
   "subOffset": 167087763,
   "history": [
+    {
+      "period": "20261105100051401",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261105100051400",
       "number": 9,
@@ -1021,7 +1027,7 @@
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 1,
+    "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -1032,10 +1038,16 @@
   },
   "log": [
     {
-      "period": "20261105100051401",
-      "label": "SKIP",
+      "period": "20261105100051402",
+      "label": "GREEN (L1)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051401",
+      "label": "SKIP",
+      "actual": "SMALL 1 (green)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100051400",
@@ -1060,12 +1072,6 @@
       "label": "SKIP",
       "actual": "BIG 9 (green)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100051396",
-      "label": "GREEN (L1)",
-      "actual": "BIG 9 (green)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -1079,16 +1085,16 @@
     "totalTested": 66
   },
   "run": {
-    "mode": "SKIP",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "prediction": "SKIP",
+    "prediction": "GREEN",
     "numbers": [],
-    "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261105100051401"
+    "level": 1,
+    "isSkip": false,
+    "predictionForPeriod": "20261105100051402"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793878821440
+  "savedAt": 1793878828122
 }
