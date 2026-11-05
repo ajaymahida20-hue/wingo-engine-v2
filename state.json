@@ -211,9 +211,9 @@
       "name": "Md Nihad",
       "username": "nihad3033",
       "since": 1793881581037,
-      "uid": null,
-      "uidStatus": "NONE",
-      "uidSubmittedAt": null,
+      "uid": "24275001",
+      "uidStatus": "PENDING_UID",
+      "uidSubmittedAt": 1793881882307,
       "active": false,
       "msgs": [
         787,
@@ -223,7 +223,8 @@
         811,
         823,
         824,
-        825
+        825,
+        874
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -358,12 +359,12 @@
         865,
         872
       ],
-      "sessionWins": 2,
+      "sessionWins": 3,
       "sessionNumber": 2,
-      "dailyWins": 7,
+      "dailyWins": 8,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100051503",
+      "lastPendingPeriod": null,
       "id": 1952722932,
       "name": "OFFICIAL_NXT_369",
       "username": "NXT_PRIME_369",
@@ -371,8 +372,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 167087823,
+  "subOffset": 167087824,
   "history": [
+    {
+      "period": "20261105100051503",
+      "number": 3,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261105100051502",
       "number": 3,
@@ -1959,10 +1966,10 @@
     }
   ],
   "strategy": {
-    "level": 2,
+    "level": 1,
     "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -1973,10 +1980,16 @@
   },
   "log": [
     {
-      "period": "20261105100051503",
-      "label": "SMALL (L2)",
+      "period": "20261105100051504",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051503",
+      "label": "SMALL (L2)",
+      "actual": "SMALL 3 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100051502",
@@ -2001,35 +2014,29 @@
       "label": "BIG (L2)",
       "actual": "BIG 5 (green)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261105100051498",
-      "label": "GREEN (L1)",
-      "actual": "BIG 8 (red)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
-    "wins": 67,
+    "wins": 68,
     "jackpots": 0,
     "losses": 52,
     "l1Wins": 43,
-    "l2Wins": 12,
+    "l2Wins": 13,
     "l3Wins": 6,
-    "winRate": 56,
-    "totalTested": 119
+    "winRate": 57,
+    "totalTested": 120
   },
   "run": {
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "prediction": "SMALL",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 2,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100051503"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100051504"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793881879484
+  "savedAt": 1793881887935
 }
