@@ -47,6 +47,12 @@
   "subOffset": 167087763,
   "history": [
     {
+      "period": "20261105100051403",
+      "number": 5,
+      "result": "BIG",
+      "color": "green,violet"
+    },
+    {
       "period": "20261105100051402",
       "number": 4,
       "result": "SMALL",
@@ -1032,9 +1038,9 @@
     }
   ],
   "strategy": {
-    "level": 2,
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
+    "level": 3,
+    "mode": "LEVEL 3",
+    "consecutiveLosses": 2,
     "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
@@ -1042,14 +1048,20 @@
     "refPeriod": null,
     "refNumber": null,
     "currentPrediction": "SMALL",
-    "currentLevel": 2
+    "currentLevel": 3
   },
   "log": [
     {
-      "period": "20261105100051403",
-      "label": "SMALL (L2)",
+      "period": "20261105100051404",
+      "label": "SMALL (L3)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051403",
+      "label": "SMALL (L2)",
+      "actual": "BIG 5 (green)",
+      "resultText": "❌ LOSE"
     },
     {
       "period": "20261105100051402",
@@ -1074,35 +1086,29 @@
       "label": "GREEN (L1)",
       "actual": "BIG 5 (green)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261105100051398",
-      "label": "SKIP",
-      "actual": "BIG 5 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 43,
     "jackpots": 0,
-    "losses": 24,
+    "losses": 25,
     "l1Wins": 34,
     "l2Wins": 4,
     "l3Wins": 2,
-    "winRate": 64,
-    "totalTested": 67
+    "winRate": 63,
+    "totalTested": 68
   },
   "run": {
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
+    "mode": "LEVEL 3",
+    "consecutiveLosses": 2,
     "prediction": "SMALL",
     "numbers": [],
-    "level": 2,
+    "level": 3,
     "isSkip": false,
-    "predictionForPeriod": "20261105100051403"
+    "predictionForPeriod": "20261105100051404"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793878879642
+  "savedAt": 1793878888194
 }
