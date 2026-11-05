@@ -23,14 +23,15 @@
       "username": "roelRs",
       "since": 1793904168875,
       "uid": "485737",
-      "uidStatus": "PENDING_UID",
+      "uidStatus": "REJECTED",
       "uidSubmittedAt": 1793904224635,
       "active": false,
       "msgs": [
         921,
         922,
         923,
-        925
+        925,
+        928
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -1185,6 +1186,12 @@
   ],
   "subOffset": 700546786,
   "history": [
+    {
+      "period": "20261105100052287",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261105100052286",
       "number": 3,
@@ -4178,19 +4185,13 @@
       "number": 8,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261105100051787",
-      "number": 6,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "LEVEL 2",
     "consecutiveLosses": 0,
-    "skipRemaining": 2,
+    "skipRemaining": 1,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4201,10 +4202,16 @@
   },
   "log": [
     {
-      "period": "20261105100052287",
+      "period": "20261105100052288",
       "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100052287",
+      "label": "SKIP",
+      "actual": "SMALL 0 (red)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100052286",
@@ -4229,23 +4236,17 @@
       "label": "SKIP",
       "actual": "BIG 6 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100052282",
-      "label": "SMALL (L2)",
-      "actual": "SMALL 0 (red)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
     "wins": 127,
     "jackpots": 0,
-    "losses": 110,
-    "l1Wins": 63,
-    "l2Wins": 36,
+    "losses": 109,
+    "l1Wins": 64,
+    "l2Wins": 35,
     "l3Wins": 17,
     "winRate": 54,
-    "totalTested": 237
+    "totalTested": 236
   },
   "run": {
     "mode": "SKIP",
@@ -4254,10 +4255,10 @@
     "numbers": [],
     "level": 0,
     "isSkip": true,
-    "predictionForPeriod": "20261105100052287"
+    "predictionForPeriod": "20261105100052288"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793905399566
+  "savedAt": 1793905408100
 }
