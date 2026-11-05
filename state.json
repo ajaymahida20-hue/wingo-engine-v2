@@ -18,6 +18,26 @@
   },
   "subs": [
     {
+      "id": 5504520177,
+      "name": "LOST",
+      "username": "Lost_illusion_99",
+      "since": 1793901537068,
+      "uid": null,
+      "uidStatus": "NONE",
+      "uidSubmittedAt": null,
+      "active": false,
+      "msgs": [
+        817
+      ],
+      "sessionWins": 0,
+      "sessionNumber": 1,
+      "dailyWins": 0,
+      "dailyDate": "2026-11-05",
+      "cooldownUntil": null,
+      "lastPendingPeriod": null,
+      "waitingForWin": false
+    },
+    {
       "id": 5183935005,
       "name": "PRITAM Biswas",
       "username": "pritam380",
@@ -43,12 +63,12 @@
         812,
         815
       ],
-      "sessionWins": 1,
+      "sessionWins": 2,
       "sessionNumber": 1,
-      "dailyWins": 1,
+      "dailyWins": 2,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100052158",
+      "lastPendingPeriod": null,
       "waitingForWin": false
     },
     {
@@ -231,14 +251,15 @@
         808,
         811,
         813,
-        814
+        814,
+        818
       ],
-      "sessionWins": 4,
-      "sessionNumber": 3,
-      "dailyWins": 14,
+      "sessionWins": 0,
+      "sessionNumber": 4,
+      "dailyWins": 15,
       "dailyDate": "2026-11-05",
-      "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100052158",
+      "cooldownUntil": 1793902438979,
+      "lastPendingPeriod": null,
       "waitingForWin": false
     },
     {
@@ -1129,8 +1150,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700546753,
+  "subOffset": 700546754,
   "history": [
+    {
+      "period": "20261105100052158",
+      "number": 3,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261105100052157",
       "number": 2,
@@ -4124,19 +4151,13 @@
       "number": 7,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261105100051658",
-      "number": 9,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4147,10 +4168,16 @@
   },
   "log": [
     {
-      "period": "20261105100052158",
-      "label": "GREEN (L1)",
+      "period": "20261105100052159",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100052158",
+      "label": "GREEN (L1)",
+      "actual": "SMALL 3 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100052157",
@@ -4175,35 +4202,29 @@
       "label": "SKIP",
       "actual": "BIG 8 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100052153",
-      "label": "SKIP",
-      "actual": "BIG 6 (red)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 124,
+    "wins": 125,
     "jackpots": 0,
-    "losses": 117,
-    "l1Wins": 58,
+    "losses": 116,
+    "l1Wins": 59,
     "l2Wins": 41,
     "l3Wins": 13,
-    "winRate": 51,
+    "winRate": 52,
     "totalTested": 241
   },
   "run": {
-    "mode": "COLOR",
+    "mode": "SKIP",
     "consecutiveLosses": 0,
-    "prediction": "GREEN",
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 1,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100052158"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100052159"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793901530714
+  "savedAt": 1793901539858
 }
