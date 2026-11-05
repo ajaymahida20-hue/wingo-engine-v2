@@ -188,7 +188,7 @@
       "dailyWins": 5,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100052103",
+      "lastPendingPeriod": "20261105100052104",
       "waitingForWin": false
     },
     {
@@ -1081,6 +1081,12 @@
   ],
   "subOffset": 700546742,
   "history": [
+    {
+      "period": "20261105100052103",
+      "number": 6,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261105100052102",
       "number": 9,
@@ -4074,33 +4080,33 @@
       "number": 6,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261105100051603",
-      "number": 7,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
-    "level": 1,
-    "mode": "COLOR",
-    "consecutiveLosses": 0,
+    "level": 2,
+    "mode": "LEVEL 2",
+    "consecutiveLosses": 1,
     "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
     "refPeriod": null,
     "refNumber": null,
-    "currentPrediction": "GREEN",
-    "currentLevel": 1
+    "currentPrediction": "BIG",
+    "currentLevel": 2
   },
   "log": [
     {
-      "period": "20261105100052103",
-      "label": "GREEN (L1)",
+      "period": "20261105100052104",
+      "label": "BIG (L2)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100052103",
+      "label": "GREEN (L1)",
+      "actual": "BIG 6 (red)",
+      "resultText": "❌ LOSE"
     },
     {
       "period": "20261105100052102",
@@ -4125,12 +4131,6 @@
       "label": "BIG (L2)",
       "actual": "SMALL 3 (green)",
       "resultText": "❌ LOSE"
-    },
-    {
-      "period": "20261105100052098",
-      "label": "GREEN (L1)",
-      "actual": "BIG 8 (red)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
@@ -4139,21 +4139,21 @@
     "losses": 114,
     "l1Wins": 61,
     "l2Wins": 40,
-    "l3Wins": 11,
+    "l3Wins": 12,
     "winRate": 52,
     "totalTested": 239
   },
   "run": {
-    "mode": "COLOR",
-    "consecutiveLosses": 0,
-    "prediction": "GREEN",
+    "mode": "LEVEL 2",
+    "consecutiveLosses": 1,
+    "prediction": "BIG",
     "numbers": [],
-    "level": 1,
+    "level": 2,
     "isSkip": false,
-    "predictionForPeriod": "20261105100052103"
+    "predictionForPeriod": "20261105100052104"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793899880313
+  "savedAt": 1793899888744
 }
