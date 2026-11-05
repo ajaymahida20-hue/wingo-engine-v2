@@ -94,7 +94,7 @@
       "username": "",
       "since": 1793896486784,
       "uid": "24278582",
-      "uidStatus": "PENDING_UID",
+      "uidStatus": "PENDING",
       "uidSubmittedAt": 1793897929403,
       "active": false,
       "msgs": [
@@ -959,6 +959,12 @@
   ],
   "subOffset": 700546729,
   "history": [
+    {
+      "period": "20261105100052046",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261105100052045",
       "number": 8,
@@ -3952,19 +3958,13 @@
       "number": 4,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261105100051546",
-      "number": 7,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 2,
+    "skipRemaining": 1,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -3975,10 +3975,16 @@
   },
   "log": [
     {
-      "period": "20261105100052046",
+      "period": "20261105100052047",
       "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100052046",
+      "label": "SKIP",
+      "actual": "SMALL 4 (red)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100052045",
@@ -4003,23 +4009,17 @@
       "label": "SMALL (L3)",
       "actual": "SMALL 2 (red)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261105100052041",
-      "label": "BIG (L2)",
-      "actual": "SMALL 0 (red)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
     "wins": 124,
     "jackpots": 0,
-    "losses": 119,
+    "losses": 118,
     "l1Wins": 57,
-    "l2Wins": 41,
-    "l3Wins": 13,
+    "l2Wins": 42,
+    "l3Wins": 12,
     "winRate": 51,
-    "totalTested": 243
+    "totalTested": 242
   },
   "run": {
     "mode": "SKIP",
@@ -4028,10 +4028,10 @@
     "numbers": [],
     "level": 0,
     "isSkip": true,
-    "predictionForPeriod": "20261105100052046"
+    "predictionForPeriod": "20261105100052047"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793898169939
+  "savedAt": 1793898178456
 }
