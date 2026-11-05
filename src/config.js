@@ -5,6 +5,7 @@ export const COLOR_STAGE_AFTER = 4;   // losses in a row before the call switche
 export const MSG_TRACK_MAX = 1000;    // newest DM message ids remembered per subscriber
 export const CAPTION_LIMIT = 1024;    // Telegram's photo-caption ceiling
 export const PAST_RESULT_LINES = 5;   // how many past results a post carries at most
+export const DAILY_WIN_LIMIT = 20;    // maximum winning shots allowed per subscriber per day
 
 export const ROUND_SECONDS_BY_GAME = {
   WinGo_30S: 30, WinGo_1M: 60, WinGo_3M: 180, WinGo_5M: 300

@@ -250,6 +250,25 @@
     </div>
   </div>
 
+  <!-- Modal for Sending Private Message to User -->
+  <div id="userMsgModal" class="modal-overlay hidden" onclick="if(event.target === this) closeUserMsgModal()">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="userMsgTitle">💬 Send Private Message</h3>
+        <button class="modal-close" onclick="closeUserMsgModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="muted" style="margin-bottom:8px;">Target User: <b id="userMsgTarget" style="color:var(--text);"></b></p>
+        <textarea id="userMsgInput" placeholder="Type personal message here... Ye message seedha user ke Telegram chat par jayega (Bot start rahe ya off rahe, deposit status ki chinta kiye bina)."></textarea>
+        <p class="muted" style="font-size:11.5px; margin-top:6px;">💡 Text, Emojis, aur HTML tags (&lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, &lt;code&gt;code&lt;/code&gt;) support hote hain.</p>
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeUserMsgModal()" style="background:#1b263b; color:var(--muted); border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Cancel</button>
+        <button id="userMsgSendBtn" onclick="submitUserMsg()" style="background:var(--cyan); color:#000; font-weight:800; border:none; padding:8px 18px; border-radius:6px; cursor:pointer;">🚀 Send Message</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="panel.js"></script>

@@ -2,7 +2,7 @@
 // Handles deposit unlock (video + UID verification), "Check My ID",
 // Start/Stop predictions with DM cleanup, and broadcasting.
 
-import { MSG_TRACK_MAX, WELCOME_PHOTO, DEFAULT_VIDEO_MSG, DEFAULT_UID_MSG } from "./config.js";
+import { MSG_TRACK_MAX, WELCOME_PHOTO, DEFAULT_VIDEO_MSG, DEFAULT_UID_MSG, DAILY_WIN_LIMIT } from "./config.js";
 import { state, persist } from "./store.js";
 import { buildPost } from "./posts.js";
 import { info, warn } from "./logger.js";
@@ -95,7 +95,11 @@ function trackSubMessage(chatId, messageId, skipPersist = false) {
 
 export async function sendDirect(chatId, text, extra = {}, skipTrackPersist = false) {
   const payload = { chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true, ...extra };
-  const j = await tg("sendMessage", payload);
+  let j = await tg("sendMessage", payload);
+  if (!j.ok && typeof j.description === "string" && (j.description.includes("can't parse entities") || j.description.includes("entity"))) {
+    delete payload.parse_mode;
+    j = await tg("sendMessage", payload);
+  }
   if (j.ok) { trackSubMessage(chatId, j.result?.message_id, skipTrackPersist); return { ok: true, result: j.result }; }
   return { ok: false, blocked: blockedReason(j.description), description: j.description };
 }
@@ -641,11 +645,11 @@ async function handleMessage(msg) {
       return;
     }
 
-    // 1. Check daily limit (30 winning shots per day)
-    if (sub.dailyWins >= 30) {
+    // 1. Check daily limit (DAILY_WIN_LIMIT winning shots per day)
+    if (sub.dailyWins >= DAILY_WIN_LIMIT) {
       await sendDirect(chatId,
         `🛑 <b>Aaj Ka Daily Quota Samapt!</b>\n\n` +
-        `Aapne aaj ke sabhi <b>30 winning shots</b> poore kar liye hain.\n` +
+        `Aapne aaj ke sabhi <b>${DAILY_WIN_LIMIT} winning shots</b> poore kar liye hain.\n` +
         `Kripya kal naye sessions ke liye fir se aayein! Dhanyawad.`,
         { reply_markup: MAIN_KEYBOARD }
       );
@@ -665,7 +669,7 @@ async function handleMessage(msg) {
         `⏳ <b>Cooldown Chalu Hai!</b>\n\n` +
         `Aapka pichhla session poora ho chuka hai. Agla (Session ${sub.sessionNumber}) shuru hone me abhi <b>${timeStr}</b> baaki hain.\n\n` +
         `⚠️ <b>Stop mat karna</b> (Stop button par click mat karna), aisa karne par aapko next 5 shots nahi milenge. Samay poora hote hi prediction automatically aana shuru ho jayega!\n\n` +
-        `📊 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/30`,
+        `📊 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}`,
         { reply_markup: MAIN_KEYBOARD }
       );
       await syncBotProfile();
@@ -698,7 +702,7 @@ async function handleMessage(msg) {
         `Server currently fresh cycle me hai (post-win skip phase).\n\n` +
         `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
         `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins}/5 wins)\n` +
-        `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/30\n\n` +
+        `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}\n\n` +
         `Live round signals will now be delivered directly to this chat.\n\n` +
         `Tap <b>${BTN_OFF}</b> at any time to pause and clear chat history.`,
         { reply_markup: MAIN_KEYBOARD }
@@ -733,7 +737,7 @@ async function handleMessage(msg) {
     await sendDirect(chatId,
       `🛑 <b>Predictions Stopped.</b>\n\n` +
       `Signal delivery has been paused.\n` +
-      `📍 Current progress: Session ${sub.sessionNumber} (${sub.sessionWins}/5 wins) | Aaj ke kul wins: ${sub.dailyWins}/30` +
+      `📍 Current progress: Session ${sub.sessionNumber} (${sub.sessionWins}/5 wins) | Aaj ke kul wins: ${sub.dailyWins}/${DAILY_WIN_LIMIT}` +
       (deleted ? `\n🧹 Cleared ${deleted} message(s) from chat.` : "") +
       `\n\nTap <b>${BTN_ON}</b> whenever you want to resume.`,
       { reply_markup: MAIN_KEYBOARD }
@@ -921,12 +925,12 @@ export async function broadcast(period, prediction, numbers, level) {
   const fullText = buildPost(period, prediction, numbers, level);
 
   const now = Date.now();
-  // Broadcast ONLY to verified, active subscribers who are not in cooldown and have not completed 30 daily wins
+  // Broadcast ONLY to verified, active subscribers who are not in cooldown and have not completed daily wins
   const eligibleSubs = state.subs.filter(s => {
     if (!s.active || s.uidStatus !== "VERIFIED") return false;
     if (s.waitingForWin) return false;
     ensureSubSession(s);
-    if (s.dailyWins >= 30) return false;
+    if (s.dailyWins >= DAILY_WIN_LIMIT) return false;
     if (s.cooldownUntil && now < s.cooldownUntil) return false;
     return true;
   });
@@ -982,15 +986,15 @@ export async function settleSubscriberWins(resolved) {
         sub.sessionWins = (sub.sessionWins || 0) + 1;
         sub.dailyWins = (sub.dailyWins || 0) + 1;
 
-        if (sub.dailyWins >= 30) {
+        if (sub.dailyWins >= DAILY_WIN_LIMIT) {
           sub.active = false;
           sub.waitingForWin = false;
           sub.cooldownUntil = null;
           persist();
           await sendDirect(sub.id,
-            `🎉 <b>Badhai Ho! Aaj Ka 30 Winning Shots Ka Target Poora Hua!</b>\n\n` +
+            `🎉 <b>Badhai Ho! Aaj Ka ${DAILY_WIN_LIMIT} Winning Shots Ka Target Poora Hua!</b>\n\n` +
             `Aapne aaj ke sabhi sessions safaltapoorvak poore kar liye hain.\n` +
-            `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/30\n\n` +
+            `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}\n\n` +
             `Ab aaj ke liye predictions samapt hoti hain. Kal naye sessions ke saath fir milenge!`,
             { reply_markup: MAIN_KEYBOARD }
           ).catch(() => {});
@@ -1007,7 +1011,7 @@ export async function settleSubscriberWins(resolved) {
             `⏸️ <b>Session Poora Hua! (5 Winning Shots Prapt)</b>\n\n` +
             `Ab <b>${waitMinutes} minute</b> wait karo. ${waitMinutes} minute ke baad aapko next 5 winning shots milenge.\n\n` +
             `⚠️ <b>Stop mat karna</b> (Stop button par click mat karna), aisa karne par aapko next 5 shots nahi milenge. Shaant rahein, samay poora hote hi prediction automatically jari rahega!\n\n` +
-            `📊 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/30`,
+            `📊 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}`,
             { reply_markup: MAIN_KEYBOARD }
           ).catch(() => {});
         } else {
@@ -1032,7 +1036,7 @@ export async function settleSubscriberWins(resolved) {
         `Abhi rules ke mutabiq 2 rounds ⏳ <b>SKIP</b> rahenge, uske baad fresh <b>Level 1</b> se aapko signals aana shuru ho jayenge.\n\n` +
         `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
         `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins || 0}/5 wins)\n` +
-        `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins || 0}/30\n\n` +
+        `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins || 0}/${DAILY_WIN_LIMIT}\n\n` +
         `Good luck!`,
         { reply_markup: MAIN_KEYBOARD }
       ).catch(() => {});
@@ -1053,7 +1057,7 @@ export async function checkSubscriberCooldowns() {
         await sendDirect(sub.id,
           `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
           `Aapka <b>Session ${sub.sessionNumber}</b> ab shuru ho raha hai!\n` +
-          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/30)`,
+          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/${DAILY_WIN_LIMIT})`,
           { reply_markup: MAIN_KEYBOARD }
         ).catch(() => {});
       } else {
@@ -1063,7 +1067,7 @@ export async function checkSubscriberCooldowns() {
           `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
           `Aapka <b>Session ${sub.sessionNumber}</b> activate ho gaya hai!\n` +
           `Safe entry ke liye server ke agle <b>WIN</b> ka wait kiya ja raha hai. Jaise hi win aayega, 2 Skips ke baad Level 1 se signals shuru honge.\n` +
-          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/30)`,
+          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/${DAILY_WIN_LIMIT})`,
           { reply_markup: MAIN_KEYBOARD }
         ).catch(() => {});
       }

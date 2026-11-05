@@ -209,6 +209,16 @@ async function api(req, res, url) {
       const r = await tg.setSubscriberUidStatus(id, "REJECTED");
       return json(res, 200, r);
     }
+    if (action === "send_message") {
+      const message = String(body.message || "").trim();
+      if (!message) return json(res, 400, { ok: false, error: "message cannot be empty" });
+      const r = await tg.sendDirect(id, message);
+      if (r.ok) {
+        info(`Admin sent personal message to user ${id}: ${message.slice(0, 40)}`);
+        return json(res, 200, { ok: true });
+      }
+      return json(res, 400, { ok: false, error: r.description || "Failed to deliver message" });
+    }
     if (action === "delete") {
       state.subs = state.subs.filter(s => String(s.id) !== String(id));
       saveNow();

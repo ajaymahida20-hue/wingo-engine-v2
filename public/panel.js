@@ -281,9 +281,12 @@ function renderSubscribers(subs) {
     let statusBadge = '<span class="badge off">NO UID YET</span>';
     let actionButtons = '';
 
+    const msgBtn = `<button style="background:rgba(59,130,246,0.22); border:1px solid #3b82f6; color:#93c5fd; font-weight:700;" onclick="openSendUserModal('${s.id}','${esc(s.name)}')">💬 MSG</button>`;
+
     if (s.uidStatus === "VERIFIED") {
       statusBadge = '<span class="badge ok">✅ VERIFIED</span>';
       actionButtons = `
+        ${msgBtn}
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else if (s.uidStatus === "DEPOSIT_PENDING") {
@@ -291,6 +294,7 @@ function renderSubscribers(subs) {
       actionButtons = `
         <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ ACCEPT / FULL VERIFY</button>
         <button class="warn-btn" onclick="subAction('ask_deposit','${s.id}')">⚠️ ASK DEPOSIT</button>
+        ${msgBtn}
         <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
@@ -299,6 +303,7 @@ function renderSubscribers(subs) {
       actionButtons = `
         <button class="primary" style="background:#00ff88;color:#000;font-weight:800;" onclick="subAction('verify','${s.id}')">✅ FULL VERIFY</button>
         <button class="warn-btn" onclick="subAction('ask_deposit','${s.id}')">⚠️ ASK DEPOSIT</button>
+        ${msgBtn}
         <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
@@ -306,6 +311,7 @@ function renderSubscribers(subs) {
       statusBadge = '<span class="badge user">⏳ PENDING UID</span>';
       actionButtons = `
         <button class="primary" style="background:#00e5ff;color:#000;font-weight:700;" onclick="subAction('verify_id','${s.id}')">🔍 VERIFY ID</button>
+        ${msgBtn}
         <button onclick="subAction('reject','${s.id}')">❌ REJECT</button>
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
@@ -313,11 +319,13 @@ function renderSubscribers(subs) {
       statusBadge = '<span class="badge err">❌ REJECTED</span>';
       actionButtons = `
         <button class="primary" style="background:#00e5ff;color:#000;font-weight:700;" onclick="subAction('verify_id','${s.id}')">🔍 VERIFY ID</button>
+        ${msgBtn}
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     } else {
       statusBadge = '<span class="badge off">NO UID YET</span>';
       actionButtons = `
+        ${msgBtn}
         <button class="danger" onclick="subAction('delete','${s.id}')">🗑 DEL</button>
       `;
     }
@@ -335,7 +343,7 @@ function renderSubscribers(subs) {
       <div class="top">
         <div>
           <div class="lbl">${esc(s.name)} ${statusBadge} ${liveBadge} ${cooldownBadge}</div>
-          <div class="id">TG ID: <b>${s.id}</b> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
+          <div class="id">TG ID: <b style="cursor:pointer; color:var(--cyan); text-decoration:underline;" title="Click to send private message" onclick="openSendUserModal('${s.id}','${esc(s.name)}')">${s.id} 💬</b> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
         </div>
         <div class="row">
           ${actionButtons}
@@ -345,7 +353,7 @@ function renderSubscribers(subs) {
         Account UID: <b style="color:var(--cyan); font-size:13px;">${esc(s.uid || "None submitted")}</b>
         ${s.uidSubmittedAt ? ' · Submitted ' + new Date(s.uidSubmittedAt).toLocaleTimeString() : ''}
         · <b>Session ${s.sessionNumber || 1}</b> (${s.sessionWins || 0}/5 wins)
-        · <b>Daily:</b> ${s.dailyWins || 0}/30 wins
+        · <b>Daily:</b> ${s.dailyWins || 0}/20 wins
         · ${s.tracked || 0} messages tracked in DM
       </div>
     </div>`;
@@ -357,6 +365,65 @@ async function subAction(action, id) {
   const r = await post("/api/subscribers", { action, id });
   if (!r.ok) alert(r.error || "Action failed");
   refresh();
+}
+
+// ================= USER PRIVATE MESSAGE MODAL =================
+let currentMsgUserId = null;
+let currentMsgUserName = "";
+
+function openSendUserModal(id, name) {
+  currentMsgUserId = id;
+  currentMsgUserName = name || `User ${id}`;
+  const title = $("userMsgTitle");
+  if (title) title.textContent = `💬 Send Private Message`;
+  const target = $("userMsgTarget");
+  if (target) target.textContent = `${currentMsgUserName} (TG ID: ${id})`;
+  const input = $("userMsgInput");
+  if (input) input.value = "";
+  const modal = $("userMsgModal");
+  if (modal) modal.classList.remove("hidden");
+  setTimeout(() => { if (input) input.focus(); }, 60);
+}
+
+function closeUserMsgModal() {
+  const modal = $("userMsgModal");
+  if (modal) modal.classList.add("hidden");
+  currentMsgUserId = null;
+}
+
+async function submitUserMsg() {
+  if (!currentMsgUserId) return;
+  const input = $("userMsgInput");
+  const text = input ? input.value.trim() : "";
+  if (!text) {
+    alert("Kripya message likhein!");
+    return;
+  }
+  const btn = $("userMsgSendBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+  }
+  try {
+    const r = await post("/api/subscribers", {
+      action: "send_message",
+      id: currentMsgUserId,
+      message: text
+    });
+    if (r.ok) {
+      alert(`✅ Message successfully sent to ${currentMsgUserName}!`);
+      closeUserMsgModal();
+    } else {
+      alert(`❌ Message nahi ja saka: ${r.error || "Unknown error"}`);
+    }
+  } catch (err) {
+    alert(`❌ Error sending message: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "🚀 Send Message";
+    }
+  }
 }
 
 // ================= ACTIONS & CONFIG =================
