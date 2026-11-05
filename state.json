@@ -22,14 +22,15 @@
       "name": "PATEL AMAN",
       "username": "amanpatel2544",
       "since": 1793892134969,
-      "uid": null,
-      "uidStatus": "NONE",
-      "uidSubmittedAt": null,
+      "uid": "24277397",
+      "uidStatus": "PENDING_UID",
+      "uidSubmittedAt": 1793892267924,
       "active": false,
       "msgs": [
         242,
         243,
-        245
+        245,
+        247
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -510,8 +511,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700546641,
+  "subOffset": 700546642,
   "history": [
+    {
+      "period": "20261105100051849",
+      "number": 5,
+      "result": "BIG",
+      "color": "green,violet"
+    },
     {
       "period": "20261105100051848",
       "number": 2,
@@ -3505,19 +3512,13 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261105100051349",
-      "number": 0,
-      "result": "SMALL",
-      "color": "red,violet"
     }
   ],
   "strategy": {
-    "level": 2,
+    "level": 1,
     "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -3528,10 +3529,16 @@
   },
   "log": [
     {
-      "period": "20261105100051849",
-      "label": "BIG (L2)",
+      "period": "20261105100051850",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051849",
+      "label": "BIG (L2)",
+      "actual": "BIG 5 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100051848",
@@ -3556,35 +3563,29 @@
       "label": "RED (L1)",
       "actual": "BIG 6 (red)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261105100051844",
-      "label": "SKIP",
-      "actual": "SMALL 3 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 121,
+    "wins": 120,
     "jackpots": 0,
-    "losses": 126,
-    "l1Wins": 57,
-    "l2Wins": 37,
-    "l3Wins": 12,
-    "winRate": 49,
-    "totalTested": 247
+    "losses": 131,
+    "l1Wins": 55,
+    "l2Wins": 38,
+    "l3Wins": 11,
+    "winRate": 48,
+    "totalTested": 251
   },
   "run": {
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "prediction": "BIG",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 2,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100051849"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100051850"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793892260224
+  "savedAt": 1793892268663
 }
