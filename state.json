@@ -53,7 +53,7 @@
       "dailyWins": 2,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261105100051377",
       "id": 7226120418,
       "name": "C M 𝐃 AGENT SAHIL ×͜×",
       "username": "Tradarbysahij",
@@ -62,6 +62,12 @@
   ],
   "subOffset": 167087759,
   "history": [
+    {
+      "period": "20261105100051376",
+      "number": 5,
+      "result": "BIG",
+      "color": "green,violet"
+    },
     {
       "period": "20261105100051375",
       "number": 9,
@@ -887,23 +893,29 @@
   ],
   "strategy": {
     "level": 1,
-    "mode": "LEVEL 7",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 1,
+    "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
     "refPeriod": null,
     "refNumber": null,
-    "currentPrediction": "BIG",
-    "currentLevel": 7
+    "currentPrediction": "GREEN",
+    "currentLevel": 1
   },
   "log": [
     {
-      "period": "20261105100051376",
-      "label": "SKIP",
+      "period": "20261105100051377",
+      "label": "GREEN (L1)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051376",
+      "label": "SKIP",
+      "actual": "BIG 5 (green)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100051375",
@@ -928,12 +940,6 @@
       "label": "SMALL (L5) 1,2,3,4",
       "actual": "BIG 7 (green)",
       "resultText": "❌ LOSE"
-    },
-    {
-      "period": "20261105100051371",
-      "label": "BIG (L4) 6,7,8,9",
-      "actual": "SMALL 3 (green)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
@@ -947,16 +953,16 @@
     "totalTested": 53
   },
   "run": {
-    "mode": "SKIP",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "prediction": "SKIP",
+    "prediction": "GREEN",
     "numbers": [],
-    "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261105100051376"
+    "level": 1,
+    "isSkip": false,
+    "predictionForPeriod": "20261105100051377"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793878070801
+  "savedAt": 1793878079031
 }
