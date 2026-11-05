@@ -5,7 +5,7 @@ import { POLL_MS } from "./config.js";
 import { state, load, persist, dataFile, initRemoteStore, syncToRemote } from "./store.js";
 import { fetchHistory, mergeHistory, noteRound, nextPeriod } from "./history.js";
 import { computePrediction, resolvePending, isColourCall } from "./engine.js";
-import { broadcast, startListener, syncBotProfile, settleSubscriberWins, checkSubscriberCooldowns } from "./telegram.js";
+import { broadcast, startListener, syncBotProfile, settleSubscriberWins, checkSubscriberCooldowns, checkDailyResets } from "./telegram.js";
 import { startServer } from "./server.js";
 import { info, warn, error, log } from "./logger.js";
 
@@ -48,6 +48,9 @@ async function tick() {
 
     // Check if any subscriber's cooldown has finished
     await checkSubscriberCooldowns();
+
+    // Check if new day has arrived to reset daily wins & move verified users to deposit pending
+    checkDailyResets();
 
     // 2. publish the next signal, once per round
     const calc = computePrediction();

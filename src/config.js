@@ -43,7 +43,7 @@ export const WELCOME_PHOTO = "AgACAgUAAxkBAAKewGrjIoFBm2kgboImZdiPbbRz3EeLAAK6GW
 
 export const DEFAULT_VIDEO_MSG =
   "📹 <b>Watch this video carefully!</b>\n\n" +
-  "After watching, please send your <b>Deposit / Account UID</b> (10-12 digits) here to verify and unlock predictions.";
+  "After watching, please send your <b>Account UID</b> here to verify and unlock predictions.";
 
 export const DEFAULT_UID_MSG =
   "📹 <b>Pehle video check karo, uske baad niche diye gaye link se registration karo and UID number bhejo.</b>\n\n" +

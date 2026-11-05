@@ -36,6 +36,7 @@ function panelPassword() {
 }
 
 function snapshot() {
+  tg.checkDailyResets();
   const { period, secondsLeft } = roundStatus();
   return {
     ok: true,

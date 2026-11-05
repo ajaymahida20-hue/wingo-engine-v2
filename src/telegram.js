@@ -276,10 +276,38 @@ export function ensureSubSession(sub) {
     sub.sessionNumber = 1;
     sub.sessionWins = 0;
     sub.cooldownUntil = null;
+    // Daily requirement: Next day user moves to PENDING (must deposit again for new day)
+    if (sub.uidStatus === "VERIFIED") {
+      sub.uidStatus = "PENDING";
+      sub.active = false;
+    }
   }
   if (typeof sub.sessionWins !== "number") sub.sessionWins = 0;
   if (typeof sub.sessionNumber !== "number" || sub.sessionNumber < 1) sub.sessionNumber = 1;
   if (typeof sub.dailyWins !== "number") sub.dailyWins = 0;
+}
+
+export function checkDailyResets() {
+  const today = getTodayKey();
+  let changed = false;
+  for (const sub of state.subs) {
+    if (sub.dailyDate !== today) {
+      sub.dailyDate = today;
+      sub.dailyWins = 0;
+      sub.sessionNumber = 1;
+      sub.sessionWins = 0;
+      sub.cooldownUntil = null;
+      if (sub.uidStatus === "VERIFIED") {
+        sub.uidStatus = "PENDING";
+        sub.active = false;
+        changed = true;
+      }
+    }
+  }
+  if (changed) {
+    persist();
+    syncBotProfile();
+  }
 }
 
 function getOrAddUser(from) {
@@ -457,12 +485,46 @@ async function handleMessage(msg) {
 
   // Command: /start
   if (text.startsWith("/start")) {
+    ensureSubSession(sub);
     if (sub.uidStatus === "VERIFIED") {
       await sendDirect(chatId,
         `👋 <b>Welcome back ${esc(sub.name)}!</b>\n\n` +
         `Your Account UID (<code>${esc(sub.uid || "")}</code>) is <b>VERIFIED</b>.\n\n` +
         `Tap <b>${BTN_ON}</b> below to start receiving live predictions.`,
         { reply_markup: MAIN_KEYBOARD }
+      );
+      return;
+    }
+
+    if (sub.uidStatus === "PENDING") {
+      const depositCaption =
+        `⚠️ <b>Daily Deposit Required!</b>\n\n` +
+        `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) server me registered hai, lekin aapne aaj ka <b>Deposit</b> complete nahi kiya hai.\n\n` +
+        `Naye din ke 30 winning shots unlock karne ke liye apna deposit complete karein.\n\n` +
+        `Deposit complete karne ke baad neeche diye gaye <b>💳 Maine Deposit Kar Liya</b> button par click karein:`;
+
+      await sendStepVideo(sub.id, "deposit", depositCaption, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+          ]
+        }
+      });
+      return;
+    }
+
+    if (sub.uidStatus === "DEPOSIT_PENDING") {
+      await sendDirect(chatId,
+        `⏳ <b>Deposit Verification Pending!</b>\n\n` +
+        `Aapka deposit claim admin ke paas review me hai.\n` +
+        `Admin verify karte hi aapka live prediction access unlock ho jayega!`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🔍 Check My ID", callback_data: `check_uid|${sub.id}` }]
+            ]
+          }
+        }
       );
       return;
     }
@@ -539,15 +601,49 @@ async function handleMessage(msg) {
 
   // Action: START PREDICTION
   if (text === BTN_ON || text.toLowerCase() === "/start_prediction") {
-    if (sub.uidStatus !== "VERIFIED") {
+    ensureSubSession(sub);
+
+    if (sub.uidStatus === "PENDING") {
+      const depositCaption =
+        `⚠️ <b>Daily Deposit Required!</b>\n\n` +
+        `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) verified hai, lekin aapne aaj ka <b>Deposit</b> complete nahi kiya hai.\n\n` +
+        `Naye din ke 30 winning shots unlock karne ke liye apna deposit complete karein.\n\n` +
+        `Deposit complete karne ke baad neeche diye gaye <b>💳 Maine Deposit Kar Liya</b> button par click karein:`;
+
+      await sendStepVideo(sub.id, "deposit", depositCaption, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+          ]
+        }
+      });
+      return;
+    }
+
+    if (sub.uidStatus === "DEPOSIT_PENDING") {
       await sendDirect(chatId,
-        `⚠️ <b>Access Locked!</b>\n\n` +
-        `Your Account UID is not verified yet.\n` +
-        `Please send your 10-12 digit Account UID here and wait for administrator approval.`
+        `⏳ <b>Deposit Verification Pending!</b>\n\n` +
+        `Aapka deposit claim admin ke paas review me hai.\n` +
+        `Admin approve karte hi aapka live prediction access activate ho jayega. Kripya thoda intezar karein.`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "🔍 Check My ID", callback_data: `check_uid|${sub.id}` }]
+            ]
+          }
+        }
       );
       return;
     }
-    ensureSubSession(sub);
+
+    if (sub.uidStatus !== "VERIFIED") {
+      await sendDirect(chatId,
+        `⚠️ <b>Access Locked!</b>\n\n` +
+        `Aapka Account UID abhi verify nahi hua hai.\n` +
+        `Kripya apna Account UID yahan message me send karein aur administrator approval ka intezar karein.`
+      );
+      return;
+    }
 
     // 1. Check daily limit (30 winning shots per day)
     if (sub.dailyWins >= 30) {
@@ -615,9 +711,11 @@ async function handleMessage(msg) {
     return;
   }
 
-  // Check if text is a numeric Account UID (5 to 12 digits, covering 10-12 digits)
-  const isUid = /^\d{5,12}$/.test(text);
-  if (isUid) {
+  // UID Submission: accept any UID of any length (digits or alphanumeric)
+  const isCommand = text.startsWith("/") || text === BTN_ON || text === BTN_OFF;
+  const isUidCandidate = !isCommand && /^[0-9a-zA-Z_-]{1,40}$/.test(text);
+
+  if (isUidCandidate) {
     if (sub.uidStatus === "VERIFIED") {
       await sendDirect(chatId,
         `✅ <b>Already Verified!</b>\n\n` +
@@ -640,13 +738,14 @@ async function handleMessage(msg) {
       `Status: ⏳ <b>Waiting for Administrator Review</b>\n\n` +
       `Admin aapki ID ko verify kar raha hai.`
     );
+    processServerVerification(sub.id, text);
     return;
   }
 
   // Any other text
   if (sub.uidStatus !== "VERIFIED") {
     await sendDirect(chatId,
-      `ℹ️ Please send your <b>10 to 12 digit Account UID</b> here to request verification.`
+      `ℹ️ Kripya apna valid <b>Account UID</b> yahan message me send karein.`
     );
   }
 }
