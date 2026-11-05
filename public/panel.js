@@ -281,7 +281,7 @@ function renderSubscribers(subs) {
     let statusBadge = '<span class="badge off">NO UID YET</span>';
     let actionButtons = '';
 
-    const msgBtn = `<button style="background:rgba(59,130,246,0.22); border:1px solid #3b82f6; color:#93c5fd; font-weight:700;" onclick="openSendUserModal('${s.id}','${esc(s.name)}')">💬 MSG</button>`;
+    const msgBtn = `<button class="primary" style="background:#2563eb; color:#fff; font-weight:700; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="openSendUserModal('${s.id}','${esc(s.name)}')">💬 SEND MESSAGE</button>`;
 
     if (s.uidStatus === "VERIFIED") {
       statusBadge = '<span class="badge ok">✅ VERIFIED</span>';
@@ -343,14 +343,14 @@ function renderSubscribers(subs) {
       <div class="top">
         <div>
           <div class="lbl">${esc(s.name)} ${statusBadge} ${liveBadge} ${cooldownBadge}</div>
-          <div class="id">TG ID: <b style="cursor:pointer; color:var(--cyan); text-decoration:underline;" title="Click to send private message" onclick="openSendUserModal('${s.id}','${esc(s.name)}')">${s.id} 💬</b> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
+          <div class="id">TG ID: <b style="color:var(--cyan); font-family:monospace; font-size:13px;">${s.id}</b> <button type="button" style="background:#2563eb; color:#fff; font-size:11px; font-weight:700; border:none; padding:3px 9px; border-radius:4px; margin-left:6px; cursor:pointer;" onclick="openSendUserModal('${s.id}','${esc(s.name)}')">💬 Send Message</button> · ${s.username ? "@" + esc(s.username) : "no username"}</div>
         </div>
         <div class="row">
           ${actionButtons}
         </div>
       </div>
       <div class="meta" style="margin-top:6px;">
-        Account UID: <b style="color:var(--cyan); font-size:13px;">${esc(s.uid || "None submitted")}</b>
+        Account UID: <b style="color:var(--cyan); font-size:13px;">${esc(s.uid || "None submitted")}</b> <button type="button" style="background:#1d4ed8; color:#fff; font-size:10.5px; font-weight:700; border:none; padding:2px 8px; border-radius:4px; margin-left:6px; cursor:pointer;" onclick="openSendUserModal('${s.id}','${esc(s.name)}')">✉️ Text User</button>
         ${s.uidSubmittedAt ? ' · Submitted ' + new Date(s.uidSubmittedAt).toLocaleTimeString() : ''}
         · <b>Session ${s.sessionNumber || 1}</b> (${s.sessionWins || 0}/5 wins)
         · <b>Daily:</b> ${s.dailyWins || 0}/20 wins
