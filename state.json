@@ -52,12 +52,18 @@
       "dailyWins": 2,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261105100051439",
       "waitingForWin": false
     }
   ],
   "subOffset": 167087768,
   "history": [
+    {
+      "period": "20261105100051438",
+      "number": 9,
+      "result": "BIG",
+      "color": "green"
+    },
     {
       "period": "20261105100051437",
       "number": 3,
@@ -1255,23 +1261,29 @@
   ],
   "strategy": {
     "level": 1,
-    "mode": "LEVEL 2",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 1,
+    "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
     "refPeriod": null,
     "refNumber": null,
-    "currentPrediction": "BIG",
-    "currentLevel": 2
+    "currentPrediction": "GREEN",
+    "currentLevel": 1
   },
   "log": [
     {
-      "period": "20261105100051438",
-      "label": "SKIP",
+      "period": "20261105100051439",
+      "label": "GREEN (L1)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051438",
+      "label": "SKIP",
+      "actual": "BIG 9 (green)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100051437",
@@ -1296,12 +1308,6 @@
       "label": "SKIP",
       "actual": "SMALL 2 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100051433",
-      "label": "SKIP",
-      "actual": "SMALL 3 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
@@ -1315,16 +1321,16 @@
     "totalTested": 87
   },
   "run": {
-    "mode": "SKIP",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "prediction": "SKIP",
+    "prediction": "GREEN",
     "numbers": [],
-    "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261105100051438"
+    "level": 1,
+    "isSkip": false,
+    "predictionForPeriod": "20261105100051439"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793879930166
+  "savedAt": 1793879938635
 }
