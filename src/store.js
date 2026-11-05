@@ -54,7 +54,12 @@ let lastRemoteSync = 0;
 
 function applySaved(saved) {
   if (!saved || typeof saved !== "object") return;
-  if (saved.cfg) state.cfg = { ...structuredClone(DEFAULT_CONFIG), ...state.cfg, ...saved.cfg };
+  if (saved.cfg) {
+    state.cfg = { ...structuredClone(DEFAULT_CONFIG), ...state.cfg, ...saved.cfg };
+    if (!state.cfg.header || state.cfg.header.includes("𓆩❣️S❣️𓆪") || state.cfg.header.includes("ⲦRȺᎠER")) {
+      state.cfg.header = DEFAULT_HEADER;
+    }
+  }
   if (!state.cfg.botToken && process.env.BOT_TOKEN) state.cfg.botToken = process.env.BOT_TOKEN.trim();
   if (Array.isArray(saved.history) && saved.history.length) {
     const existingPeriods = new Set(state.history.map(h => String(h.period || h.issueNumber)));

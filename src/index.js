@@ -15,8 +15,7 @@ let busy = false;
 const labelFor = (prediction, numbers, level) => {
   if (prediction === "SKIP") return "SKIP";
   const lvl = (level && level > 0) ? ` (L${level})` : "";
-  const balls = (numbers && numbers.length) ? " " + numbers.join(",") : "";
-  return `${prediction}${lvl}${balls}`;
+  return `${prediction}${lvl}`;
 };
 
 const trimLog = () => { if (state.log.length > LOG_MAX) state.log.length = LOG_MAX; };

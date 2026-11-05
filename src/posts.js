@@ -9,7 +9,7 @@ export function buildTargetBox(period, prediction, numbers, level, sessionWins) 
   const p = String(prediction || "").toUpperCase();
   const p4 = String(period || "").slice(-4);
   const winCount = (typeof sessionWins === "number") ? sessionWins : 0;
-  const headerLine = `[ ${winCount} WINNING ] NEXT PREDICTION [ ${winCount} WINNING ]`;
+  const headerLine = `🎯 NEXT PREDICTION [ ${winCount} WINNING ] 🎯`;
 
   if (p === "SKIP") {
     return [
@@ -63,10 +63,12 @@ function pastResultLines() {
     const status = statusWord(entry.resultText || "");
     if (!status) continue;
     const p4 = String(entry.period || "").slice(-4);
-    const [side, ...rest] = String(entry.label || "").split(" ");
-    const restText = rest.join(" ").trim();
-    const extraPart = restText ? `${restText} ` : "";
-    lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${extraPart}${status}`);
+    const rawLabel = String(entry.label || "");
+    const parts = rawLabel.split(/\s+/);
+    const side = parts[0] || "";
+    const lvlMatch = rawLabel.match(/\(L\d+\)/i);
+    const lvlPart = lvlMatch ? `${lvlMatch[0]} ` : "";
+    lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${lvlPart}${status}`);
   }
   return lines.reverse();
 }

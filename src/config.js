@@ -35,10 +35,7 @@ export const NUMBER_TABLE = {
   BIG:   { green: [7, 9], red: [6, 8] }
 };
 
-export const DEFAULT_HEADER =
-  "𓆩❣️S❣️𓆪   🅥༄ᏉᏉ Ꭵ Ꭾ ☠︎☬༒\n\n" +
-  "vᵎp °᭄ ➳❦Ꭿl๏ήє ہ٨ـہہ٨ـ♡ ⲦRȺᎠER࿐\n" +
-  "                  ✵∘∘cOmєвcคк∘∘✵";
+export const DEFAULT_HEADER = "🥶 VIP WINGO 30 SECOND 🥶";
 
 // Fallback welcome banner file_id. The bundled public/welcome.jpg is sent first, so
 // this only matters if that file is missing.

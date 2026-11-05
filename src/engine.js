@@ -454,13 +454,13 @@ export function computePrediction() {
   if (strat.level === 1) {
     // Level 1: Predict the COLOR of refRound
     prediction = refColor; // "GREEN" or "RED"
-    numbers = (refColor === "GREEN") ? [1, 3, 7, 9] : [2, 4, 6, 8];
+    numbers = [];
     level = 1;
     strat.mode = "COLOR";
   } else {
-    // Level 2, 3, 4: Predict OPPOSITE of Big/Small of refRound
+    // Level 2, 3, 4, 5...: Predict OPPOSITE of Big/Small of refRound
     prediction = refOppositeType; // "BIG" or "SMALL"
-    numbers = (prediction === "BIG") ? [6, 7, 8, 9] : [1, 2, 3, 4];
+    numbers = [];
     level = strat.level;
     strat.mode = `LEVEL ${level}`;
   }
