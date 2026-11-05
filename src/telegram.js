@@ -276,6 +276,7 @@ export function ensureSubSession(sub) {
     sub.sessionNumber = 1;
     sub.sessionWins = 0;
     sub.cooldownUntil = null;
+    sub.waitingForWin = false;
     // Daily requirement: Next day user moves to PENDING (must deposit again for new day)
     if (sub.uidStatus === "VERIFIED") {
       sub.uidStatus = "PENDING";
@@ -285,6 +286,7 @@ export function ensureSubSession(sub) {
   if (typeof sub.sessionWins !== "number") sub.sessionWins = 0;
   if (typeof sub.sessionNumber !== "number" || sub.sessionNumber < 1) sub.sessionNumber = 1;
   if (typeof sub.dailyWins !== "number") sub.dailyWins = 0;
+  if (typeof sub.waitingForWin !== "boolean") sub.waitingForWin = false;
 }
 
 export function checkDailyResets() {
@@ -297,6 +299,7 @@ export function checkDailyResets() {
       sub.sessionNumber = 1;
       sub.sessionWins = 0;
       sub.cooldownUntil = null;
+      sub.waitingForWin = false;
       if (sub.uidStatus === "VERIFIED") {
         sub.uidStatus = "PENDING";
         sub.active = false;
@@ -433,20 +436,13 @@ export async function setSubscriberUidStatus(userId, status) {
   persist();
 
   if (status === "VERIFIED") {
-    // Send congratulations video (WhatsApp Video 10.03.41 PM / verified-video.mp4)
-    const finalCaption =
+    // Send congratulations text directly (no black video)
+    const finalMsg =
       `🎉 <b>CONGRATULATIONS! YOUR ACCOUNT IS FULLY VERIFIED</b>\n\n` +
       `Aapka Account UID <code>${esc(sub.uid || "")}</code> aur Deposit successfully verify ho chuka hai!\n\n` +
       `Tap <b>${BTN_ON}</b> below to start receiving live predictions.`;
 
-    await sendStepVideo(sub.id, "verified", finalCaption);
-    await sleep(400);
-
-    await sendDirect(sub.id,
-      `⚡ <b>Predictions Access Unlocked!</b>\n\n` +
-      `Live round signals receive karne ke liye neeche <b>${BTN_ON}</b> dabayein:`,
-      { reply_markup: MAIN_KEYBOARD }
-    );
+    await sendDirect(sub.id, finalMsg, { reply_markup: MAIN_KEYBOARD });
   } else if (status === "DEPOSIT_PENDING") {
     // Send deposit video (WhatsApp Video 10.26.35 PM / deposit-video.mp4) along with deposit message & button
     const depositCaption =
@@ -677,16 +673,50 @@ async function handleMessage(msg) {
     }
 
     // 3. Start active predictions for this session
+    if (sub.active && sub.waitingForWin) {
+      await sendDirect(chatId,
+        `⏳ <b>Engine Syncing Active (Wait for Next Win)...</b>\n\n` +
+        `Aapka prediction start request already queue me hai!\n` +
+        `Server abhi live round check kar raha hai. Safe entry ke liye jaise hi server par agla <b>WIN</b> confirm hoga, aapko automatically 2 Skips ke baad fresh Level 1 se signals shuru honge.\n\n` +
+        `⚠️ <b>Stop mat karna</b>, wait karein.`,
+        { reply_markup: MAIN_KEYBOARD }
+      );
+      return;
+    }
+
     sub.cooldownUntil = null;
+
+    // Check if server is currently in a safe entry state (post-win skip phase)
+    const canJoinImmediately = Boolean(state.strategy && state.strategy.skipRemaining > 0);
+
+    if (canJoinImmediately) {
+      sub.waitingForWin = false;
+      sub.active = true;
+      persist();
+      await sendDirect(chatId,
+        `🚀 <b>Predictions Activated!</b>\n\n` +
+        `Server currently fresh cycle me hai (post-win skip phase).\n\n` +
+        `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
+        `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins}/5 wins)\n` +
+        `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/30\n\n` +
+        `Live round signals will now be delivered directly to this chat.\n\n` +
+        `Tap <b>${BTN_OFF}</b> at any time to pause and clear chat history.`,
+        { reply_markup: MAIN_KEYBOARD }
+      );
+      await syncBotProfile();
+      return;
+    }
+
+    // Server is in active round: wait for next win
+    sub.waitingForWin = true;
     sub.active = true;
     persist();
     await sendDirect(chatId,
-      `🚀 <b>Predictions Activated!</b>\n\n` +
-      `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
-      `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins}/5 wins)\n` +
-      `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/30\n\n` +
-      `Live round signals will now be delivered directly to this chat.\n\n` +
-      `Tap <b>${BTN_OFF}</b> at any time to pause and clear chat history.`,
+      `⏳ <b>Engine Syncing Active (Wait for Next Win)...</b>\n\n` +
+      `Aapka prediction start request receive ho gaya hai!\n` +
+      `Server abhi live round check kar raha hai. Safe entry ke liye, jab tak server par agla <b>WIN</b> nahi ho jata, tab tak wait karo.\n\n` +
+      `🎯 Server par 1 Win confirm hote hi aapko 2 Skips ke baad fresh Level 1 se predictions milna shuru ho jayenge!\n\n` +
+      `⚠️ <b>Stop mat karna</b>, win confirm hote hi signals automatically chalu ho jayenge.`,
       { reply_markup: MAIN_KEYBOARD }
     );
     await syncBotProfile();
@@ -696,6 +726,7 @@ async function handleMessage(msg) {
   // Action: STOP PREDICTION
   if (text === BTN_OFF || text.toLowerCase() === "/stop_prediction") {
     sub.active = false;
+    sub.waitingForWin = false;
     const deleted = await clearSubscriberChat(sub);
     persist();
     ensureSubSession(sub);
@@ -893,6 +924,7 @@ export async function broadcast(period, prediction, numbers, level) {
   // Broadcast ONLY to verified, active subscribers who are not in cooldown and have not completed 30 daily wins
   const eligibleSubs = state.subs.filter(s => {
     if (!s.active || s.uidStatus !== "VERIFIED") return false;
+    if (s.waitingForWin) return false;
     ensureSubSession(s);
     if (s.dailyWins >= 30) return false;
     if (s.cooldownUntil && now < s.cooldownUntil) return false;
@@ -952,6 +984,7 @@ export async function settleSubscriberWins(resolved) {
 
         if (sub.dailyWins >= 30) {
           sub.active = false;
+          sub.waitingForWin = false;
           sub.cooldownUntil = null;
           persist();
           await sendDirect(sub.id,
@@ -965,6 +998,7 @@ export async function settleSubscriberWins(resolved) {
           const completedSession = sub.sessionNumber || 1;
           sub.sessionNumber = completedSession + 1;
           sub.sessionWins = 0;
+          sub.waitingForWin = false;
           const waitMinutes = completedSession * 5;
           sub.cooldownUntil = Date.now() + waitMinutes * 60 * 1000;
           persist();
@@ -984,6 +1018,26 @@ export async function settleSubscriberWins(resolved) {
       }
     }
   }
+
+  // 2. If this round was a WIN on server, safely sync and activate any subscribers waiting for safe entry!
+  if (isWin) {
+    const waitingSubs = state.subs.filter(s => s.active && s.uidStatus === "VERIFIED" && s.waitingForWin);
+    for (const sub of waitingSubs) {
+      sub.waitingForWin = false;
+      ensureSubSession(sub);
+      persist();
+      await sendDirect(sub.id,
+        `✅ <b>Server Win Confirmed! Session Synced!</b>\n\n` +
+        `Aapka prediction session ab server ke saath safely connect ho gaya hai.\n` +
+        `Abhi rules ke mutabiq 2 rounds ⏳ <b>SKIP</b> rahenge, uske baad fresh <b>Level 1</b> se aapko signals aana shuru ho jayenge.\n\n` +
+        `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
+        `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins || 0}/5 wins)\n` +
+        `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins || 0}/30\n\n` +
+        `Good luck!`,
+        { reply_markup: MAIN_KEYBOARD }
+      ).catch(() => {});
+    }
+  }
 }
 
 // Checks if any active subscriber's cooldown has finished and notifies them
@@ -992,13 +1046,27 @@ export async function checkSubscriberCooldowns() {
   for (const sub of state.subs) {
     if (sub.active && sub.uidStatus === "VERIFIED" && sub.cooldownUntil && now >= sub.cooldownUntil) {
       sub.cooldownUntil = null;
-      persist();
-      await sendDirect(sub.id,
-        `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
-        `Aapka <b>Session ${sub.sessionNumber}</b> ab shuru ho raha hai!\n` +
-        `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/30)`,
-        { reply_markup: MAIN_KEYBOARD }
-      ).catch(() => {});
+      const canJoinImmediately = Boolean(state.strategy && state.strategy.skipRemaining > 0);
+      if (canJoinImmediately) {
+        sub.waitingForWin = false;
+        persist();
+        await sendDirect(sub.id,
+          `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
+          `Aapka <b>Session ${sub.sessionNumber}</b> ab shuru ho raha hai!\n` +
+          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/30)`,
+          { reply_markup: MAIN_KEYBOARD }
+        ).catch(() => {});
+      } else {
+        sub.waitingForWin = true;
+        persist();
+        await sendDirect(sub.id,
+          `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
+          `Aapka <b>Session ${sub.sessionNumber}</b> activate ho gaya hai!\n` +
+          `Safe entry ke liye server ke agle <b>WIN</b> ka wait kiya ja raha hai. Jaise hi win aayega, 2 Skips ke baad Level 1 se signals shuru honge.\n` +
+          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/30)`,
+          { reply_markup: MAIN_KEYBOARD }
+        ).catch(() => {});
+      }
     }
   }
 }
