@@ -23,7 +23,7 @@
       "username": "MSDx1981",
       "since": 1793898214021,
       "uid": "24274985",
-      "uidStatus": "DEPOSIT_PENDING",
+      "uidStatus": "PENDING",
       "uidSubmittedAt": 1793898568428,
       "active": false,
       "msgs": [
@@ -34,7 +34,8 @@
         713,
         715,
         725,
-        728
+        728,
+        731
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -1033,6 +1034,12 @@
   ],
   "subOffset": 700546740,
   "history": [
+    {
+      "period": "20261105100052075",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261105100052074",
       "number": 5,
@@ -4026,19 +4033,13 @@
       "number": 0,
       "result": "SMALL",
       "color": "red,violet"
-    },
-    {
-      "period": "20261105100051575",
-      "number": 7,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 2,
+    "skipRemaining": 1,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4049,10 +4050,16 @@
   },
   "log": [
     {
-      "period": "20261105100052075",
+      "period": "20261105100052076",
       "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100052075",
+      "label": "SKIP",
+      "actual": "SMALL 4 (red)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100052074",
@@ -4077,23 +4084,17 @@
       "label": "RED (L1)",
       "actual": "BIG 8 (red)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261105100052070",
-      "label": "SKIP",
-      "actual": "SMALL 0 (red)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 125,
     "jackpots": 0,
-    "losses": 116,
+    "losses": 115,
     "l1Wins": 61,
     "l2Wins": 39,
-    "l3Wins": 11,
+    "l3Wins": 12,
     "winRate": 52,
-    "totalTested": 241
+    "totalTested": 240
   },
   "run": {
     "mode": "SKIP",
@@ -4102,10 +4103,10 @@
     "numbers": [],
     "level": 0,
     "isSkip": true,
-    "predictionForPeriod": "20261105100052075"
+    "predictionForPeriod": "20261105100052076"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793899040009
+  "savedAt": 1793899048547
 }
