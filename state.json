@@ -66,7 +66,7 @@
       "username": "SathishRS",
       "since": 1793881677875,
       "uid": "24274995",
-      "uidStatus": "PENDING_UID",
+      "uidStatus": "DEPOSIT_PENDING",
       "uidSubmittedAt": 1793882058677,
       "active": false,
       "msgs": [
@@ -81,7 +81,8 @@
         871,
         897,
         905,
-        909
+        909,
+        910
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -405,14 +406,15 @@
         884,
         896,
         900,
-        902
+        902,
+        911
       ],
-      "sessionWins": 4,
-      "sessionNumber": 2,
-      "dailyWins": 9,
+      "sessionWins": 0,
+      "sessionNumber": 3,
+      "dailyWins": 10,
       "dailyDate": "2026-11-05",
-      "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100051509",
+      "cooldownUntil": 1793882667719,
+      "lastPendingPeriod": null,
       "id": 1952722932,
       "name": "OFFICIAL_NXT_369",
       "username": "NXT_PRIME_369",
@@ -420,8 +422,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 167087840,
+  "subOffset": 167087843,
   "history": [
+    {
+      "period": "20261105100051509",
+      "number": 3,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261105100051508",
       "number": 6,
@@ -2047,7 +2055,7 @@
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -2058,10 +2066,16 @@
   },
   "log": [
     {
-      "period": "20261105100051509",
-      "label": "GREEN (L1)",
+      "period": "20261105100051510",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051509",
+      "label": "GREEN (L1)",
+      "actual": "SMALL 3 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100051508",
@@ -2086,35 +2100,29 @@
       "label": "SKIP",
       "actual": "BIG 6 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100051504",
-      "label": "SKIP",
-      "actual": "SMALL 0 (red)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 69,
+    "wins": 70,
     "jackpots": 0,
     "losses": 52,
-    "l1Wins": 44,
+    "l1Wins": 45,
     "l2Wins": 13,
     "l3Wins": 6,
     "winRate": 57,
-    "totalTested": 121
+    "totalTested": 122
   },
   "run": {
-    "mode": "COLOR",
+    "mode": "SKIP",
     "consecutiveLosses": 0,
-    "prediction": "GREEN",
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 1,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100051509"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100051510"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793882059207
+  "savedAt": 1793882068287
 }
