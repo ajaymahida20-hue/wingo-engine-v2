@@ -21,18 +21,16 @@ export function buildTargetBox(period, prediction, numbers, level, sessionWins) 
   }
 
   const lvlPart = (level && level > 0) ? ` [L${level}]` : "";
-  let icon = "";
-  if (p === "GREEN" || p === "BIG") icon = "🟢 ";
-  else if (p === "RED" || p === "SMALL") icon = "🔴 ";
+  let predDisplay = p;
+  if (p === "GREEN") predDisplay = "🟢 GREEN";
+  else if (p === "RED") predDisplay = "🔴 RED";
+  else if (p === "BIG" || p === "SMALL") predDisplay = p;
 
   const lines = [
     `        ${headerLine}`,
     "",
-    `               ${p4} : [ ${icon}${p} ]${lvlPart}`
+    `               ${p4} : [ ${predDisplay} ]${lvlPart}`
   ];
-  if (numbers && numbers.length) {
-    lines.push(`               NUMBER - [ ${numbers.join(" , ")} ]`);
-  }
   return lines.join("\n");
 }
 

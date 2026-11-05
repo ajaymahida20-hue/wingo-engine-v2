@@ -1150,12 +1150,18 @@
         levelBadgeEl.textContent = p.isShadow ? "Level: SHADOW" : "Level: SKIP";
         anchorBadgeEl.textContent = p.reason ? "WAITING" : "SKIP";
       } else {
-        if (p.predictedType === "GREEN" || p.predictedType === "BIG") {
+        if (p.predictedType === "GREEN") {
           predResultEl.className = "pred-big";
-          predResultEl.innerHTML = `🟢 ${p.predictedType}`;
+          predResultEl.innerHTML = `🟢 GREEN`;
+        } else if (p.predictedType === "RED") {
+          predResultEl.className = "pred-small";
+          predResultEl.innerHTML = `🔴 RED`;
+        } else if (p.predictedType === "BIG") {
+          predResultEl.className = "pred-big";
+          predResultEl.innerHTML = `BIG`;
         } else {
           predResultEl.className = "pred-small";
-          predResultEl.innerHTML = `🔴 ${p.predictedType}`;
+          predResultEl.innerHTML = `SMALL`;
         }
         levelBadgeEl.textContent = `Level: ${p.level}`;
         anchorBadgeEl.textContent = `Ref: ${p.refNumber} (${p.refColor || p.refOppositeType})`;

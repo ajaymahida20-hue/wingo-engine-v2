@@ -57,26 +57,49 @@ function applySaved(saved) {
   if (saved.cfg) state.cfg = { ...structuredClone(DEFAULT_CONFIG), ...state.cfg, ...saved.cfg };
   if (!state.cfg.botToken && process.env.BOT_TOKEN) state.cfg.botToken = process.env.BOT_TOKEN.trim();
   if (Array.isArray(saved.history) && saved.history.length) {
-    state.history = saved.history.slice(0, 500);
+    const existingPeriods = new Set(state.history.map(h => String(h.period || h.issueNumber)));
+    const merged = [...state.history];
+    for (const h of saved.history) {
+      const p = String(h.period || h.issueNumber);
+      if (!existingPeriods.has(p)) {
+        merged.push(h);
+        existingPeriods.add(p);
+      }
+    }
+    merged.sort((a, b) => {
+      const A = BigInt(a.period || a.issueNumber || 0);
+      const B = BigInt(b.period || b.issueNumber || 0);
+      return A > B ? -1 : A < B ? 1 : 0;
+    });
+    state.history = merged.slice(0, 500);
   }
   if (saved.strategy && typeof saved.strategy === "object") {
     state.strategy = { ...state.strategy, ...saved.strategy };
   }
   if (Array.isArray(saved.subs) && saved.subs.length) {
-    state.subs = saved.subs.map(s => ({
-      uid: null,
-      uidStatus: "NONE",
-      uidSubmittedAt: null,
-      active: false,
-      msgs: [],
-      sessionWins: 0,
-      sessionNumber: 1,
-      dailyWins: 0,
-      dailyDate: null,
-      cooldownUntil: null,
-      lastPendingPeriod: null,
-      ...s
-    }));
+    const existingMap = new Map(state.subs.map(s => [s.id, s]));
+    for (const s of saved.subs) {
+      if (!existingMap.has(s.id)) {
+        existingMap.set(s.id, {
+          uid: null,
+          uidStatus: "NONE",
+          uidSubmittedAt: null,
+          active: false,
+          msgs: [],
+          sessionWins: 0,
+          sessionNumber: 1,
+          dailyWins: 0,
+          dailyDate: null,
+          cooldownUntil: null,
+          lastPendingPeriod: null,
+          ...s
+        });
+      } else {
+        const cur = existingMap.get(s.id);
+        Object.assign(cur, s);
+      }
+    }
+    state.subs = Array.from(existingMap.values());
   }
   if (Number.isFinite(saved.subOffset)) state.subOffset = saved.subOffset;
   if (Array.isArray(saved.log) && saved.log.length) {
@@ -131,21 +154,19 @@ export async function syncToRemote(force = false) {
   if (!token || !repo) return false;
 
   const now = Date.now();
-  // Throttle automatic periodic syncs to once every 3 minutes unless forced
-  if (!force && now - lastRemoteSync < 180000) return false;
+  // Throttle automatic periodic syncs to once every 20 seconds unless forced
+  if (!force && now - lastRemoteSync < 20000) return false;
   if (syncingRemote) return false;
 
   syncingRemote = true;
   try {
-    if (!remoteSha) {
-      const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/state.json?ref=${branch}`, {
-        headers: { "Authorization": `Bearer ${token}`, "User-Agent": "Wingo-Engine" },
-        signal: AbortSignal.timeout(8000)
-      });
-      if (getRes.ok) {
-        const d = await getRes.json();
-        remoteSha = d.sha;
-      }
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/state.json?ref=${branch}`, {
+      headers: { "Authorization": `Bearer ${token}`, "User-Agent": "Wingo-Engine" },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (getRes.ok) {
+      const d = await getRes.json();
+      remoteSha = d.sha;
     }
 
     const payload = {
