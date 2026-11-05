@@ -290,12 +290,12 @@
         712,
         716
       ],
-      "sessionWins": 2,
+      "sessionWins": 3,
       "sessionNumber": 4,
-      "dailyWins": 17,
+      "dailyWins": 18,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100052071",
+      "lastPendingPeriod": null,
       "waitingForWin": false
     },
     {
@@ -355,7 +355,7 @@
       "uid": "24277397",
       "uidStatus": "VERIFIED",
       "uidSubmittedAt": 1793892267924,
-      "active": true,
+      "active": false,
       "msgs": [
         242,
         243,
@@ -457,14 +457,15 @@
         707,
         710,
         711,
-        717
+        717,
+        718
       ],
-      "sessionWins": 4,
+      "sessionWins": 5,
       "sessionNumber": 4,
-      "dailyWins": 19,
+      "dailyWins": 20,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100052071",
+      "lastPendingPeriod": null,
       "waitingForWin": false
     },
     {
@@ -1022,6 +1023,12 @@
   ],
   "subOffset": 700546737,
   "history": [
+    {
+      "period": "20261105100052071",
+      "number": 8,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261105100052070",
       "number": 0,
@@ -4015,19 +4022,13 @@
       "number": 5,
       "result": "BIG",
       "color": "green,violet"
-    },
-    {
-      "period": "20261105100051571",
-      "number": 3,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4038,10 +4039,16 @@
   },
   "log": [
     {
-      "period": "20261105100052071",
-      "label": "RED (L1)",
+      "period": "20261105100052072",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100052071",
+      "label": "RED (L1)",
+      "actual": "BIG 8 (red)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100052070",
@@ -4066,35 +4073,29 @@
       "label": "SKIP",
       "actual": "BIG 8 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100052066",
-      "label": "SKIP",
-      "actual": "BIG 5 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 125,
     "jackpots": 0,
-    "losses": 114,
+    "losses": 116,
     "l1Wins": 61,
-    "l2Wins": 40,
+    "l2Wins": 39,
     "l3Wins": 11,
     "winRate": 52,
-    "totalTested": 239
+    "totalTested": 241
   },
   "run": {
-    "mode": "COLOR",
+    "mode": "SKIP",
     "consecutiveLosses": 0,
-    "prediction": "RED",
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 1,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100052071"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100052072"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793898922087
+  "savedAt": 1793898928882
 }
