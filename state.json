@@ -18,6 +18,26 @@
   },
   "subs": [
     {
+      "id": 6166246487,
+      "name": "𝐰𝐡𝐨.𝐢𝐬.𝐬𝐭𝐚𝐫𝐯𝐲?",
+      "username": "Starvyhere",
+      "since": 1793885876438,
+      "uid": null,
+      "uidStatus": "NONE",
+      "uidSubmittedAt": null,
+      "active": false,
+      "msgs": [
+        118
+      ],
+      "sessionWins": 0,
+      "sessionNumber": 1,
+      "dailyWins": 0,
+      "dailyDate": "2026-11-05",
+      "cooldownUntil": null,
+      "lastPendingPeriod": null,
+      "waitingForWin": false
+    },
+    {
       "id": 8424480641,
       "name": "Mn",
       "username": "Kartik024",
@@ -142,12 +162,12 @@
         112,
         114
       ],
-      "sessionWins": 2,
+      "sessionWins": 3,
       "sessionNumber": 1,
-      "dailyWins": 2,
+      "dailyWins": 3,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261105100051636",
+      "lastPendingPeriod": null,
       "waitingForWin": false
     },
     {
@@ -252,8 +272,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700546595,
+  "subOffset": 700546597,
   "history": [
+    {
+      "period": "20261105100051636",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261105100051635",
       "number": 2,
@@ -2638,10 +2664,10 @@
     }
   ],
   "strategy": {
-    "level": 2,
+    "level": 1,
     "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -2652,10 +2678,16 @@
   },
   "log": [
     {
-      "period": "20261105100051636",
-      "label": "SMALL (L2)",
+      "period": "20261105100051637",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051636",
+      "label": "SMALL (L2)",
+      "actual": "SMALL 4 (red)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261105100051635",
@@ -2680,35 +2712,29 @@
       "label": "RED (L1)",
       "actual": "SMALL 2 (red)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261105100051631",
-      "label": "SKIP",
-      "actual": "SMALL 4 (red)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 101,
+    "wins": 102,
     "jackpots": 0,
     "losses": 83,
     "l1Wins": 63,
-    "l2Wins": 19,
+    "l2Wins": 20,
     "l3Wins": 7,
     "winRate": 55,
-    "totalTested": 184
+    "totalTested": 185
   },
   "run": {
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "prediction": "SMALL",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 2,
-    "isSkip": false,
-    "predictionForPeriod": "20261105100051636"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261105100051637"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793885870440
+  "savedAt": 1793885878943
 }
