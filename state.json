@@ -23,7 +23,7 @@
       "username": "pritam380",
       "since": 1793899876285,
       "uid": "24278986",
-      "uidStatus": "DEPOSIT_PENDING",
+      "uidStatus": "PENDING",
       "uidSubmittedAt": 1793900327739,
       "active": false,
       "msgs": [
@@ -33,7 +33,8 @@
         778,
         781,
         785,
-        786
+        786,
+        787
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -1104,6 +1105,12 @@
   ],
   "subOffset": 700546746,
   "history": [
+    {
+      "period": "20261105100052137",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261105100052136",
       "number": 6,
@@ -4097,18 +4104,12 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261105100051637",
-      "number": 9,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
-    "level": 2,
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
+    "level": 3,
+    "mode": "LEVEL 3",
+    "consecutiveLosses": 2,
     "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
@@ -4116,14 +4117,20 @@
     "refPeriod": null,
     "refNumber": null,
     "currentPrediction": "BIG",
-    "currentLevel": 2
+    "currentLevel": 3
   },
   "log": [
     {
-      "period": "20261105100052137",
-      "label": "BIG (L2)",
+      "period": "20261105100052138",
+      "label": "BIG (L3)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100052137",
+      "label": "BIG (L2)",
+      "actual": "SMALL 4 (red)",
+      "resultText": "❌ LOSE"
     },
     {
       "period": "20261105100052136",
@@ -4148,35 +4155,29 @@
       "label": "BIG (L2)",
       "actual": "BIG 9 (green)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261105100052132",
-      "label": "GREEN (L1)",
-      "actual": "SMALL 0 (red)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
-    "wins": 124,
+    "wins": 122,
     "jackpots": 0,
-    "losses": 117,
-    "l1Wins": 58,
-    "l2Wins": 42,
+    "losses": 123,
+    "l1Wins": 56,
+    "l2Wins": 40,
     "l3Wins": 13,
-    "winRate": 51,
-    "totalTested": 241
+    "winRate": 50,
+    "totalTested": 245
   },
   "run": {
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
+    "mode": "LEVEL 3",
+    "consecutiveLosses": 2,
     "prediction": "BIG",
     "numbers": [],
-    "level": 2,
+    "level": 3,
     "isSkip": false,
-    "predictionForPeriod": "20261105100052137"
+    "predictionForPeriod": "20261105100052138"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793900900569
+  "savedAt": 1793900909069
 }
