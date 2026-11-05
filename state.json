@@ -23,7 +23,7 @@
       "username": "Kartik024",
       "since": 1793885629631,
       "uid": "24275146",
-      "uidStatus": "PENDING",
+      "uidStatus": "DEPOSIT_PENDING",
       "uidSubmittedAt": 1793885672311,
       "active": false,
       "msgs": [
@@ -32,7 +32,8 @@
         98,
         101,
         105,
-        107
+        107,
+        108
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -140,7 +141,7 @@
       "dailyWins": 1,
       "dailyDate": "2026-11-05",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261105100051632",
       "waitingForWin": false
     },
     {
@@ -243,8 +244,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700546590,
+  "subOffset": 700546592,
   "history": [
+    {
+      "period": "20261105100051631",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261105100051630",
       "number": 3,
@@ -2602,7 +2609,7 @@
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 1,
+    "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -2613,10 +2620,16 @@
   },
   "log": [
     {
-      "period": "20261105100051631",
-      "label": "SKIP",
+      "period": "20261105100051632",
+      "label": "RED (L1)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261105100051631",
+      "label": "SKIP",
+      "actual": "SMALL 4 (red)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261105100051630",
@@ -2641,12 +2654,6 @@
       "label": "SKIP",
       "actual": "SMALL 0 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261105100051626",
-      "label": "BIG (L3)",
-      "actual": "BIG 6 (red)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -2660,16 +2667,16 @@
     "totalTested": 182
   },
   "run": {
-    "mode": "SKIP",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "prediction": "SKIP",
+    "prediction": "RED",
     "numbers": [],
-    "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261105100051631"
+    "level": 1,
+    "isSkip": false,
+    "predictionForPeriod": "20261105100051632"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793885720373
+  "savedAt": 1793885728935
 }
