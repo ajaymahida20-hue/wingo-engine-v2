@@ -110,14 +110,15 @@
         1260,
         1261,
         1263,
-        1264
+        1264,
+        1265
       ],
-      "sessionWins": 4,
-      "sessionNumber": 2,
-      "dailyWins": 9,
+      "sessionWins": 0,
+      "sessionNumber": 3,
+      "dailyWins": 10,
       "dailyDate": "2026-11-06",
-      "cooldownUntil": null,
-      "lastPendingPeriod": "20261106100050682",
+      "cooldownUntil": 1793944258641,
+      "lastPendingPeriod": null,
       "waitingForWin": false
     },
     {
@@ -1468,6 +1469,12 @@
   ],
   "subOffset": 700546892,
   "history": [
+    {
+      "period": "20261106100050682",
+      "number": 9,
+      "result": "BIG",
+      "color": "green"
+    },
     {
       "period": "20261106100050681",
       "number": 5,
@@ -4461,19 +4468,13 @@
       "number": 9,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261106100050182",
-      "number": 4,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
-    "level": 2,
+    "level": 1,
     "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4484,10 +4485,16 @@
   },
   "log": [
     {
-      "period": "20261106100050682",
-      "label": "BIG (L2)",
+      "period": "20261106100050683",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261106100050682",
+      "label": "BIG (L2)",
+      "actual": "BIG 9 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261106100050681",
@@ -4512,35 +4519,29 @@
       "label": "GREEN (L1)",
       "actual": "SMALL 3 (green)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261106100050677",
-      "label": "SKIP",
-      "actual": "BIG 5 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 119,
+    "wins": 120,
     "jackpots": 0,
-    "losses": 132,
-    "l1Wins": 56,
-    "l2Wins": 28,
+    "losses": 131,
+    "l1Wins": 55,
+    "l2Wins": 31,
     "l3Wins": 18,
-    "winRate": 47,
+    "winRate": 48,
     "totalTested": 251
   },
   "run": {
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
-    "prediction": "BIG",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 2,
-    "isSkip": false,
-    "predictionForPeriod": "20261106100050682"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261106100050683"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793943650374
+  "savedAt": 1793943659176
 }
