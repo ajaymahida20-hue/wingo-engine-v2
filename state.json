@@ -18,6 +18,27 @@
   },
   "subs": [
     {
+      "id": 5991682252,
+      "name": "Chikku 💓",
+      "username": "",
+      "since": 1793954361399,
+      "uid": null,
+      "uidStatus": "NONE",
+      "uidSubmittedAt": null,
+      "active": false,
+      "msgs": [
+        1459,
+        1460
+      ],
+      "sessionWins": 0,
+      "sessionNumber": 1,
+      "dailyWins": 0,
+      "dailyDate": "2026-11-06",
+      "cooldownUntil": null,
+      "lastPendingPeriod": null,
+      "waitingForWin": false
+    },
+    {
       "id": 8527763076,
       "name": "Gg",
       "username": "",
@@ -1633,8 +1654,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700546914,
+  "subOffset": 700546915,
   "history": [
+    {
+      "period": "20261106100051039",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261106100051038",
       "number": 8,
@@ -4628,19 +4655,13 @@
       "number": 5,
       "result": "BIG",
       "color": "green,violet"
-    },
-    {
-      "period": "20261106100050539",
-      "number": 8,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
-    "level": 3,
+    "level": 1,
     "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4651,10 +4672,16 @@
   },
   "log": [
     {
-      "period": "20261106100051039",
-      "label": "SMALL (L3)",
+      "period": "20261106100051040",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261106100051039",
+      "label": "SMALL (L3)",
+      "actual": "SMALL 0 (red)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261106100051038",
@@ -4679,35 +4706,29 @@
       "label": "SKIP",
       "actual": "BIG 6 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261106100051034",
-      "label": "RED (L1)",
-      "actual": "BIG 6 (red)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
-    "wins": 124,
+    "wins": 126,
     "jackpots": 0,
-    "losses": 117,
-    "l1Wins": 71,
+    "losses": 113,
+    "l1Wins": 73,
     "l2Wins": 25,
-    "l3Wins": 8,
-    "winRate": 51,
-    "totalTested": 241
+    "l3Wins": 9,
+    "winRate": 53,
+    "totalTested": 239
   },
   "run": {
-    "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "prediction": "SMALL",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 3,
-    "isSkip": false,
-    "predictionForPeriod": "20261106100051039"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261106100051040"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793954359622
+  "savedAt": 1793954368148
 }
