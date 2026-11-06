@@ -1352,7 +1352,7 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-06",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261106100050592",
+      "lastPendingPeriod": "20261106100050593",
       "waitingForWin": false
     },
     {
@@ -1450,6 +1450,12 @@
   ],
   "subOffset": 700546875,
   "history": [
+    {
+      "period": "20261106100050592",
+      "number": 2,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261106100050591",
       "number": 4,
@@ -4443,18 +4449,12 @@
       "number": 9,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261106100050092",
-      "number": 5,
-      "result": "BIG",
-      "color": "green,violet"
     }
   ],
   "strategy": {
-    "level": 2,
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
+    "level": 3,
+    "mode": "LEVEL 3",
+    "consecutiveLosses": 2,
     "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
@@ -4462,14 +4462,20 @@
     "refPeriod": null,
     "refNumber": null,
     "currentPrediction": "BIG",
-    "currentLevel": 2
+    "currentLevel": 3
   },
   "log": [
     {
-      "period": "20261106100050592",
-      "label": "BIG (L2)",
+      "period": "20261106100050593",
+      "label": "BIG (L3)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261106100050592",
+      "label": "BIG (L2)",
+      "actual": "SMALL 2 (red)",
+      "resultText": "❌ LOSE"
     },
     {
       "period": "20261106100050591",
@@ -4494,12 +4500,6 @@
       "label": "GREEN (L1)",
       "actual": "BIG 5 (green)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261106100050587",
-      "label": "SKIP",
-      "actual": "BIG 9 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
@@ -4507,22 +4507,22 @@
     "jackpots": 0,
     "losses": 141,
     "l1Wins": 57,
-    "l2Wins": 22,
-    "l3Wins": 18,
+    "l2Wins": 23,
+    "l3Wins": 17,
     "winRate": 45,
     "totalTested": 257
   },
   "run": {
-    "mode": "LEVEL 2",
-    "consecutiveLosses": 1,
+    "mode": "LEVEL 3",
+    "consecutiveLosses": 2,
     "prediction": "BIG",
     "numbers": [],
-    "level": 2,
+    "level": 3,
     "isSkip": false,
-    "predictionForPeriod": "20261106100050592"
+    "predictionForPeriod": "20261106100050593"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793940949325
+  "savedAt": 1793940957838
 }
