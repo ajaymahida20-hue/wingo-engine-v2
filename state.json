@@ -1757,6 +1757,12 @@
   "subOffset": 700546949,
   "history": [
     {
+      "period": "20261106100051623",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
+    {
       "period": "20261106100051622",
       "number": 2,
       "result": "SMALL",
@@ -4749,19 +4755,13 @@
       "number": 1,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261106100051123",
-      "number": 3,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4772,10 +4772,16 @@
   },
   "log": [
     {
-      "period": "20261106100051623",
-      "label": "RED (L1)",
+      "period": "20261106100051624",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261106100051623",
+      "label": "RED (L1)",
+      "actual": "SMALL 4 (red)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261106100051622",
@@ -4800,35 +4806,29 @@
       "label": "GREEN (L1)",
       "actual": "BIG 6 (red)",
       "resultText": "❌ LOSE"
-    },
-    {
-      "period": "20261106100051618",
-      "label": "SKIP",
-      "actual": "BIG 7 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 118,
+    "wins": 119,
     "jackpots": 0,
-    "losses": 135,
-    "l1Wins": 56,
-    "l2Wins": 26,
+    "losses": 134,
+    "l1Wins": 58,
+    "l2Wins": 25,
     "l3Wins": 16,
     "winRate": 47,
     "totalTested": 253
   },
   "run": {
-    "mode": "COLOR",
+    "mode": "SKIP",
     "consecutiveLosses": 0,
-    "prediction": "RED",
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 1,
-    "isSkip": false,
-    "predictionForPeriod": "20261106100051623"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261106100051624"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793971880896
+  "savedAt": 1793971889851
 }
