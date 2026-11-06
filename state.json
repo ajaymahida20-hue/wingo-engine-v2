@@ -705,7 +705,7 @@
       "dailyWins": 7,
       "dailyDate": "2026-11-06",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261106100051803",
+      "lastPendingPeriod": "20261106100051804",
       "waitingForWin": false
     },
     {
@@ -1253,7 +1253,7 @@
       "dailyWins": 7,
       "dailyDate": "2026-11-06",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261106100051803",
+      "lastPendingPeriod": "20261106100051804",
       "waitingForWin": false
     },
     {
@@ -1835,6 +1835,12 @@
   ],
   "subOffset": 700546979,
   "history": [
+    {
+      "period": "20261106100051803",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261106100051802",
       "number": 1,
@@ -4828,33 +4834,33 @@
       "number": 7,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261106100051303",
-      "number": 9,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
-    "level": 1,
-    "mode": "COLOR",
-    "consecutiveLosses": 0,
+    "level": 2,
+    "mode": "LEVEL 2",
+    "consecutiveLosses": 1,
     "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
     "refPeriod": null,
     "refNumber": null,
-    "currentPrediction": "GREEN",
-    "currentLevel": 1
+    "currentPrediction": "BIG",
+    "currentLevel": 2
   },
   "log": [
     {
-      "period": "20261106100051803",
-      "label": "GREEN (L1)",
+      "period": "20261106100051804",
+      "label": "BIG (L2)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261106100051803",
+      "label": "GREEN (L1)",
+      "actual": "SMALL 0 (red)",
+      "resultText": "❌ LOSE"
     },
     {
       "period": "20261106100051802",
@@ -4879,35 +4885,29 @@
       "label": "SMALL (L2)",
       "actual": "BIG 6 (red)",
       "resultText": "❌ LOSE"
-    },
-    {
-      "period": "20261106100051798",
-      "label": "GREEN (L1)",
-      "actual": "SMALL 4 (red)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
-    "wins": 121,
+    "wins": 120,
     "jackpots": 0,
-    "losses": 126,
-    "l1Wins": 63,
+    "losses": 129,
+    "l1Wins": 61,
     "l2Wins": 23,
-    "l3Wins": 18,
-    "winRate": 49,
-    "totalTested": 247
+    "l3Wins": 19,
+    "winRate": 48,
+    "totalTested": 249
   },
   "run": {
-    "mode": "COLOR",
-    "consecutiveLosses": 0,
-    "prediction": "GREEN",
+    "mode": "LEVEL 2",
+    "consecutiveLosses": 1,
+    "prediction": "BIG",
     "numbers": [],
-    "level": 1,
+    "level": 2,
     "isSkip": false,
-    "predictionForPeriod": "20261106100051803"
+    "predictionForPeriod": "20261106100051804"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1793977280506
+  "savedAt": 1793977288967
 }
