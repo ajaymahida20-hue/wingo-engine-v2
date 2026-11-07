@@ -1854,6 +1854,12 @@
   "subOffset": 700547022,
   "history": [
     {
+      "period": "20261107100050480",
+      "number": 3,
+      "result": "SMALL",
+      "color": "green"
+    },
+    {
       "period": "20261107100050479",
       "number": 8,
       "result": "BIG",
@@ -4846,19 +4852,13 @@
       "number": 2,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261106100052860",
-      "number": 3,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4869,10 +4869,16 @@
   },
   "log": [
     {
-      "period": "20261107100050480",
-      "label": "GREEN (L1)",
+      "period": "20261107100050481",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261107100050480",
+      "label": "GREEN (L1)",
+      "actual": "SMALL 3 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261107100050479",
@@ -4897,35 +4903,29 @@
       "label": "SKIP",
       "actual": "SMALL 3 (green)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261107100050475",
-      "label": "SKIP",
-      "actual": "BIG 5 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 117,
+    "wins": 118,
     "jackpots": 0,
-    "losses": 138,
+    "losses": 137,
     "l1Wins": 54,
-    "l2Wins": 31,
+    "l2Wins": 33,
     "l3Wins": 14,
     "winRate": 46,
     "totalTested": 255
   },
   "run": {
-    "mode": "COLOR",
+    "mode": "SKIP",
     "consecutiveLosses": 0,
-    "prediction": "GREEN",
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 1,
-    "isSkip": false,
-    "predictionForPeriod": "20261107100050480"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261107100050481"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794023989797
+  "savedAt": 1794024000305
 }
