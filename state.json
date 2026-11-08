@@ -1910,6 +1910,12 @@
   "subOffset": 700547051,
   "history": [
     {
+      "period": "20261108100052549",
+      "number": 7,
+      "result": "BIG",
+      "color": "green"
+    },
+    {
       "period": "20261108100052548",
       "number": 8,
       "result": "BIG",
@@ -4902,19 +4908,13 @@
       "number": 5,
       "result": "BIG",
       "color": "green,violet"
-    },
-    {
-      "period": "20261108100052049",
-      "number": 9,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4925,10 +4925,16 @@
   },
   "log": [
     {
-      "period": "20261108100052549",
-      "label": "GREEN (L1)",
+      "period": "20261108100052550",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261108100052549",
+      "label": "GREEN (L1)",
+      "actual": "BIG 7 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261108100052548",
@@ -4953,35 +4959,29 @@
       "label": "SMALL (L3)",
       "actual": "BIG 9 (green)",
       "resultText": "❌ LOSE"
-    },
-    {
-      "period": "20261108100052544",
-      "label": "BIG (L2)",
-      "actual": "SMALL 1 (green)",
-      "resultText": "❌ LOSE"
     }
   ],
   "stats": {
-    "wins": 128,
+    "wins": 127,
     "jackpots": 0,
-    "losses": 105,
-    "l1Wins": 74,
-    "l2Wins": 24,
-    "l3Wins": 18,
-    "winRate": 55,
-    "totalTested": 233
+    "losses": 110,
+    "l1Wins": 71,
+    "l2Wins": 25,
+    "l3Wins": 19,
+    "winRate": 54,
+    "totalTested": 237
   },
   "run": {
-    "mode": "COLOR",
+    "mode": "SKIP",
     "consecutiveLosses": 0,
-    "prediction": "GREEN",
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 1,
-    "isSkip": false,
-    "predictionForPeriod": "20261108100052549"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261108100052550"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794172460041
+  "savedAt": 1794172468518
 }
