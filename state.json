@@ -1910,6 +1910,12 @@
   "subOffset": 700547051,
   "history": [
     {
+      "period": "20261108100051531",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
+    {
       "period": "20261108100051530",
       "number": 5,
       "result": "BIG",
@@ -4902,19 +4908,13 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261108100051031",
-      "number": 1,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
-    "level": 3,
+    "level": 1,
     "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4925,10 +4925,16 @@
   },
   "log": [
     {
-      "period": "20261108100051531",
-      "label": "SMALL (L3)",
+      "period": "20261108100051532",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261108100051531",
+      "label": "SMALL (L3)",
+      "actual": "SMALL 1 (green)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261108100051530",
@@ -4953,35 +4959,29 @@
       "label": "SKIP",
       "actual": "BIG 8 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261108100051526",
-      "label": "GREEN (L1)",
-      "actual": "BIG 7 (green)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
     "wins": 121,
     "jackpots": 0,
-    "losses": 126,
-    "l1Wins": 65,
+    "losses": 128,
+    "l1Wins": 63,
     "l2Wins": 29,
-    "l3Wins": 11,
+    "l3Wins": 13,
     "winRate": 49,
-    "totalTested": 247
+    "totalTested": 249
   },
   "run": {
-    "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "prediction": "SMALL",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 3,
-    "isSkip": false,
-    "predictionForPeriod": "20261108100051531"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261108100051532"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794141919655
+  "savedAt": 1794141928138
 }
