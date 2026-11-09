@@ -22,16 +22,17 @@
       "name": "Tuhin",
       "username": "",
       "since": 1794230418262,
-      "uid": null,
-      "uidStatus": "NONE",
-      "uidSubmittedAt": null,
+      "uid": "24331667",
+      "uidStatus": "PENDING_UID",
+      "uidSubmittedAt": 1794230486348,
       "active": false,
       "msgs": [
         2117,
         2118,
         2120,
         2121,
-        2122
+        2122,
+        2124
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -2381,8 +2382,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547117,
+  "subOffset": 700547118,
   "history": [
+    {
+      "period": "20261109100051603",
+      "number": 8,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261109100051602",
       "number": 1,
@@ -5376,19 +5383,13 @@
       "number": 7,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261109100051103",
-      "number": 4,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
-    "level": 3,
+    "level": 1,
     "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "skipRemaining": 0,
+    "consecutiveLosses": 0,
+    "skipRemaining": 2,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -5399,10 +5400,16 @@
   },
   "log": [
     {
-      "period": "20261109100051603",
-      "label": "BIG (L3)",
+      "period": "20261109100051604",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261109100051603",
+      "label": "BIG (L3)",
+      "actual": "BIG 8 (red)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261109100051602",
@@ -5427,35 +5434,29 @@
       "label": "SKIP",
       "actual": "BIG 7 (green)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261109100051598",
-      "label": "RED (L1)",
-      "actual": "SMALL 0 (red)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
-    "wins": 112,
+    "wins": 113,
     "jackpots": 0,
-    "losses": 153,
+    "losses": 152,
     "l1Wins": 44,
     "l2Wins": 30,
-    "l3Wins": 18,
-    "winRate": 42,
+    "l3Wins": 20,
+    "winRate": 43,
     "totalTested": 265
   },
   "run": {
-    "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
-    "prediction": "BIG",
+    "mode": "SKIP",
+    "consecutiveLosses": 0,
+    "prediction": "SKIP",
     "numbers": [],
-    "level": 3,
-    "isSkip": false,
-    "predictionForPeriod": "20261109100051603"
+    "level": 0,
+    "isSkip": true,
+    "predictionForPeriod": "20261109100051604"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794230479828
+  "savedAt": 1794230488302
 }
