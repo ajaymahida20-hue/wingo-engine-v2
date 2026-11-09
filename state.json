@@ -1913,6 +1913,12 @@
   "subOffset": 700547055,
   "history": [
     {
+      "period": "20261109100051102",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
+    {
       "period": "20261109100051101",
       "number": 6,
       "result": "BIG",
@@ -4905,19 +4911,13 @@
       "number": 6,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261109100050602",
-      "number": 2,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
     "level": 1,
     "mode": "COLOR",
     "consecutiveLosses": 0,
-    "skipRemaining": 1,
+    "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
@@ -4928,10 +4928,16 @@
   },
   "log": [
     {
-      "period": "20261109100051102",
-      "label": "SKIP",
+      "period": "20261109100051103",
+      "label": "GREEN (L1)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261109100051102",
+      "label": "SKIP",
+      "actual": "SMALL 4 (red)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261109100051101",
@@ -4956,35 +4962,29 @@
       "label": "SKIP",
       "actual": "BIG 5 (green)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261109100051097",
-      "label": "GREEN (L1)",
-      "actual": "SMALL 3 (green)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
     "wins": 130,
     "jackpots": 0,
-    "losses": 100,
+    "losses": 99,
     "l1Wins": 73,
-    "l2Wins": 30,
-    "l3Wins": 17,
+    "l2Wins": 31,
+    "l3Wins": 16,
     "winRate": 57,
-    "totalTested": 230
+    "totalTested": 229
   },
   "run": {
-    "mode": "SKIP",
+    "mode": "COLOR",
     "consecutiveLosses": 0,
-    "prediction": "SKIP",
+    "prediction": "GREEN",
     "numbers": [],
-    "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261109100051102"
+    "level": 1,
+    "isSkip": false,
+    "predictionForPeriod": "20261109100051103"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794215449606
+  "savedAt": 1794215458118
 }
