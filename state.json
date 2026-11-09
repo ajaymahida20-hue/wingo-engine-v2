@@ -108,6 +108,12 @@
   "subOffset": 700547132,
   "history": [
     {
+      "period": "20261109100051987",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
+    {
       "period": "20261109100051986",
       "number": 5,
       "result": "BIG",
@@ -3100,33 +3106,33 @@
       "number": 2,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261109100051487",
-      "number": 2,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
-    "level": 1,
-    "mode": "COLOR",
-    "consecutiveLosses": 0,
+    "level": 2,
+    "mode": "LEVEL 2",
+    "consecutiveLosses": 1,
     "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
     "targetNumber": null,
     "refPeriod": null,
     "refNumber": null,
-    "currentPrediction": "GREEN",
-    "currentLevel": 1
+    "currentPrediction": "SMALL",
+    "currentLevel": 2
   },
   "log": [
     {
-      "period": "20261109100051987",
-      "label": "GREEN (L1)",
+      "period": "20261109100051988",
+      "label": "SMALL (L2)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261109100051987",
+      "label": "GREEN (L1)",
+      "actual": "SMALL 4 (red)",
+      "resultText": "❌ LOSE"
     },
     {
       "period": "20261109100051986",
@@ -3151,12 +3157,6 @@
       "label": "SKIP",
       "actual": "BIG 8 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261109100051982",
-      "label": "SKIP",
-      "actual": "SMALL 1 (green)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
@@ -3164,22 +3164,22 @@
     "jackpots": 0,
     "losses": 120,
     "l1Wins": 59,
-    "l2Wins": 32,
-    "l3Wins": 17,
+    "l2Wins": 33,
+    "l3Wins": 16,
     "winRate": 51,
     "totalTested": 243
   },
   "run": {
-    "mode": "COLOR",
-    "consecutiveLosses": 0,
-    "prediction": "GREEN",
+    "mode": "LEVEL 2",
+    "consecutiveLosses": 1,
+    "prediction": "SMALL",
     "numbers": [],
-    "level": 1,
+    "level": 2,
     "isSkip": false,
-    "predictionForPeriod": "20261109100051987"
+    "predictionForPeriod": "20261109100051988"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794242001328
+  "savedAt": 1794242023177
 }
