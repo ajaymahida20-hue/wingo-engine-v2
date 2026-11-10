@@ -75,11 +75,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052252",
+      "lastPendingPeriod": "20261110100052253",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 3,
       "pastLog": [
+        {
+          "period": "20261110100052252",
+          "side": "SMALL",
+          "status": "LOSS"
+        },
         {
           "period": "20261110100052251",
           "side": "SMALL",
@@ -99,11 +104,6 @@
           "period": "20261110100052248",
           "side": "BIG",
           "status": "WIN"
-        },
-        {
-          "period": "20261110100052247",
-          "side": "BIG",
-          "status": "LOSS"
         }
       ],
       "waitingForWin": false
@@ -135,6 +135,12 @@
   ],
   "subOffset": 700547239,
   "history": [
+    {
+      "period": "20261110100052252",
+      "number": 9,
+      "result": "BIG",
+      "color": "green"
+    },
     {
       "period": "20261110100052251",
       "number": 9,
@@ -3128,12 +3134,6 @@
       "number": 0,
       "result": "SMALL",
       "color": "red,violet"
-    },
-    {
-      "period": "20261110100051752",
-      "number": 9,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -3151,10 +3151,16 @@
   },
   "log": [
     {
-      "period": "20261110100052252",
-      "label": "SMALL",
+      "period": "20261110100052253",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052252",
+      "label": "SMALL",
+      "actual": "BIG (9)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261110100052251",
@@ -3179,12 +3185,6 @@
       "label": "BIG",
       "actual": "BIG (9)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261110100052247",
-      "label": "BIG",
-      "actual": "SMALL (0)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -3199,14 +3199,14 @@
   },
   "run": {
     "mode": "7-PERIOD LOOKBACK",
-    "prediction": "SMALL",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
     "isSkip": false,
-    "predictionForPeriod": "20261110100052252"
+    "predictionForPeriod": "20261110100052253"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794336350291
+  "savedAt": 1794336358750
 }
