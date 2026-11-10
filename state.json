@@ -50,11 +50,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052341",
+      "lastPendingPeriod": null,
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 4,
       "pastLog": [
+        {
+          "period": "20261110100052341",
+          "side": "BIG",
+          "status": "LOSS"
+        },
         {
           "period": "20261110100052339",
           "side": "BIG",
@@ -72,11 +77,6 @@
         },
         {
           "period": "20261110100052333",
-          "side": "SMALL",
-          "status": "WIN"
-        },
-        {
-          "period": "20261110100052331",
           "side": "SMALL",
           "status": "WIN"
         }
@@ -161,6 +161,12 @@
   ],
   "subOffset": 700547260,
   "history": [
+    {
+      "period": "20261110100052341",
+      "number": 2,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261110100052340",
       "number": 5,
@@ -3154,12 +3160,6 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261110100051841",
-      "number": 2,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3177,10 +3177,16 @@
   },
   "log": [
     {
-      "period": "20261110100052341",
-      "label": "BIG",
+      "period": "20261110100052342",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052341",
+      "label": "BIG",
+      "actual": "SMALL (2)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261110100052340",
@@ -3205,34 +3211,28 @@
       "label": "SMALL",
       "actual": "BIG (8)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261110100052336",
-      "label": "SKIP",
-      "actual": "BIG (5)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 248,
     "jackpots": 0,
-    "losses": 245,
+    "losses": 246,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 50,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK",
-    "prediction": "BIG",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261110100052341"
+    "isSkip": true,
+    "predictionForPeriod": "20261110100052342"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794339000392
+  "savedAt": 1794339038990
 }
