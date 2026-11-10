@@ -12,10 +12,8 @@ import { info, warn, error, log } from "./logger.js";
 const LOG_MAX = 6; // 1 pending prediction + 5 completed past results
 let busy = false;
 
-const labelFor = (prediction, numbers, level) => {
-  if (prediction === "SKIP") return "SKIP";
-  const lvl = (level && level > 0) ? ` (L${level})` : "";
-  return `${prediction}${lvl}`;
+const labelFor = (prediction) => {
+  return prediction;
 };
 
 const trimLog = () => { if (state.log.length > LOG_MAX) state.log.length = LOG_MAX; };
@@ -55,7 +53,7 @@ async function tick() {
     // 2. publish the next signal, once per round
     const calc = computePrediction();
     if (!calc) {
-      if (state.statLines.polls % 15 === 1) warn(`waiting for history — only ${state.history.length} round(s) saved so far (need at least 10)`);
+      if (state.statLines.polls % 15 === 1) warn(`waiting for history — only ${state.history.length} round(s) saved so far (need at least 7)`);
     } else if (state.run.predictionForPeriod === null) {
       const period = nextPeriod();
       state.run.prediction = calc.prediction;
@@ -65,11 +63,11 @@ async function tick() {
       state.run.mode = calc.detail.mode;
       state.run.consecutiveLosses = calc.detail.consecutiveLosses;
       state.run.predictionForPeriod = period;
-      const lbl = labelFor(calc.prediction, calc.numbers, calc.level);
+      const lbl = labelFor(calc.prediction);
       state.log.unshift({ period, label: lbl, actual: "?", resultText: "PENDING" });
       trimLog();
       persist(true);
-      info(`published ..${period.slice(-4)} → ${lbl} (${calc.detail.mode}, Session Wins: ${calc.sessionWins}/10)`);
+      info(`published ..${period.slice(-4)} → ${lbl} (${calc.detail.mode})`);
       await broadcast(period, calc.prediction, calc.numbers, calc.level);
     } else {
       persist();
