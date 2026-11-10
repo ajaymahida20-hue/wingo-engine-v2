@@ -234,7 +234,7 @@ function welcomeCaption(from) {
   return (
     `HELLO USER 👋\n\n` +
     `<b>WELCOME TO NXT WORLD</b>\n\n` +
-    `Hello <b>${esc(who)}</b>! Welcome to NXT World!`
+    `Hello <b>${esc(who)}</b>!`
   );
 }
 
