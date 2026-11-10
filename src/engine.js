@@ -1,14 +1,22 @@
-// WinGo 7-Period Lookback Prediction Engine
+// WinGo 7-Period Lookback Prediction Engine (Opposite Strategy)
 //
 // Calculation Rule:
 // For the current prediction period P (e.g. 213), look 7 periods behind: P - 7 (e.g. 206).
-// If round (P - 7) was BIG (number 5-9) -> predict BIG.
-// If round (P - 7) was SMALL (number 0-4) -> predict SMALL.
-// No numbers, no colors, no multi-level jumps/skips, no shadow mode.
+// If round (P - 7) was BIG (number 5-9) -> predict SMALL (Opposite).
+// If round (P - 7) was SMALL (number 0-4) -> predict BIG (Opposite).
+// Alternate round SKIP after every prediction.
 // Pure BIG / SMALL prediction.
 
 import { state, persist } from "./store.js";
 import { nextPeriod } from "./history.js";
+
+// Oppositer: inverts BIG to SMALL, and SMALL to BIG
+export const invertPrediction = (p) => {
+  const s = String(p || "").toUpperCase();
+  if (s === "BIG") return "SMALL";
+  if (s === "SMALL") return "BIG";
+  return s;
+};
 
 // Winner color helper (kept for compatibility)
 export function ballColor(round) {
@@ -59,7 +67,8 @@ export function simulateStrategy(historyList = state.history) {
     const actualType = currentRound.result || (actualNum >= 5 ? "BIG" : "SMALL");
 
     const refNum = parseInt(refRound.number ?? refRound.Number, 10);
-    const predictedType = refRound.result || (refNum >= 5 ? "BIG" : "SMALL");
+    const rawType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    const predictedType = invertPrediction(rawType);
 
     const isWin = (actualType === predictedType);
     stats.totalTested++;
@@ -95,14 +104,15 @@ export function simulateStrategy(historyList = state.history) {
   let nextLivePrediction = null;
   if (refRoundForLive) {
     const refNum = parseInt(refRoundForLive.number ?? refRoundForLive.Number, 10);
-    const pred = (refRoundForLive.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    const rawPred = (refRoundForLive.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    const pred = invertPrediction(rawPred);
     nextLivePrediction = {
       isSkip: false,
       skipCount: 0,
       level: 0,
       predictedType: pred,
       isShadow: false,
-      mode: "7-PERIOD LOOKBACK",
+      mode: "7-PERIOD LOOKBACK (OPPOSITE)",
       refPeriod: String(refRoundForLive.period || refRoundForLive.issueNumber || ""),
       refNumber: refNum
     };
@@ -168,7 +178,8 @@ export function computePrediction() {
   const refNum = parseInt(refRound.number ?? refRound.Number, 10);
   const refType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
 
-  const prediction = refType; // "BIG" or "SMALL"
+  // OPPOSITE PREDICTION (Oppositer): invert 7-period lookback call
+  const prediction = invertPrediction(refType);
 
   const sim = simulateStrategy(state.history);
   if (sim && sim.stats) {
@@ -179,7 +190,7 @@ export function computePrediction() {
   }
 
   const detail = {
-    mode: "7-PERIOD LOOKBACK",
+    mode: "7-PERIOD LOOKBACK (OPPOSITE)",
     prediction,
     numbers: [],
     level: 0,
@@ -281,7 +292,7 @@ export function resolvePending(newest) {
 export function resetStrategy() {
   state.strategy.skipRemaining = 0;
   state.run = {
-    mode: "7-PERIOD LOOKBACK",
+    mode: "7-PERIOD LOOKBACK (OPPOSITE)",
     consecutiveLosses: 0,
     prediction: null,
     numbers: [],
