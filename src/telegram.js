@@ -233,8 +233,8 @@ function welcomeCaption(from) {
   const who = from?.username ? `${displayName(from)} (@${from.username})` : displayName(from);
   return (
     `HELLO USER 👋\n\n` +
-    `<b>WELCOME TO 3 LEVEL NXT WORLD</b>\n\n` +
-    `Hello <b>${esc(who)}</b>!`
+    `<b>WELCOME TO NXT WORLD</b>\n\n` +
+    `Hello <b>${esc(who)}</b>! Welcome to NXT World!`
   );
 }
 
