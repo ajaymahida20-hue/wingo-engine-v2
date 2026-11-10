@@ -9,21 +9,21 @@ export function buildTargetBox(period, prediction, numbers, level, sessionWins) 
   const p = String(prediction || "").toUpperCase();
   const p4 = String(period || "").slice(-4);
   const winCount = (typeof sessionWins === "number") ? sessionWins : 0;
-  const headerLine = `🎯 NEXT PREDICTION [ ${winCount} WINNING ] 🎯`;
+  const headerLine = `          🎯 NEXT PREDICTION    [ ${winCount} WINNING ] 🎯`;
 
   if (p === "SKIP") {
     return [
-      `        ${headerLine}`,
+      headerLine,
       "",
-      `               ${p4} : [ ⏳ SKIP ]`,
-      "               STATUS - [ PAUSED / WAIT ]"
+      `                      ${p4} : [ ⏳ SKIP ]`,
+      "                      STATUS - [ PAUSED / WAIT ]"
     ].join("\n");
   }
 
   const lines = [
-    `        ${headerLine}`,
+    headerLine,
     "",
-    `               ${p4} : [ ${p} ]`
+    `                      ${p4} : [ ${p} ]`
   ];
   return lines.join("\n");
 }
@@ -34,15 +34,16 @@ export function footerLine() {
 
 const sideWord = prediction => {
   const p = String(prediction || "").toUpperCase();
-  if (p.includes("BIG")) return "BIG";
+  if (p.includes("BIG")) return "BIGGG";
   if (p.includes("SMAL")) return "SMALL";
   return p;
 };
 
 const statusWord = resultText => {
-  if (resultText.includes("WIN")) return "WIN";
-  if (resultText.includes("LOSE") || resultText.includes("LOSS")) return "LOSS";
-  if (resultText.includes("SKIP")) return "SKIP";
+  const r = String(resultText || "").toUpperCase();
+  if (r.includes("WIN")) return "WINNN";
+  if (r.includes("LOSE") || r.includes("LOSS")) return "LOSSS";
+  if (r.includes("SKIP")) return "SKIPP";
   return "";
 };
 
@@ -57,8 +58,9 @@ export function pastResultLines(userLog = null) {
     const p4 = String(entry.period || "").slice(-4);
     const rawLabel = String(entry.label || entry.side || "");
     const parts = rawLabel.split(/\s+/);
-    const side = parts[0] || "";
-    lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${status}`);
+    const side = sideWord(parts[0] || "");
+    const sp = side === "BIGGG" ? "    " : "   ";
+    lines.push(`PEREOD :- ${p4} ${side}${sp}${status}`);
   }
   return lines.reverse();
 }
