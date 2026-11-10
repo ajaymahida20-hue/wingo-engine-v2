@@ -84,4 +84,24 @@ export function buildPost(period, prediction, numbers, level, sessionWins, userL
   return `<b>${sections.join("\n\n")}</b>`;
 }
 
+// Builds the final completed post when 5 winning shots are achieved
+export function buildCompletedPost(sessionWins = 5, userLog = null) {
+  const header = (state.cfg.header || DEFAULT_HEADER).trim();
+  const allLines = pastResultLines(userLog);
+  const winCount = (typeof sessionWins === "number") ? sessionWins : 5;
+
+  const box = [
+    `NEXT PREDICT:- COMPLETED :- [ 🎯 ${winCount} WINNING ]`,
+    "",
+    `TOTAL WINN :- {  ${winCount}  }`
+  ].join("\n");
+
+  const sections = [];
+  if (header) sections.push(header);
+  if (allLines.length) sections.push(allLines.join("\n"));
+  sections.push(box);
+
+  return `<b>${sections.join("\n\n")}</b>`;
+}
+
 export { isColourCall };
