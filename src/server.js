@@ -90,6 +90,9 @@ function snapshot() {
       uidStatus: s.uidStatus || "NONE",
       uidSubmittedAt: s.uidSubmittedAt || null,
       active: s.active === true,
+      freeTrialActive: s.freeTrialActive === true,
+      freeTrialUsed: s.freeTrialUsed === true,
+      freeTrialWins: s.freeTrialWins || 0,
       tracked: (s.msgs || []).length,
       sessionNumber: s.sessionNumber || 1,
       sessionWins: s.sessionWins || 0,
@@ -102,7 +105,8 @@ function snapshot() {
       pendingUid: state.subs.filter(s => s.uidStatus === "PENDING_UID").length,
       depositPending: state.subs.filter(s => s.uidStatus === "DEPOSIT_PENDING").length,
       pending: state.subs.filter(s => s.uidStatus === "PENDING").length,
-      live: state.subs.filter(s => s.active && s.uidStatus === "VERIFIED").length
+      freeTrial: state.subs.filter(s => s.freeTrialActive && (s.freeTrialWins || 0) < 5).length,
+      live: state.subs.filter(s => s.active && (s.uidStatus === "VERIFIED" || (s.freeTrialActive && (s.freeTrialWins || 0) < 5))).length
     },
     log: state.log.slice(0, 40)
   };
