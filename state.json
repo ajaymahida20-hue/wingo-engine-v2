@@ -44,11 +44,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052489",
+      "lastPendingPeriod": null,
       "freeTrialActive": true,
       "freeTrialUsed": false,
-      "freeTrialWins": 0,
+      "freeTrialWins": 1,
       "pastLog": [
+        {
+          "period": "20261110100052489",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261110100052487",
           "side": "BIG",
@@ -167,16 +172,22 @@
         2845,
         2846
       ],
-      "sessionWins": 0,
+      "sessionWins": 1,
       "sessionNumber": 4,
-      "dailyWins": 15,
+      "dailyWins": 16,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052489",
+      "lastPendingPeriod": null,
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
-      "pastLog": [],
+      "pastLog": [
+        {
+          "period": "20261110100052489",
+          "side": "SMALL",
+          "status": "WIN"
+        }
+      ],
       "id": 1952722932,
       "name": "ᵗʰᵉ→ＲＩＣ HＩ戀",
       "username": "NXT_PRIME_369",
@@ -186,6 +197,12 @@
   ],
   "subOffset": 700547281,
   "history": [
+    {
+      "period": "20261110100052489",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261110100052488",
       "number": 5,
@@ -3179,12 +3196,6 @@
       "number": 2,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261110100051989",
-      "number": 4,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3202,10 +3213,16 @@
   },
   "log": [
     {
-      "period": "20261110100052489",
-      "label": "SMALL",
+      "period": "20261110100052490",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052489",
+      "label": "SMALL",
+      "actual": "SMALL (4)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261110100052488",
@@ -3230,34 +3247,28 @@
       "label": "BIG",
       "actual": "SMALL (2)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261110100052484",
-      "label": "SKIP",
-      "actual": "SMALL (4)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 262,
+    "wins": 263,
     "jackpots": 0,
     "losses": 231,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 53,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "SMALL",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261110100052489"
+    "isSkip": true,
+    "predictionForPeriod": "20261110100052490"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794343461338
+  "savedAt": 1794343468366
 }
