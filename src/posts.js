@@ -5,25 +5,31 @@ import { PAST_RESULT_LINES, DEFAULT_HEADER } from "./config.js";
 import { state } from "./store.js";
 import { isColourCall } from "./engine.js";
 
+const formatPeriod = (p) => {
+  const s = String(p || "");
+  const last5 = s.slice(-5).replace(/^0+/, "");
+  return last5 || s.slice(-4);
+};
+
 export function buildTargetBox(period, prediction, numbers, level, sessionWins) {
   const p = String(prediction || "").toUpperCase();
-  const p4 = String(period || "").slice(-4);
+  const pDisplay = formatPeriod(period);
   const winCount = (typeof sessionWins === "number") ? sessionWins : 0;
-  const headerLine = `🎯 NEXT PREDICTION [ ${winCount} WINNING ]`;
 
   if (p === "SKIP") {
     return [
-      headerLine,
+      `NEXT PREDICT:- ${pDisplay} :- [ ⏳ SKIP ]`,
       "",
-      `${p4} : [ ⏳ SKIP ]`,
-      "STATUS - [ PAUSED / WAIT ]"
+      "STATUS - [ PAUSED / WAIT ]",
+      "",
+      `TOTAL WINN :- {  ${winCount}  }`
     ].join("\n");
   }
 
   const lines = [
-    headerLine,
+    `NEXT PREDICT:- ${pDisplay} :- [ ${p} ]`,
     "",
-    `${p4} : [ ${p} ]`
+    `TOTAL WINN :- {  ${winCount}  }`
   ];
   return lines.join("\n");
 }
@@ -54,12 +60,12 @@ export function pastResultLines(userLog = null) {
     if (lines.length >= PAST_RESULT_LINES) break;
     const status = statusWord(entry.resultText || entry.status || "");
     if (!status) continue;
-    const p4 = String(entry.period || "").slice(-4);
+    const pDisplay = formatPeriod(entry.period);
     const rawLabel = String(entry.label || entry.side || "");
     const parts = rawLabel.split(/\s+/);
     const side = sideWord(parts[0] || "");
     const sp = side === "BIGGG" ? "    " : "   ";
-    lines.push(`PEREOD :- ${p4} ${side}${sp}${status}`);
+    lines.push(`PEREOD :- ${pDisplay} ${side}${sp}${status}`);
   }
   return lines.reverse();
 }
