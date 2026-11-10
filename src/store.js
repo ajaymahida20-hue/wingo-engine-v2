@@ -100,6 +100,7 @@ function applySaved(saved) {
           freeTrialActive: false,
           freeTrialUsed: false,
           freeTrialWins: 0,
+          pastLog: [],
           ...s
         });
       } else {
