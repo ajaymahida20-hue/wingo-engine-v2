@@ -63,6 +63,12 @@
   "subOffset": 700547159,
   "history": [
     {
+      "period": "20261110100051614",
+      "number": 9,
+      "result": "BIG",
+      "color": "green"
+    },
+    {
       "period": "20261110100051613",
       "number": 0,
       "result": "SMALL",
@@ -3055,18 +3061,12 @@
       "number": 1,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261110100051114",
-      "number": 1,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
-    "level": 3,
-    "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
+    "level": 4,
+    "mode": "LEVEL 4",
+    "consecutiveLosses": 3,
     "skipRemaining": 0,
     "shadowMode": false,
     "shadowPrediction": null,
@@ -3074,14 +3074,20 @@
     "refPeriod": null,
     "refNumber": null,
     "currentPrediction": "SMALL",
-    "currentLevel": 3
+    "currentLevel": 4
   },
   "log": [
     {
-      "period": "20261110100051614",
-      "label": "SMALL (L3)",
+      "period": "20261110100051615",
+      "label": "SMALL (L4)",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100051614",
+      "label": "SMALL (L3)",
+      "actual": "BIG 9 (green)",
+      "resultText": "❌ LOSE"
     },
     {
       "period": "20261110100051613",
@@ -3106,12 +3112,6 @@
       "label": "SKIP",
       "actual": "SMALL 0 (red)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261110100051609",
-      "label": "RED (L1)",
-      "actual": "SMALL 2 (red)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -3125,16 +3125,16 @@
     "totalTested": 245
   },
   "run": {
-    "mode": "LEVEL 3",
-    "consecutiveLosses": 2,
+    "mode": "LEVEL 4",
+    "consecutiveLosses": 3,
     "prediction": "SMALL",
     "numbers": [],
-    "level": 3,
+    "level": 4,
     "isSkip": false,
-    "predictionForPeriod": "20261110100051614"
+    "predictionForPeriod": "20261110100051615"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794317209936
+  "savedAt": 1794317218712
 }
