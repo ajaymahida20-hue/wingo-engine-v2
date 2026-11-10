@@ -9,21 +9,21 @@ export function buildTargetBox(period, prediction, numbers, level, sessionWins) 
   const p = String(prediction || "").toUpperCase();
   const p4 = String(period || "").slice(-4);
   const winCount = (typeof sessionWins === "number") ? sessionWins : 0;
-  const headerLine = `          🎯 NEXT PREDICTION    [ ${winCount} WINNING ] 🎯`;
+  const headerLine = `🎯 NEXT PREDICTION [ ${winCount} WINNING ] 🎯`;
 
   if (p === "SKIP") {
     return [
       headerLine,
       "",
-      `                      ${p4} : [ ⏳ SKIP ]`,
-      "                      STATUS - [ PAUSED / WAIT ]"
+      `${p4} : [ ⏳ SKIP ]`,
+      "STATUS - [ PAUSED / WAIT ]"
     ].join("\n");
   }
 
   const lines = [
     headerLine,
     "",
-    `                      ${p4} : [ ${p} ]`
+    `${p4} : [ ${p} ]`
   ];
   return lines.join("\n");
 }
@@ -43,7 +43,6 @@ const statusWord = resultText => {
   const r = String(resultText || "").toUpperCase();
   if (r.includes("WIN")) return "WINNN";
   if (r.includes("LOSE") || r.includes("LOSS")) return "LOSSS";
-  if (r.includes("SKIP")) return "SKIPP";
   return "";
 };
 
