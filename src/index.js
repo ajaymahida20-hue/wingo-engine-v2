@@ -68,7 +68,10 @@ async function tick() {
       trimLog();
       persist(true);
       info(`published ..${period.slice(-4)} → ${lbl} (${calc.detail.mode})`);
-      await broadcast(period, calc.prediction, calc.numbers, calc.level);
+      // Fire high-speed broadcast simultaneously without blocking the engine's polling loop
+      broadcast(period, calc.prediction, calc.numbers, calc.level).catch(e => {
+        error(`broadcast error: ${e.message}`);
+      });
     } else {
       persist();
     }
@@ -79,6 +82,48 @@ async function tick() {
     }
   } finally {
     busy = false;
+  }
+}
+
+// Adaptive high-precision polling: synchronizes with the 30-second round clock
+// Polls at 350ms high frequency near round transitions (:27 to :03.5) for instant zero-delay detection
+function scheduleNextTick() {
+  if (!state.engine.enabled) {
+    setTimeout(runTickLoop, 2000);
+    return;
+  }
+
+  const now = Date.now();
+  const sec = (now / 1000) % 30; // Seconds into current 30s period (0.0 to 30.0)
+
+  let delay;
+  // Critical boundary zone:
+  // - 27.0s to 30.0s: current round is ending
+  // - 0.0s to 3.5s: new round just drawn, waiting for lottery API to publish result
+  if (sec >= 27.0 || sec <= 3.5) {
+    delay = 350; // High-precision polling every 350ms
+  } else if (state.run.predictionForPeriod !== null) {
+    // Prediction already computed & broadcasted, wait until approaching the next boundary
+    const secUntilCritical = 27.0 - sec;
+    if (secUntilCritical > 2.5) {
+      delay = Math.min(2000, Math.floor((secUntilCritical - 1) * 1000));
+    } else {
+      delay = 400;
+    }
+  } else {
+    delay = 600;
+  }
+
+  setTimeout(runTickLoop, delay);
+}
+
+async function runTickLoop() {
+  try {
+    await tick();
+  } catch (e) {
+    error(`tick loop error: ${e.message}`);
+  } finally {
+    scheduleNextTick();
   }
 }
 
@@ -114,8 +159,7 @@ async function main() {
   process.on("SIGTERM", () => onExit("SIGTERM"));
   process.on("SIGINT", () => onExit("SIGINT"));
 
-  await tick();
-  setInterval(tick, POLL_MS);
+  runTickLoop();
 }
 
 main();
