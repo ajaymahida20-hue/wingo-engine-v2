@@ -20,16 +20,10 @@ export function buildTargetBox(period, prediction, numbers, level, sessionWins) 
     ].join("\n");
   }
 
-  const lvlPart = (level && level > 0) ? ` [L${level}]` : "";
-  let predDisplay = p;
-  if (p === "GREEN") predDisplay = "🟢 GREEN";
-  else if (p === "RED") predDisplay = "🔴 RED";
-  else if (p === "BIG" || p === "SMALL") predDisplay = p;
-
   const lines = [
     `        ${headerLine}`,
     "",
-    `               ${p4} : [ ${predDisplay} ]${lvlPart}`
+    `               ${p4} : [ ${p} ]`
   ];
   return lines.join("\n");
 }
@@ -40,17 +34,13 @@ export function footerLine() {
 
 const sideWord = prediction => {
   const p = String(prediction || "").toUpperCase();
-  if (p.startsWith("BIG")) return "BIGG";
-  if (p.startsWith("SMAL")) return "SMAL";
-  if (p.startsWith("GREE")) return "GREN";
-  if (p.startsWith("RED")) return "RED ";
-  if (p.startsWith("SKIP")) return "SKIP";
+  if (p.includes("BIG")) return "BIG";
+  if (p.includes("SMAL")) return "SMALL";
   return p;
 };
 
 const statusWord = resultText => {
-  if (resultText.includes("JACKPOT")) return "JACK";
-  if (resultText.includes("WIN")) return "WINN";
+  if (resultText.includes("WIN")) return "WIN";
   if (resultText.includes("LOSE") || resultText.includes("LOSS")) return "LOSS";
   if (resultText.includes("SKIP")) return "SKIP";
   return "";
@@ -66,9 +56,7 @@ function pastResultLines() {
     const rawLabel = String(entry.label || "");
     const parts = rawLabel.split(/\s+/);
     const side = parts[0] || "";
-    const lvlMatch = rawLabel.match(/\(L\d+\)/i);
-    const lvlPart = lvlMatch ? `${lvlMatch[0]} ` : "";
-    lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${lvlPart}${status}`);
+    lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${status}`);
   }
   return lines.reverse();
 }
