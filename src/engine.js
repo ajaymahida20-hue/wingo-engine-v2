@@ -125,6 +125,30 @@ export function computePrediction() {
     return null; // wait until at least 7 completed rounds exist
   }
 
+  // If a prediction round just completed, this round must be a SKIP (alternate skip flow)
+  if ((state.strategy.skipRemaining || 0) > 0) {
+    state.strategy.skipRemaining = 0;
+    const detail = {
+      mode: "PAUSED / WAIT",
+      prediction: "SKIP",
+      numbers: [],
+      level: 0,
+      isSkip: true,
+      refPeriod: "",
+      refNumber: 0,
+      refType: "",
+      stats: state.stats
+    };
+    state.lastDetail = detail;
+    return {
+      prediction: "SKIP",
+      numbers: [],
+      level: 0,
+      isSkip: true,
+      detail
+    };
+  }
+
   const period = nextPeriod(); // Upcoming period P (e.g. 213)
   
   // Find round 7 periods back (P - 7, e.g. 206)
@@ -210,6 +234,19 @@ export function resolvePending(newest) {
   const actualNum = parseInt(newest.number ?? newest.Number, 10);
   const actualResult = (newest.result || (actualNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
 
+  // Settle SKIP rounds without modifying win/loss counters
+  if (predicted === "SKIP") {
+    run.predictionForPeriod = null;
+    persist();
+    return {
+      period: newest.period,
+      label: "SKIP",
+      actualText: `${actualResult} (${actualNum})`,
+      resultText: "⏳ SKIP",
+      resultClass: "value"
+    };
+  }
+
   const isWin = (predicted === actualResult);
   const resultText = isWin ? "✅ WIN" : "❌ LOSS";
   const resultClass = isWin ? "big" : "small";
@@ -221,6 +258,9 @@ export function resolvePending(newest) {
     state.stats.losses++;
     run.consecutiveLosses = (run.consecutiveLosses || 0) + 1;
   }
+
+  // After every real prediction (WIN or LOSS), the next round must be SKIPPED!
+  state.strategy.skipRemaining = 1;
 
   const total = state.stats.wins + state.stats.losses;
   state.stats.winRate = total > 0 ? Math.round((state.stats.wins / total) * 100) : 0;
@@ -239,6 +279,7 @@ export function resolvePending(newest) {
 }
 
 export function resetStrategy() {
+  state.strategy.skipRemaining = 0;
   state.run = {
     mode: "7-PERIOD LOOKBACK",
     consecutiveLosses: 0,
