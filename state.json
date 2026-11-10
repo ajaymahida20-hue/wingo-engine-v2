@@ -19,7 +19,7 @@
   "subs": [
     {
       "uid": "726676",
-      "uidStatus": "DEPOSIT_PENDING",
+      "uidStatus": "VERIFIED",
       "uidSubmittedAt": 1794338453726,
       "active": false,
       "msgs": [
@@ -51,7 +51,8 @@
         2616,
         2617,
         2618,
-        2619
+        2619,
+        2626
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -127,14 +128,15 @@
         2621,
         2623,
         2624,
-        2625
+        2625,
+        2627
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261110100052363",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
@@ -154,6 +156,12 @@
   ],
   "subOffset": 700547263,
   "history": [
+    {
+      "period": "20261110100052362",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261110100052361",
       "number": 1,
@@ -3147,12 +3155,6 @@
       "number": 7,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261110100051862",
-      "number": 7,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -3170,10 +3172,16 @@
   },
   "log": [
     {
-      "period": "20261110100052362",
-      "label": "SKIP",
+      "period": "20261110100052363",
+      "label": "SMALL",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052362",
+      "label": "SKIP",
+      "actual": "SMALL (0)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261110100052361",
@@ -3198,12 +3206,6 @@
       "label": "SKIP",
       "actual": "BIG (5)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261110100052357",
-      "label": "SMALL",
-      "actual": "SMALL (2)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -3217,15 +3219,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK",
+    "prediction": "SMALL",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261110100052362"
+    "isSkip": false,
+    "predictionForPeriod": "20261110100052363"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794339651599
+  "savedAt": 1794339658570
 }
