@@ -97,6 +97,9 @@ function applySaved(saved) {
           dailyDate: null,
           cooldownUntil: null,
           lastPendingPeriod: null,
+          freeTrialActive: false,
+          freeTrialUsed: false,
+          freeTrialWins: 0,
           ...s
         });
       } else {
