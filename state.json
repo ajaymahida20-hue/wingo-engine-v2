@@ -25,20 +25,21 @@
       "uid": "Prediction",
       "uidStatus": "PENDING_UID",
       "uidSubmittedAt": 1794326772306,
-      "active": false,
+      "active": true,
       "msgs": [
         2282,
         2283,
         2284,
-        2286
+        2286,
+        2287
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
       "dailyWins": 0,
       "dailyDate": "2026-11-10",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
-      "freeTrialActive": false,
+      "lastPendingPeriod": "20261110100051934",
+      "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 0,
       "waitingForWin": false
@@ -127,8 +128,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547179,
+  "subOffset": 700547180,
   "history": [
+    {
+      "period": "20261110100051933",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261110100051932",
       "number": 5,
@@ -3122,12 +3129,6 @@
       "number": 9,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261110100051433",
-      "number": 8,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3145,10 +3146,16 @@
   },
   "log": [
     {
-      "period": "20261110100051933",
-      "label": "BIG",
+      "period": "20261110100051934",
+      "label": "SMALL",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100051933",
+      "label": "BIG",
+      "actual": "SMALL (0)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261110100051932",
@@ -3173,18 +3180,12 @@
       "label": "BIG",
       "actual": "BIG (8)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261110100051928",
-      "label": "BIG",
-      "actual": "BIG (9)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
-    "wins": 262,
+    "wins": 261,
     "jackpots": 0,
-    "losses": 231,
+    "losses": 232,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -3193,14 +3194,14 @@
   },
   "run": {
     "mode": "7-PERIOD LOOKBACK",
-    "prediction": "BIG",
+    "prediction": "SMALL",
     "numbers": [],
     "level": 0,
     "isSkip": false,
-    "predictionForPeriod": "20261110100051933"
+    "predictionForPeriod": "20261110100051934"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794326779909
+  "savedAt": 1794326788220
 }
