@@ -77,16 +77,21 @@
         2388,
         2389
       ],
-      "sessionWins": 1,
+      "sessionWins": 2,
       "sessionNumber": 1,
-      "dailyWins": 1,
+      "dailyWins": 2,
       "dailyDate": "2026-11-10",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052205",
+      "lastPendingPeriod": "20261110100052206",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
       "pastLog": [
+        {
+          "period": "20261110100052205",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261110100052204",
           "side": "SMALL",
@@ -106,11 +111,6 @@
           "period": "20261110100052201",
           "side": "BIG",
           "status": "WIN"
-        },
-        {
-          "period": "20261110100052200",
-          "side": "SMALL",
-          "status": "LOSS"
         }
       ],
       "waitingForWin": false
@@ -118,6 +118,12 @@
   ],
   "subOffset": 700547216,
   "history": [
+    {
+      "period": "20261110100052205",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261110100052204",
       "number": 7,
@@ -3111,12 +3117,6 @@
       "number": 0,
       "result": "SMALL",
       "color": "red,violet"
-    },
-    {
-      "period": "20261110100051705",
-      "number": 5,
-      "result": "BIG",
-      "color": "green,violet"
     }
   ],
   "strategy": {
@@ -3134,10 +3134,16 @@
   },
   "log": [
     {
-      "period": "20261110100052205",
+      "period": "20261110100052206",
       "label": "SMALL",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052205",
+      "label": "SMALL",
+      "actual": "SMALL (1)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261110100052204",
@@ -3162,12 +3168,6 @@
       "label": "BIG",
       "actual": "BIG (8)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261110100052200",
-      "label": "SMALL",
-      "actual": "BIG (8)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -3186,10 +3186,10 @@
     "numbers": [],
     "level": 0,
     "isSkip": false,
-    "predictionForPeriod": "20261110100052205"
+    "predictionForPeriod": "20261110100052206"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794334940094
+  "savedAt": 1794334948609
 }
