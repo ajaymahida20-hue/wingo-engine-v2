@@ -390,13 +390,14 @@ export async function sendDepositPrompt(sub) {
   sub.active = false;
   persist();
 
+  // Step 1 Deposit Video (verified-video.mp4): ID verified, now complete deposit!
   const depositInstructionCaption =
-    `📹 <b>Complete Your Deposit To Unlock Permanent Predictions!</b>\n\n` +
+    `📹 <b>ID Server Verified — Complete Deposit!</b>\n\n` +
     `Aapka Account ID (<code>${esc(sub.uid || "")}</code>) server verified hai.\n` +
-    `Permanent daily live predictions unlock karne ke liye video dekhein aur apna deposit complete karein.\n\n` +
+    `5 Free Winning Shots poore ho chuke hain! Ab permanent daily live predictions unlock karne ke liye video dekhein aur apna deposit complete karein.\n\n` +
     `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
 
-  await sendStepVideo(sub.id, "deposit", depositInstructionCaption, {
+  await sendStepVideo(sub.id, "deposit_instructions", depositInstructionCaption, {
     reply_markup: {
       inline_keyboard: [
         [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
@@ -439,11 +440,31 @@ export async function sendIdVerifiedDeposit(userId) {
   return { ok: true, status: sub.uidStatus };
 }
 
-// Admin asks for deposit / deposit reminder:
+// Admin asks for deposit / deposit reminder (Video 2: deposit-video.mp4):
 export async function sendAskDeposit(userId) {
   const sub = state.subs.find(s => String(s.id) === String(userId));
   if (!sub) return { ok: false, error: "user not found" };
-  return sendDepositPrompt(sub);
+
+  sub.uidStatus = "PENDING";
+  sub.active = false;
+  persist();
+
+  const depositCaption =
+    `⚠️ <b>Deposit Verification Pending / Not Found!</b>\n\n` +
+    `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) server verified hai, lekin aapka deposit verify nahi ho paya hai.\n\n` +
+    `Kripya is video ko dhyan se dekhein aur apna deposit complete karein.\n\n` +
+    `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
+
+  await sendStepVideo(sub.id, "deposit", depositCaption, {
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+      ]
+    }
+  });
+
+  await syncBotProfile();
+  return { ok: true, status: sub.uidStatus };
 }
 
 export async function setSubscriberUidStatus(userId, status) {
@@ -463,12 +484,12 @@ export async function setSubscriberUidStatus(userId, status) {
 
     await sendDirect(sub.id, finalMsg, { reply_markup: MAIN_KEYBOARD });
   } else if (status === "DEPOSIT_PENDING") {
-    // Send deposit video (WhatsApp Video 10.26.35 PM / deposit-video.mp4) along with deposit message & button
+    // Send deposit video (deposit-video.mp4) along with deposit message & button
     const depositCaption =
       `⚠️ <b>Account ID Verified, Deposit Pending!</b>\n\n` +
       `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) verify ho gaya hai, lekin aapne abhi tak <b>Deposit</b> complete nahi kiya hai.\n\n` +
       `Kripya registration link se apna deposit complete karein.\n` +
-      `Deposit complete karne ke baad neeche diye gaye <b>💳 I Have Deposited</b> button par click karein:`;
+      `Deposit complete karne ke baad neeche diye gaye <b>💳 Maine Deposit Kar Liya</b> button par click karein:`;
 
     await sendStepVideo(sub.id, "deposit", depositCaption, {
       reply_markup: {
@@ -478,10 +499,29 @@ export async function setSubscriberUidStatus(userId, status) {
       }
     });
   } else if (status === "REJECTED") {
-    await sendDirect(sub.id,
-      `❌ <b>UID Verification Failed</b>\n\n` +
-      `Your Account UID could not be verified. Please review the video instructions and submit a valid UID again.`
-    );
+    if (sub.uid) {
+      sub.uidStatus = "PENDING";
+      persist();
+
+      const rejectDepositCaption =
+        `❌ <b>Deposit Verification Not Approved!</b>\n\n` +
+        `Aapka deposit verify nahi ho paya hai.\n` +
+        `Kripya is video ko dhyan se dekhein aur apna deposit sahi tarike se complete karein.\n\n` +
+        `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
+
+      await sendStepVideo(sub.id, "deposit", rejectDepositCaption, {
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+          ]
+        }
+      });
+    } else {
+      await sendDirect(sub.id,
+        `❌ <b>UID Verification Failed</b>\n\n` +
+        `Your Account UID could not be verified. Please review the video instructions and submit a valid UID again.`
+      );
+    }
   }
 
   await syncBotProfile();
