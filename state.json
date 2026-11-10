@@ -31,14 +31,15 @@
         2679,
         2681,
         2683,
-        2684
+        2684,
+        2685
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261110100052397",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 0,
@@ -112,7 +113,7 @@
       "dailyWins": 8,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261110100052397",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
@@ -152,6 +153,12 @@
   ],
   "subOffset": 700547268,
   "history": [
+    {
+      "period": "20261110100052396",
+      "number": 5,
+      "result": "BIG",
+      "color": "green,violet"
+    },
     {
       "period": "20261110100052395",
       "number": 5,
@@ -3145,12 +3152,6 @@
       "number": 9,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261110100051896",
-      "number": 1,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -3168,10 +3169,16 @@
   },
   "log": [
     {
-      "period": "20261110100052396",
-      "label": "SKIP",
+      "period": "20261110100052397",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052396",
+      "label": "SKIP",
+      "actual": "BIG (5)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261110100052395",
@@ -3196,12 +3203,6 @@
       "label": "SKIP",
       "actual": "SMALL (0)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261110100052391",
-      "label": "BIG",
-      "actual": "BIG (9)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -3215,15 +3216,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261110100052396"
+    "isSkip": false,
+    "predictionForPeriod": "20261110100052397"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794340671037
+  "savedAt": 1794340678254
 }
