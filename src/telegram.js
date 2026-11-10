@@ -22,6 +22,22 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
+// High-speed keep-alive connection pool for Telegram Bot API
+try {
+  const undici = await import("undici");
+  if (undici && undici.Agent && undici.setGlobalDispatcher) {
+    const agent = new undici.Agent({
+      connections: 64,
+      pipelining: 1,
+      keepAliveTimeout: 60000,
+      keepAliveMaxTimeout: 120000,
+    });
+    undici.setGlobalDispatcher(agent);
+  }
+} catch {
+  // If undici is not directly loaded, global fetch still operates
+}
+
 // Asynchronous concurrency pool for high-speed broadcast
 async function mapConcurrent(items, concurrency, fn) {
   if (!items || !items.length) return [];
@@ -1094,15 +1110,22 @@ export async function broadcast(period, prediction, numbers, level) {
   }
 
   const startMs = Date.now();
-  const CONCURRENCY = 12;
+  // High concurrency to deliver to all subscribers at the exact same second
+  const CONCURRENCY = 25;
   const dead = [];
 
-  await mapConcurrent(eligibleSubs, CONCURRENCY, async (s) => {
+  // Step 1: Pre-build each subscriber's post in memory so the loop has zero string/logic overhead
+  const targets = eligibleSubs.map(s => {
     const winsToShow = s.freeTrialActive ? (s.freeTrialWins || 0) : (s.sessionWins || 0);
     const userLog = Array.isArray(s.pastLog) ? s.pastLog : [];
-    const subPost = buildPost(period, prediction, numbers, level, winsToShow, userLog);
-    const r = await sendDirect(s.id, subPost, { reply_markup: MAIN_KEYBOARD }, true);
-    if (!r.ok && r.blocked) dead.push(s.id);
+    const post = buildPost(period, prediction, numbers, level, winsToShow, userLog);
+    return { sub: s, post };
+  });
+
+  // Step 2: Instant parallel fan-out across persistent keep-alive connections
+  await mapConcurrent(targets, CONCURRENCY, async ({ sub, post }) => {
+    const r = await sendDirect(sub.id, post, { reply_markup: MAIN_KEYBOARD }, true);
+    if (!r.ok && r.blocked) dead.push(sub.id);
   });
 
   if (dead.length) {
@@ -1151,19 +1174,23 @@ export async function settleSubscriberWins(resolved) {
             sub.uidStatus = "PENDING";
             persist();
 
-            // Send completed 5/5 wins post
-            const finalPost = buildCompletedPost(5, sub.pastLog);
-            await sendDirect(sub.id, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
-            await sleep(1500);
+            const finalLog = [...sub.pastLog];
+            const userId = sub.id;
+            // Send completed 5/5 wins post and follow-up in background (zero block on engine/broadcast)
+            (async () => {
+              const finalPost = buildCompletedPost(5, finalLog);
+              await sendDirect(userId, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
+              await sleep(1500);
 
-            await sendDirect(sub.id,
-              `🎉 <b>Badhai Ho! Aapke 5 Free Winning Shots Poore Ho Chuke Hain!</b>\n\n` +
-              `Aapka 1-time free trial safaltapoorvak complete ho gaya hai (5/5 Wins! 🎯)\n\n` +
-              `Permanent aur daily live predictions unlock karne ke liye agla step poora karein:`
-            ).catch(() => {});
+              await sendDirect(userId,
+                `🎉 <b>Badhai Ho! Aapke 5 Free Winning Shots Poore Ho Chuke Hain!</b>\n\n` +
+                `Aapka 1-time free trial safaltapoorvak complete ho gaya hai (5/5 Wins! 🎯)\n\n` +
+                `Permanent aur daily live predictions unlock karne ke liye agla step poora karein:`
+              ).catch(() => {});
 
-            await sleep(1000);
-            await sendDepositPrompt(sub);
+              await sleep(1000);
+              await sendDepositPrompt(sub);
+            })().catch(e => warn(`free trial completion delivery error (${userId}): ${e.message}`));
           } else {
             persist();
           }
@@ -1181,17 +1208,22 @@ export async function settleSubscriberWins(resolved) {
           sub.cooldownUntil = null;
           persist();
 
-          const finalPost = buildCompletedPost(5, sub.pastLog);
-          await sendDirect(sub.id, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
-          await sleep(1500);
+          const finalLog = [...sub.pastLog];
+          const userId = sub.id;
+          const totalWins = sub.dailyWins;
+          (async () => {
+            const finalPost = buildCompletedPost(5, finalLog);
+            await sendDirect(userId, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
+            await sleep(1500);
 
-          await sendDirect(sub.id,
-            `🎉 <b>Badhai Ho! Aaj Ka ${DAILY_WIN_LIMIT} Winning Shots Ka Target Poora Hua!</b>\n\n` +
-            `Aapne aaj ke sabhi sessions safaltapoorvak poore kar liye hain.\n` +
-            `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}\n\n` +
-            `Ab aaj ke liye predictions samapt hoti hain. Kal naye sessions ke saath fir milenge!`,
-            { reply_markup: MAIN_KEYBOARD }
-          ).catch(() => {});
+            await sendDirect(userId,
+              `🎉 <b>Badhai Ho! Aaj Ka ${DAILY_WIN_LIMIT} Winning Shots Ka Target Poora Hua!</b>\n\n` +
+              `Aapne aaj ke sabhi sessions safaltapoorvak poore kar liye hain.\n` +
+              `🏆 <b>Aaj ke kul wins:</b> ${totalWins}/${DAILY_WIN_LIMIT}\n\n` +
+              `Ab aaj ke liye predictions samapt hoti hain. Kal naye sessions ke saath fir milenge!`,
+              { reply_markup: MAIN_KEYBOARD }
+            ).catch(() => {});
+          })().catch(e => warn(`daily win delivery error (${userId}): ${e.message}`));
         } else if (sub.sessionWins >= 5) {
           const completedSession = sub.sessionNumber || 1;
           sub.sessionNumber = completedSession + 1;
@@ -1201,17 +1233,22 @@ export async function settleSubscriberWins(resolved) {
           sub.cooldownUntil = Date.now() + waitMinutes * 60 * 1000;
           persist();
 
-          const finalPost = buildCompletedPost(5, sub.pastLog);
-          await sendDirect(sub.id, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
-          await sleep(1500);
+          const finalLog = [...sub.pastLog];
+          const userId = sub.id;
+          const dailyCount = sub.dailyWins;
+          (async () => {
+            const finalPost = buildCompletedPost(5, finalLog);
+            await sendDirect(userId, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
+            await sleep(1500);
 
-          await sendDirect(sub.id,
-            `⏸️ <b>Session Poora Hua! (5 Winning Shots Prapt)</b>\n\n` +
-            `Ab <b>${waitMinutes} minute</b> wait karo. ${waitMinutes} minute ke baad aapko next 5 winning shots milenge.\n\n` +
-            `⚠️ <b>Stop mat karna</b> (Stop button par click mat karna), aisa karne par aapko next 5 shots nahi milenge. Shaant rahein, samay poora hote hi prediction automatically jari rahega!\n\n` +
-            `📊 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}`,
-            { reply_markup: MAIN_KEYBOARD }
-          ).catch(() => {});
+            await sendDirect(userId,
+              `⏸️ <b>Session Poora Hua! (5 Winning Shots Prapt)</b>\n\n` +
+              `Ab <b>${waitMinutes} minute</b> wait karo. ${waitMinutes} minute ke baad aapko next 5 winning shots milenge.\n\n` +
+              `⚠️ <b>Stop mat karna</b> (Stop button par click mat karna), aisa karne par aapko next 5 shots nahi milenge. Shaant rahein, samay poora hote hi prediction automatically jari rahega!\n\n` +
+              `📊 <b>Aaj ke kul wins:</b> ${dailyCount}/${DAILY_WIN_LIMIT}`,
+              { reply_markup: MAIN_KEYBOARD }
+            ).catch(() => {});
+          })().catch(e => warn(`session completion delivery error (${userId}): ${e.message}`));
         } else {
           persist();
         }
