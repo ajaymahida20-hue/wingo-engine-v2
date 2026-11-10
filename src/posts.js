@@ -46,14 +46,16 @@ const statusWord = resultText => {
   return "";
 };
 
-function pastResultLines() {
+export function pastResultLines(userLog = null) {
+  // If userLog is provided as an array, use it (starts at 0 and grows up to 5)
+  const source = Array.isArray(userLog) ? userLog : state.log.slice(1);
   const lines = [];
-  for (const entry of state.log.slice(1)) {
+  for (const entry of source) {
     if (lines.length >= PAST_RESULT_LINES) break;
-    const status = statusWord(entry.resultText || "");
+    const status = statusWord(entry.resultText || entry.status || "");
     if (!status) continue;
     const p4 = String(entry.period || "").slice(-4);
-    const rawLabel = String(entry.label || "");
+    const rawLabel = String(entry.label || entry.side || "");
     const parts = rawLabel.split(/\s+/);
     const side = parts[0] || "";
     lines.push(`PEREOD :- ${p4} ${sideWord(side)} ${status}`);
@@ -62,9 +64,9 @@ function pastResultLines() {
 }
 
 // Builds the complete prediction post text (pure text formatted for Telegram HTML)
-export function buildPost(period, prediction, numbers, level, sessionWins) {
+export function buildPost(period, prediction, numbers, level, sessionWins, userLog = null) {
   const header = (state.cfg.header || DEFAULT_HEADER).trim();
-  const allLines = pastResultLines();
+  const allLines = pastResultLines(userLog);
   const box = buildTargetBox(period, prediction, numbers, level, sessionWins);
 
   const sections = [];
