@@ -290,13 +290,16 @@ export function getTodayKey() {
 export function ensureSubSession(sub) {
   if (!sub) return;
   const today = getTodayKey();
-  if (sub.dailyDate !== today) {
+  if (!sub.dailyDate) {
+    sub.dailyDate = today;
+  } else if (sub.dailyDate !== today) {
     sub.dailyDate = today;
     sub.dailyWins = 0;
     sub.sessionNumber = 1;
     sub.sessionWins = 0;
     sub.cooldownUntil = null;
     sub.waitingForWin = false;
+    sub.pastLog = [];
     // Daily requirement: Next day user moves to PENDING (must deposit again for new day)
     if (sub.uidStatus === "VERIFIED") {
       sub.uidStatus = "PENDING";
@@ -317,18 +320,22 @@ export function checkDailyResets() {
   const today = getTodayKey();
   let changed = false;
   for (const sub of state.subs) {
-    if (sub.dailyDate !== today) {
+    if (!sub.dailyDate) {
+      sub.dailyDate = today;
+      changed = true;
+    } else if (sub.dailyDate !== today) {
       sub.dailyDate = today;
       sub.dailyWins = 0;
       sub.sessionNumber = 1;
       sub.sessionWins = 0;
       sub.cooldownUntil = null;
       sub.waitingForWin = false;
+      sub.pastLog = [];
       if (sub.uidStatus === "VERIFIED") {
         sub.uidStatus = "PENDING";
         sub.active = false;
-        changed = true;
       }
+      changed = true;
     }
   }
   if (changed) {
@@ -492,6 +499,17 @@ export async function setSubscriberUidStatus(userId, status) {
   persist();
 
   if (status === "VERIFIED") {
+    sub.dailyDate = getTodayKey();
+    sub.sessionWins = 0;
+    sub.sessionNumber = 1;
+    sub.dailyWins = 0;
+    sub.cooldownUntil = null;
+    sub.waitingForWin = false;
+    sub.freeTrialActive = false;
+    sub.freeTrialUsed = true;
+    sub.pastLog = [];
+    persist();
+
     // Send congratulations text directly (no black video)
     const finalMsg =
       `🎉 <b>CONGRATULATIONS! YOUR ACCOUNT IS FULLY VERIFIED</b>\n\n` +
@@ -694,6 +712,27 @@ async function handleMessage(msg) {
   if (text === BTN_ON || text.toLowerCase() === "/start_prediction") {
     ensureSubSession(sub);
 
+    // 1. FIRST PRIORITY: Check if user is currently in cooldown between sessions!
+    if (sub.cooldownUntil && Date.now() < sub.cooldownUntil) {
+      sub.active = true;
+      persist();
+      const remainingSec = Math.max(0, Math.ceil((sub.cooldownUntil - Date.now()) / 1000));
+      const remMin = Math.floor(remainingSec / 60);
+      const remSec = remainingSec % 60;
+      const timeStr = remMin > 0 ? `${remMin} minute ${remSec} second` : `${remSec} second`;
+
+      await sendDirect(chatId,
+        `⏳ <b>Next Session Ka Waiting Time Chalu Hai!</b>\n\n` +
+        `Aapka pichhla session safaltapoorvak poora ho chuka hai.\n` +
+        `Agla <b>Session ${sub.sessionNumber || 2}</b> shuru hone me abhi <b>${timeStr}</b> ka samay baaki hai!\n\n` +
+        `⚠️ <b>Abhi START ya STOP button par click mat karo!</b> Shaant rahein, jaise hi timer poora hoga, agle 5 winning shots automatically shuru ho jayenge!\n\n` +
+        `📊 <b>Aaj ke kul wins:</b> ${sub.dailyWins || 0}/${DAILY_WIN_LIMIT}`,
+        { reply_markup: MAIN_KEYBOARD }
+      );
+      await syncBotProfile();
+      return;
+    }
+
     if (sub.uidStatus !== "VERIFIED") {
       if (sub.freeTrialActive && (sub.freeTrialWins || 0) < 5) {
         sub.active = true;
@@ -760,7 +799,7 @@ async function handleMessage(msg) {
       return;
     }
 
-    // 1. Check daily limit (DAILY_WIN_LIMIT winning shots per day)
+    // 2. Check daily limit (DAILY_WIN_LIMIT winning shots per day)
     if (sub.dailyWins >= DAILY_WIN_LIMIT) {
       await sendDirect(chatId,
         `🛑 <b>Aaj Ka Daily Quota Samapt!</b>\n\n` +
@@ -768,26 +807,6 @@ async function handleMessage(msg) {
         `Kripya kal naye sessions ke liye fir se aayein! Dhanyawad.`,
         { reply_markup: MAIN_KEYBOARD }
       );
-      return;
-    }
-
-    // 2. Check if currently in cooldown
-    if (sub.cooldownUntil && Date.now() < sub.cooldownUntil) {
-      sub.active = true;
-      persist();
-      const remainingSec = Math.max(0, Math.ceil((sub.cooldownUntil - Date.now()) / 1000));
-      const remMin = Math.floor(remainingSec / 60);
-      const remSec = remainingSec % 60;
-      const timeStr = remMin > 0 ? `${remMin} minute ${remSec} second` : `${remSec} second`;
-
-      await sendDirect(chatId,
-        `⏳ <b>Cooldown Chalu Hai!</b>\n\n` +
-        `Aapka pichhla session poora ho chuka hai. Agla (Session ${sub.sessionNumber}) shuru hone me abhi <b>${timeStr}</b> baaki hain.\n\n` +
-        `⚠️ <b>Stop mat karna</b> (Stop button par click mat karna), aisa karne par aapko next 5 shots nahi milenge. Samay poora hote hi prediction automatically aana shuru ho jayega!\n\n` +
-        `📊 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}`,
-        { reply_markup: MAIN_KEYBOARD }
-      );
-      await syncBotProfile();
       return;
     }
 
@@ -1206,9 +1225,10 @@ export async function settleSubscriberWins(resolved) {
           sub.active = false;
           sub.waitingForWin = false;
           sub.cooldownUntil = null;
+          const finalLog = [...sub.pastLog];
+          sub.pastLog = [];
           persist();
 
-          const finalLog = [...sub.pastLog];
           const userId = sub.id;
           const totalWins = sub.dailyWins;
           (async () => {
@@ -1231,9 +1251,10 @@ export async function settleSubscriberWins(resolved) {
           sub.waitingForWin = false;
           const waitMinutes = completedSession * 5;
           sub.cooldownUntil = Date.now() + waitMinutes * 60 * 1000;
+          const finalLog = [...sub.pastLog];
+          sub.pastLog = []; // Reset history so next session starts from ZERO!
           persist();
 
-          const finalLog = [...sub.pastLog];
           const userId = sub.id;
           const dailyCount = sub.dailyWins;
           (async () => {
@@ -1243,8 +1264,8 @@ export async function settleSubscriberWins(resolved) {
 
             await sendDirect(userId,
               `⏸️ <b>Session Poora Hua! (5 Winning Shots Prapt)</b>\n\n` +
-              `Ab <b>${waitMinutes} minute</b> wait karo. ${waitMinutes} minute ke baad aapko next 5 winning shots milenge.\n\n` +
-              `⚠️ <b>Stop mat karna</b> (Stop button par click mat karna), aisa karne par aapko next 5 shots nahi milenge. Shaant rahein, samay poora hote hi prediction automatically jari rahega!\n\n` +
+              `Ab <b>${waitMinutes} minute</b> wait karo. ${waitMinutes} minute ke baad aapka agla <b>Session ${completedSession + 1}</b> shuru hoga.\n\n` +
+              `⚠️ <b>Abhi START ya STOP button par click mat karna</b>. Shaant rahein, samay poora hote hi agle 5 shots automatically shuru ho jayenge!\n\n` +
               `📊 <b>Aaj ke kul wins:</b> ${dailyCount}/${DAILY_WIN_LIMIT}`,
               { reply_markup: MAIN_KEYBOARD }
             ).catch(() => {});
@@ -1286,6 +1307,8 @@ export async function checkSubscriberCooldowns() {
     if (sub.active && sub.uidStatus === "VERIFIED" && sub.cooldownUntil && now >= sub.cooldownUntil) {
       sub.cooldownUntil = null;
       sub.waitingForWin = false;
+      sub.sessionWins = 0;
+      sub.pastLog = []; // Reset history so new session starts from ZERO!
       persist();
       await sendDirect(sub.id,
         `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
