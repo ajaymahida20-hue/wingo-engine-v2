@@ -48,9 +48,9 @@
       "username": "Tradarbysahij",
       "since": 1794334424798,
       "uid": "95661",
-      "uidStatus": "UID_VERIFIED",
+      "uidStatus": "PENDING",
       "uidSubmittedAt": 1794334442498,
-      "active": true,
+      "active": false,
       "msgs": [
         2361,
         2362,
@@ -64,18 +64,25 @@
         2371,
         2372,
         2373,
-        2377
+        2377,
+        2378,
+        2379
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
       "dailyWins": 0,
       "dailyDate": "2026-11-10",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052196",
-      "freeTrialActive": true,
-      "freeTrialUsed": false,
-      "freeTrialWins": 4,
+      "lastPendingPeriod": null,
+      "freeTrialActive": false,
+      "freeTrialUsed": true,
+      "freeTrialWins": 5,
       "pastLog": [
+        {
+          "period": "20261110100052196",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261110100052195",
           "side": "BIG",
@@ -95,11 +102,6 @@
           "period": "20261110100052192",
           "side": "SMALL",
           "status": "WIN"
-        },
-        {
-          "period": "20261110100052191",
-          "side": "BIG",
-          "status": "WIN"
         }
       ],
       "waitingForWin": false
@@ -107,6 +109,12 @@
   ],
   "subOffset": 700547214,
   "history": [
+    {
+      "period": "20261110100052196",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261110100052195",
       "number": 9,
@@ -3100,12 +3108,6 @@
       "number": 8,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261110100051696",
-      "number": 8,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3123,10 +3125,16 @@
   },
   "log": [
     {
-      "period": "20261110100052196",
-      "label": "SMALL",
+      "period": "20261110100052197",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052196",
+      "label": "SMALL",
+      "actual": "SMALL (1)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261110100052195",
@@ -3151,18 +3159,12 @@
       "label": "SMALL",
       "actual": "SMALL (3)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261110100052191",
-      "label": "BIG",
-      "actual": "BIG (7)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
-    "wins": 249,
+    "wins": 250,
     "jackpots": 0,
-    "losses": 244,
+    "losses": 243,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -3171,14 +3173,14 @@
   },
   "run": {
     "mode": "7-PERIOD LOOKBACK",
-    "prediction": "SMALL",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
     "isSkip": false,
-    "predictionForPeriod": "20261110100052196"
+    "predictionForPeriod": "20261110100052197"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794334677262
+  "savedAt": 1794334682054
 }
