@@ -95,14 +95,15 @@
         2785,
         2786,
         2788,
-        2790
+        2790,
+        2792
       ],
       "sessionWins": 2,
       "sessionNumber": 1,
       "dailyWins": 2,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261110100052451",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
@@ -232,14 +233,15 @@
         2784,
         2787,
         2789,
-        2791
+        2791,
+        2793
       ],
       "sessionWins": 1,
       "sessionNumber": 3,
       "dailyWins": 11,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261110100052451",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
@@ -279,6 +281,12 @@
   ],
   "subOffset": 700547275,
   "history": [
+    {
+      "period": "20261110100052450",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261110100052449",
       "number": 1,
@@ -3272,12 +3280,6 @@
       "number": 4,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261110100051950",
-      "number": 8,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3295,10 +3297,16 @@
   },
   "log": [
     {
-      "period": "20261110100052450",
-      "label": "SKIP",
+      "period": "20261110100052451",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052450",
+      "label": "SKIP",
+      "actual": "SMALL (1)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261110100052449",
@@ -3323,12 +3331,6 @@
       "label": "SKIP",
       "actual": "SMALL (0)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261110100052445",
-      "label": "BIG",
-      "actual": "SMALL (4)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -3342,15 +3344,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261110100052450"
+    "isSkip": false,
+    "predictionForPeriod": "20261110100052451"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794342291699
+  "savedAt": 1794342299361
 }
