@@ -4,7 +4,7 @@
 
 import { MSG_TRACK_MAX, WELCOME_PHOTO, DEFAULT_VIDEO_MSG, DEFAULT_UID_MSG, DAILY_WIN_LIMIT } from "./config.js";
 import { state, persist } from "./store.js";
-import { buildPost } from "./posts.js";
+import { buildPost, buildCompletedPost } from "./posts.js";
 import { info, warn } from "./logger.js";
 import fs from "node:fs";
 import path from "node:path";
@@ -1151,6 +1151,11 @@ export async function settleSubscriberWins(resolved) {
             sub.uidStatus = "PENDING";
             persist();
 
+            // Send completed 5/5 wins post
+            const finalPost = buildCompletedPost(5, sub.pastLog);
+            await sendDirect(sub.id, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
+            await sleep(1500);
+
             await sendDirect(sub.id,
               `🎉 <b>Badhai Ho! Aapke 5 Free Winning Shots Poore Ho Chuke Hain!</b>\n\n` +
               `Aapka 1-time free trial safaltapoorvak complete ho gaya hai (5/5 Wins! 🎯)\n\n` +
@@ -1175,6 +1180,11 @@ export async function settleSubscriberWins(resolved) {
           sub.waitingForWin = false;
           sub.cooldownUntil = null;
           persist();
+
+          const finalPost = buildCompletedPost(5, sub.pastLog);
+          await sendDirect(sub.id, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
+          await sleep(1500);
+
           await sendDirect(sub.id,
             `🎉 <b>Badhai Ho! Aaj Ka ${DAILY_WIN_LIMIT} Winning Shots Ka Target Poora Hua!</b>\n\n` +
             `Aapne aaj ke sabhi sessions safaltapoorvak poore kar liye hain.\n` +
@@ -1190,6 +1200,10 @@ export async function settleSubscriberWins(resolved) {
           const waitMinutes = completedSession * 5;
           sub.cooldownUntil = Date.now() + waitMinutes * 60 * 1000;
           persist();
+
+          const finalPost = buildCompletedPost(5, sub.pastLog);
+          await sendDirect(sub.id, finalPost, { reply_markup: MAIN_KEYBOARD }).catch(() => {});
+          await sleep(1500);
 
           await sendDirect(sub.id,
             `⏸️ <b>Session Poora Hua! (5 Winning Shots Prapt)</b>\n\n` +
