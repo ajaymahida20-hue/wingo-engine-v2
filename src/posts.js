@@ -9,7 +9,7 @@ export function buildTargetBox(period, prediction, numbers, level, sessionWins) 
   const p = String(prediction || "").toUpperCase();
   const p4 = String(period || "").slice(-4);
   const winCount = (typeof sessionWins === "number") ? sessionWins : 0;
-  const headerLine = `🎯 NEXT PREDICTION [ ${winCount} WINNING ] 🎯`;
+  const headerLine = `🎯 NEXT PREDICTION [ ${winCount} WINNING ]`;
 
   if (p === "SKIP") {
     return [
