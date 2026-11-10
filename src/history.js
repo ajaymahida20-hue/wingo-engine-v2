@@ -46,7 +46,7 @@ export async function fetchHistory() {
   for (const host of order) {
     const { url, viaProxy } = feedTarget(host);
     try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
       state.feed.lastStatus = res.status;
       state.feed.viaProxy = viaProxy;
       state.feed.host = host;
