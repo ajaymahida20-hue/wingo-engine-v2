@@ -23,9 +23,9 @@
       "username": "Tradarbysahij",
       "since": 1794343312086,
       "uid": "5654",
-      "uidStatus": "UID_VERIFIED",
+      "uidStatus": "PENDING",
       "uidSubmittedAt": 1794343331063,
-      "active": true,
+      "active": false,
       "msgs": [
         2833,
         2835,
@@ -54,11 +54,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052499",
-      "freeTrialActive": true,
-      "freeTrialUsed": false,
-      "freeTrialWins": 4,
+      "lastPendingPeriod": null,
+      "freeTrialActive": false,
+      "freeTrialUsed": true,
+      "freeTrialWins": 5,
       "pastLog": [
+        {
+          "period": "20261110100052499",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261110100052497",
           "side": "SMALL",
@@ -78,11 +83,6 @@
           "period": "20261110100052491",
           "side": "BIG",
           "status": "WIN"
-        },
-        {
-          "period": "20261110100052489",
-          "side": "SMALL",
-          "status": "WIN"
         }
       ],
       "waitingForWin": false
@@ -91,7 +91,7 @@
       "uid": "726676",
       "uidStatus": "VERIFIED",
       "uidSubmittedAt": 1794338453726,
-      "active": true,
+      "active": false,
       "msgs": [
         2571,
         2572,
@@ -207,42 +207,16 @@
         2865,
         2866
       ],
-      "sessionWins": 4,
+      "sessionWins": 5,
       "sessionNumber": 4,
-      "dailyWins": 19,
+      "dailyWins": 20,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052499",
+      "lastPendingPeriod": null,
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
-      "pastLog": [
-        {
-          "period": "20261110100052497",
-          "side": "SMALL",
-          "status": "LOSS"
-        },
-        {
-          "period": "20261110100052495",
-          "side": "SMALL",
-          "status": "WIN"
-        },
-        {
-          "period": "20261110100052493",
-          "side": "BIG",
-          "status": "WIN"
-        },
-        {
-          "period": "20261110100052491",
-          "side": "BIG",
-          "status": "WIN"
-        },
-        {
-          "period": "20261110100052489",
-          "side": "SMALL",
-          "status": "WIN"
-        }
-      ],
+      "pastLog": [],
       "id": 1952722932,
       "name": "ᵗʰᵉ→ＲＩＣ HＩ戀",
       "username": "NXT_PRIME_369",
@@ -252,6 +226,12 @@
   ],
   "subOffset": 700547281,
   "history": [
+    {
+      "period": "20261110100052499",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261110100052498",
       "number": 8,
@@ -3245,12 +3225,6 @@
       "number": 2,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261110100051999",
-      "number": 0,
-      "result": "SMALL",
-      "color": "red,violet"
     }
   ],
   "strategy": {
@@ -3268,10 +3242,16 @@
   },
   "log": [
     {
-      "period": "20261110100052499",
-      "label": "SMALL",
+      "period": "20261110100052500",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052499",
+      "label": "SMALL",
+      "actual": "SMALL (4)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261110100052498",
@@ -3296,34 +3276,28 @@
       "label": "SMALL",
       "actual": "SMALL (4)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261110100052494",
-      "label": "SKIP",
-      "actual": "SMALL (3)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 266,
+    "wins": 267,
     "jackpots": 0,
     "losses": 227,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 54,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "SMALL",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261110100052499"
+    "isSkip": true,
+    "predictionForPeriod": "20261110100052500"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794343761455
+  "savedAt": 1794343768332
 }
