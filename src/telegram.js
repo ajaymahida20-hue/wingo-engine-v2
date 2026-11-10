@@ -294,6 +294,7 @@ export function ensureSubSession(sub) {
   if (typeof sub.freeTrialWins !== "number") sub.freeTrialWins = 0;
   if (typeof sub.freeTrialActive !== "boolean") sub.freeTrialActive = false;
   if (typeof sub.freeTrialUsed !== "boolean") sub.freeTrialUsed = false;
+  if (!Array.isArray(sub.pastLog)) sub.pastLog = [];
 }
 
 export function checkDailyResets() {
@@ -342,7 +343,8 @@ function getOrAddUser(from) {
       lastPendingPeriod: null,
       freeTrialActive: false,
       freeTrialUsed: false,
-      freeTrialWins: 0
+      freeTrialWins: 0,
+      pastLog: []
     };
     state.subs.unshift(sub);
   } else {
@@ -377,27 +379,24 @@ export async function processServerVerification(userId, uid) {
   // Auto-verify only if explicitly enabled in panel (by default it's false for manual admin review)
   if (state.cfg.autoVerifyUid === true) {
     await sleep(1500); // 1.5s server processing simulation
-    await setSubscriberUidStatus(userId, "VERIFIED");
+    await sendIdVerifiedDeposit(userId);
     info(`user ${userId} UID ${uid} auto-verified successfully`);
   }
 }
 
-// Verification Step 2: Admin verifies UID from Web Panel
-// User moves to "PENDING" (awaiting deposit) and receives the deposit video + "Maine Deposit Kar Liya" button
-export async function sendIdVerifiedDeposit(userId) {
-  const sub = state.subs.find(s => String(s.id) === String(userId));
-  if (!sub) return { ok: false, error: "user not found" };
-
-  sub.uidStatus = "PENDING"; // Moves to PENDING (awaiting deposit)
+export async function sendDepositPrompt(sub) {
+  if (!sub) return { ok: false };
+  sub.uidStatus = "PENDING";
+  sub.active = false;
   persist();
 
-  // Send Video WhatsApp Video 10.03.41 PM (which explains: ID is verified by server, now deposit!) with "I Have Deposited" button
   const depositInstructionCaption =
-    `📹 <b>ID Server Verified — Complete Deposit!</b>\n\n` +
-    `Aapka Account ID server se verify ho chuka hai. Live prediction unlock karne ke liye apna deposit complete karein.\n\n` +
+    `📹 <b>Complete Your Deposit To Unlock Permanent Predictions!</b>\n\n` +
+    `Aapka Account ID (<code>${esc(sub.uid || "")}</code>) server verified hai.\n` +
+    `Permanent daily live predictions unlock karne ke liye video dekhein aur apna deposit complete karein.\n\n` +
     `Deposit complete karne ke baad neeche diye gaye button par click karein:`;
 
-  await sendStepVideo(sub.id, "deposit_instructions", depositInstructionCaption, {
+  await sendStepVideo(sub.id, "deposit", depositInstructionCaption, {
     reply_markup: {
       inline_keyboard: [
         [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
@@ -409,32 +408,42 @@ export async function sendIdVerifiedDeposit(userId) {
   return { ok: true, status: sub.uidStatus };
 }
 
-// Admin asks for deposit / deposit not found:
-// User moves back to "PENDING" (awaiting deposit) and receives deposit reminder message + video
-export async function sendAskDeposit(userId) {
+// Verification Step 2: Admin verifies UID from Web Panel
+// User moves to "UID_VERIFIED" and receives the "Use for free 5 winning shot" button
+export async function sendIdVerifiedDeposit(userId) {
   const sub = state.subs.find(s => String(s.id) === String(userId));
   if (!sub) return { ok: false, error: "user not found" };
 
-  sub.uidStatus = "PENDING"; // Moves back to PENDING
-  sub.active = false;
+  if (sub.freeTrialUsed) {
+    return sendDepositPrompt(sub);
+  }
+
+  sub.uidStatus = "UID_VERIFIED";
   persist();
 
-  const depositCaption =
-    `⚠️ <b>Account ID Verified, Deposit Pending!</b>\n\n` +
-    `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) verify ho gaya hai, lekin aapne abhi tak <b>Deposit</b> complete nahi kiya hai.\n\n` +
-    `Kripya registration link se apna deposit complete karein.\n` +
-    `Deposit complete karne ke baad neeche diye gaye <b>💳 I Have Deposited</b> button par click karein:`;
+  const trialCaption =
+    `✅ <b>Account UID Verified!</b>\n\n` +
+    `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) server se verify ho chuka hai!\n\n` +
+    `Aapko milte hain <b>5 Free Winning Shots</b>.\n` +
+    `Neeche diye gaye button par click karke apne free predictions start karein:`;
 
-  await sendStepVideo(sub.id, "deposit", depositCaption, {
+  await sendDirect(sub.id, trialCaption, {
     reply_markup: {
       inline_keyboard: [
-        [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+        [{ text: "🎁 Use for free 5 winning shot", callback_data: `use_free_trial|${sub.id}` }]
       ]
     }
   });
 
   await syncBotProfile();
   return { ok: true, status: sub.uidStatus };
+}
+
+// Admin asks for deposit / deposit reminder:
+export async function sendAskDeposit(userId) {
+  const sub = state.subs.find(s => String(s.id) === String(userId));
+  if (!sub) return { ok: false, error: "user not found" };
+  return sendDepositPrompt(sub);
 }
 
 export async function setSubscriberUidStatus(userId, status) {
@@ -516,6 +525,26 @@ async function handleMessage(msg) {
           ]
         }
       });
+      return;
+    }
+
+    if (sub.uidStatus === "UID_VERIFIED") {
+      if (!sub.freeTrialUsed) {
+        await sendDirect(chatId,
+          `✅ <b>Account UID Verified!</b>\n\n` +
+          `UID: <code>${esc(sub.uid || "")}</code>\n\n` +
+          `🎁 Apna <b>5 Free Winning Shots</b> trial shuru karne ke liye neeche diye gaye button par click karein:`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "🎁 Use for free 5 winning shot", callback_data: `use_free_trial|${sub.id}` }]
+              ]
+            }
+          }
+        );
+      } else {
+        await sendDepositPrompt(sub);
+      }
       return;
     }
 
@@ -609,39 +638,6 @@ async function handleMessage(msg) {
   if (text === BTN_ON || text.toLowerCase() === "/start_prediction") {
     ensureSubSession(sub);
 
-    if (sub.uidStatus === "PENDING") {
-      const depositCaption =
-        `⚠️ <b>Daily Deposit Required!</b>\n\n` +
-        `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) verified hai, lekin aapne aaj ka <b>Deposit</b> complete nahi kiya hai.\n\n` +
-        `Naye din ke 30 winning shots unlock karne ke liye apna deposit complete karein.\n\n` +
-        `Deposit complete karne ke baad neeche diye gaye <b>💳 Maine Deposit Kar Liya</b> button par click karein:`;
-
-      await sendStepVideo(sub.id, "deposit", depositCaption, {
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
-          ]
-        }
-      });
-      return;
-    }
-
-    if (sub.uidStatus === "DEPOSIT_PENDING") {
-      await sendDirect(chatId,
-        `⏳ <b>Deposit Verification Pending!</b>\n\n` +
-        `Aapka deposit claim admin ke paas review me hai.\n` +
-        `Admin approve karte hi aapka live prediction access activate ho jayega. Kripya thoda intezar karein.`,
-        {
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: "🔍 Check My ID", callback_data: `check_uid|${sub.id}` }]
-            ]
-          }
-        }
-      );
-      return;
-    }
-
     if (sub.uidStatus !== "VERIFIED") {
       if (sub.freeTrialActive && (sub.freeTrialWins || 0) < 5) {
         sub.active = true;
@@ -655,11 +651,11 @@ async function handleMessage(msg) {
         return;
       }
 
-      if (!sub.freeTrialUsed && (sub.freeTrialWins || 0) < 5) {
+      if (sub.uidStatus === "UID_VERIFIED" && !sub.freeTrialUsed && (sub.freeTrialWins || 0) < 5) {
         await sendDirect(chatId,
-          `⚠️ <b>Access Locked (Verification Pending)!</b>\n\n` +
-          `Aapka Account UID verification review me hai.\n\n` +
-          `🎁 Lekin aap apna <b>5 Free Winning Shots</b> trial abhi claim kar sakte hain:`,
+          `✅ <b>Account UID Verified!</b>\n\n` +
+          `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) server se verify ho chuka hai!\n\n` +
+          `🎁 Apna <b>5 Free Winning Shots</b> trial shuru karne ke liye neeche diye gaye button par click karein:`,
           {
             reply_markup: {
               inline_keyboard: [
@@ -671,10 +667,39 @@ async function handleMessage(msg) {
         return;
       }
 
+      if (sub.uidStatus === "PENDING") {
+        await sendDepositPrompt(sub);
+        return;
+      }
+
+      if (sub.uidStatus === "DEPOSIT_PENDING") {
+        await sendDirect(chatId,
+          `⏳ <b>Deposit Verification Pending!</b>\n\n` +
+          `Aapka deposit claim admin ke paas review me hai. Kripya verification complete hone ka intezar karein.`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "🔍 Check My ID", callback_data: `check_uid|${sub.id}` }]
+              ]
+            }
+          }
+        );
+        return;
+      }
+
+      if (sub.uidStatus === "PENDING_UID") {
+        await sendDirect(chatId,
+          `⏳ <b>UID Verification Pending!</b>\n\n` +
+          `Aapka Account UID (<code>${esc(sub.uid || "")}</code>) admin review me hai.\n` +
+          `Admin ke verify karte hi aapko 5 Free Winning Shots ka button mil jayega.`
+        );
+        return;
+      }
+
       await sendDirect(chatId,
         `⚠️ <b>Access Locked!</b>\n\n` +
-        `Aapka Account UID abhi verify nahi hua hai.\n` +
-        `Kripya apna Account UID yahan message me send karein aur administrator approval ka intezar karein.`
+        `Aapka Account UID abhi submit ya verify nahi hua hai.\n` +
+        `Kripya apna valid Account UID yahan message me send karein.`
       );
       return;
     }
@@ -714,6 +739,7 @@ async function handleMessage(msg) {
     sub.cooldownUntil = null;
     sub.waitingForWin = false;
     sub.active = true;
+    sub.pastLog = [];
     persist();
     await sendDirect(chatId,
       `🚀 <b>Predictions Activated!</b>\n\n` +
@@ -732,6 +758,7 @@ async function handleMessage(msg) {
   if (text === BTN_OFF || text.toLowerCase() === "/stop_prediction") {
     sub.active = false;
     sub.waitingForWin = false;
+    sub.pastLog = [];
     const deleted = await clearSubscriberChat(sub);
     persist();
     ensureSubSession(sub);
@@ -771,25 +798,13 @@ async function handleMessage(msg) {
     sub.uidSubmittedAt = Date.now();
     persist();
 
-    // Send confirmation message with the free trial button
-    const extra = (!sub.freeTrialUsed && (sub.freeTrialWins || 0) < 5) ? {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "🎁 Use for free 5 winning shot", callback_data: `use_free_trial|${sub.id}` }]
-        ]
-      }
-    } : {};
-
-    const trialPrompt = (!sub.freeTrialUsed && (sub.freeTrialWins || 0) < 5)
-      ? `\n\n🎁 <b>Free Trial Offer:</b>\nNeeche diye gaye button par click karke aap apna <b>5 Free Winning Shots</b> trial abhi claim kar sakte hain! 👇`
-      : "";
-
+    // Confirmation message: Admin will verify ID first! (No free trial button yet)
     await sendDirect(chatId,
       `📩 <b>Verification Request Submitted!</b>\n\n` +
       `Your Account UID: <code>${esc(text)}</code>\n` +
       `Status: ⏳ <b>Waiting for Administrator Review</b>\n\n` +
-      `Admin aapki ID ko verify kar raha hai.` + trialPrompt,
-      extra
+      `Admin aapki ID ko server par verify kar raha hai.\n` +
+      `Server se ID verify hone ke baad aapko <b>5 Free Winning Shots</b> claim karne ka button milega. Kripya thoda intezar karein.`
     );
     processServerVerification(sub.id, text);
     return;
@@ -939,6 +954,33 @@ async function handleCallback(cq) {
       return;
     }
 
+    if (sub.uidStatus === "UID_VERIFIED") {
+      await tg("answerCallbackQuery", {
+        callback_query_id: cq.id,
+        text: "✅ Status: UID VERIFIED!\nApna 5 Free Winning Shots claim karein.",
+        show_alert: true
+      });
+      if (chatId) {
+        if (!sub.freeTrialUsed) {
+          await sendDirect(chatId,
+            `✅ <b>Account UID Verified!</b>\n\n` +
+            `UID: <code>${esc(sub.uid || "")}</code>\n\n` +
+            `🎁 Apna <b>5 Free Winning Shots</b> trial shuru karne ke liye neeche diye gaye button par click karein:`,
+            {
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: "🎁 Use for free 5 winning shot", callback_data: `use_free_trial|${sub.id}` }]
+                ]
+              }
+            }
+          );
+        } else {
+          await sendDepositPrompt(sub);
+        }
+      }
+      return;
+    }
+
     if (sub.uidStatus === "DEPOSIT_PENDING") {
       await tg("answerCallbackQuery", {
         callback_query_id: cq.id,
@@ -982,8 +1024,6 @@ async function handleCallback(cq) {
 // ---------------------------------------------------------------- broadcast loop
 
 export async function broadcast(period, prediction, numbers, level) {
-  const fullText = buildPost(period, prediction, numbers, level);
-
   const now = Date.now();
   // Broadcast to active free trial users OR verified active subscribers
   const eligibleSubs = state.subs.filter(s => {
@@ -1019,7 +1059,8 @@ export async function broadcast(period, prediction, numbers, level) {
 
   await mapConcurrent(eligibleSubs, CONCURRENCY, async (s) => {
     const winsToShow = s.freeTrialActive ? (s.freeTrialWins || 0) : (s.sessionWins || 0);
-    const subPost = buildPost(period, prediction, numbers, level, winsToShow);
+    const userLog = Array.isArray(s.pastLog) ? s.pastLog : [];
+    const subPost = buildPost(period, prediction, numbers, level, winsToShow, userLog);
     const r = await sendDirect(s.id, subPost, { reply_markup: MAIN_KEYBOARD }, true);
     if (!r.ok && r.blocked) dead.push(s.id);
   });
@@ -1048,6 +1089,16 @@ export async function settleSubscriberWins(resolved) {
   for (const sub of state.subs) {
     if (sub.lastPendingPeriod === resolved.period) {
       sub.lastPendingPeriod = null;
+
+      // Track subscriber's session history (newest first, up to 5 rounds)
+      if (!Array.isArray(sub.pastLog)) sub.pastLog = [];
+      sub.pastLog.unshift({
+        period: resolved.period,
+        side: resolved.label,
+        status: isWin ? "WIN" : "LOSS"
+      });
+      if (sub.pastLog.length > 5) sub.pastLog.length = 5;
+
       if (isWin) {
         // 1. Handle Free Trial Users
         if (sub.freeTrialActive && !sub.freeTrialUsed) {
@@ -1056,28 +1107,18 @@ export async function settleSubscriberWins(resolved) {
           if (sub.freeTrialWins >= 5) {
             sub.freeTrialActive = false;
             sub.freeTrialUsed = true;
-            if (sub.uidStatus !== "VERIFIED") {
-              sub.active = false;
-            }
+            sub.active = false;
+            sub.uidStatus = "PENDING";
             persist();
-
-            const depositExtra = sub.uidStatus === "PENDING" ? {
-              reply_markup: {
-                inline_keyboard: [
-                  [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
-                ]
-              }
-            } : { reply_markup: MAIN_KEYBOARD };
 
             await sendDirect(sub.id,
               `🎉 <b>Badhai Ho! Aapke 5 Free Winning Shots Poore Ho Chuke Hain!</b>\n\n` +
-              `Aapka 1-time free trial safaltapoorvak complete ho gaya hai (5/5 Wins!)\n\n` +
-              `Permanent aur daily live predictions jari rakhne ke liye apna deposit complete karein.\n\n` +
-              (sub.uidStatus === "PENDING"
-                ? `👇 Niche diye gaye button par click karein:`
-                : `Admin aapki ID aur deposit verify karke regular access unlock karega.`),
-              depositExtra
+              `Aapka 1-time free trial safaltapoorvak complete ho gaya hai (5/5 Wins! 🎯)\n\n` +
+              `Permanent aur daily live predictions unlock karne ke liye agla step poora karein:`
             ).catch(() => {});
+
+            await sleep(1000);
+            await sendDepositPrompt(sub);
           } else {
             persist();
           }
