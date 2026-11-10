@@ -291,6 +291,9 @@ export function ensureSubSession(sub) {
   if (typeof sub.sessionNumber !== "number" || sub.sessionNumber < 1) sub.sessionNumber = 1;
   if (typeof sub.dailyWins !== "number") sub.dailyWins = 0;
   if (typeof sub.waitingForWin !== "boolean") sub.waitingForWin = false;
+  if (typeof sub.freeTrialWins !== "number") sub.freeTrialWins = 0;
+  if (typeof sub.freeTrialActive !== "boolean") sub.freeTrialActive = false;
+  if (typeof sub.freeTrialUsed !== "boolean") sub.freeTrialUsed = false;
 }
 
 export function checkDailyResets() {
@@ -336,7 +339,10 @@ function getOrAddUser(from) {
       dailyWins: 0,
       dailyDate: getTodayKey(),
       cooldownUntil: null,
-      lastPendingPeriod: null
+      lastPendingPeriod: null,
+      freeTrialActive: false,
+      freeTrialUsed: false,
+      freeTrialWins: 0
     };
     state.subs.unshift(sub);
   } else {
@@ -637,6 +643,34 @@ async function handleMessage(msg) {
     }
 
     if (sub.uidStatus !== "VERIFIED") {
+      if (sub.freeTrialActive && (sub.freeTrialWins || 0) < 5) {
+        sub.active = true;
+        persist();
+        await sendDirect(chatId,
+          `🚀 <b>Free Trial Predictions Resumed!</b>\n\n` +
+          `🎯 Current progress: ${sub.freeTrialWins || 0}/5 free wins.\n` +
+          `Live signals continue in this chat.`,
+          { reply_markup: MAIN_KEYBOARD }
+        );
+        return;
+      }
+
+      if (!sub.freeTrialUsed && (sub.freeTrialWins || 0) < 5) {
+        await sendDirect(chatId,
+          `⚠️ <b>Access Locked (Verification Pending)!</b>\n\n` +
+          `Aapka Account UID verification review me hai.\n\n` +
+          `🎁 Lekin aap apna <b>5 Free Winning Shots</b> trial abhi claim kar sakte hain:`,
+          {
+            reply_markup: {
+              inline_keyboard: [
+                [{ text: "🎁 Use for free 5 winning shot", callback_data: `use_free_trial|${sub.id}` }]
+              ]
+            }
+          }
+        );
+        return;
+      }
+
       await sendDirect(chatId,
         `⚠️ <b>Access Locked!</b>\n\n` +
         `Aapka Account UID abhi verify nahi hua hai.\n` +
@@ -677,50 +711,17 @@ async function handleMessage(msg) {
     }
 
     // 3. Start active predictions for this session
-    if (sub.active && sub.waitingForWin) {
-      await sendDirect(chatId,
-        `⏳ <b>Engine Syncing Active (Wait for Next Win)...</b>\n\n` +
-        `Aapka prediction start request already queue me hai!\n` +
-        `Server abhi live round check kar raha hai. Safe entry ke liye jaise hi server par agla <b>WIN</b> confirm hoga, aapko automatically 2 Skips ke baad fresh Level 1 se signals shuru honge.\n\n` +
-        `⚠️ <b>Stop mat karna</b>, wait karein.`,
-        { reply_markup: MAIN_KEYBOARD }
-      );
-      return;
-    }
-
     sub.cooldownUntil = null;
-
-    // Check if server is currently in a safe entry state (post-win skip phase)
-    const canJoinImmediately = Boolean(state.strategy && state.strategy.skipRemaining > 0);
-
-    if (canJoinImmediately) {
-      sub.waitingForWin = false;
-      sub.active = true;
-      persist();
-      await sendDirect(chatId,
-        `🚀 <b>Predictions Activated!</b>\n\n` +
-        `Server currently fresh cycle me hai (post-win skip phase).\n\n` +
-        `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
-        `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins}/5 wins)\n` +
-        `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}\n\n` +
-        `Live round signals will now be delivered directly to this chat.\n\n` +
-        `Tap <b>${BTN_OFF}</b> at any time to pause and clear chat history.`,
-        { reply_markup: MAIN_KEYBOARD }
-      );
-      await syncBotProfile();
-      return;
-    }
-
-    // Server is in active round: wait for next win
-    sub.waitingForWin = true;
+    sub.waitingForWin = false;
     sub.active = true;
     persist();
     await sendDirect(chatId,
-      `⏳ <b>Engine Syncing Active (Wait for Next Win)...</b>\n\n` +
-      `Aapka prediction start request receive ho gaya hai!\n` +
-      `Server abhi live round check kar raha hai. Safe entry ke liye, jab tak server par agla <b>WIN</b> nahi ho jata, tab tak wait karo.\n\n` +
-      `🎯 Server par 1 Win confirm hote hi aapko 2 Skips ke baad fresh Level 1 se predictions milna shuru ho jayenge!\n\n` +
-      `⚠️ <b>Stop mat karna</b>, win confirm hote hi signals automatically chalu ho jayenge.`,
+      `🚀 <b>Predictions Activated!</b>\n\n` +
+      `Live round signals will now be delivered directly to this chat.\n\n` +
+      `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
+      `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins}/5 wins)\n` +
+      `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins}/${DAILY_WIN_LIMIT}\n\n` +
+      `Tap <b>${BTN_OFF}</b> at any time to pause and clear chat history.`,
       { reply_markup: MAIN_KEYBOARD }
     );
     await syncBotProfile();
@@ -734,10 +735,14 @@ async function handleMessage(msg) {
     const deleted = await clearSubscriberChat(sub);
     persist();
     ensureSubSession(sub);
+    const progressText = (sub.freeTrialActive || !sub.freeTrialUsed)
+      ? `Free Trial: ${sub.freeTrialWins || 0}/5 wins`
+      : `Session ${sub.sessionNumber} (${sub.sessionWins}/5 wins) | Aaj ke kul wins: ${sub.dailyWins}/${DAILY_WIN_LIMIT}`;
+
     await sendDirect(chatId,
       `🛑 <b>Predictions Stopped.</b>\n\n` +
       `Signal delivery has been paused.\n` +
-      `📍 Current progress: Session ${sub.sessionNumber} (${sub.sessionWins}/5 wins) | Aaj ke kul wins: ${sub.dailyWins}/${DAILY_WIN_LIMIT}` +
+      `📍 Current progress: ${progressText}` +
       (deleted ? `\n🧹 Cleared ${deleted} message(s) from chat.` : "") +
       `\n\nTap <b>${BTN_ON}</b> whenever you want to resume.`,
       { reply_markup: MAIN_KEYBOARD }
@@ -766,12 +771,25 @@ async function handleMessage(msg) {
     sub.uidSubmittedAt = Date.now();
     persist();
 
-    // 1. Send confirmation message
+    // Send confirmation message with the free trial button
+    const extra = (!sub.freeTrialUsed && (sub.freeTrialWins || 0) < 5) ? {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🎁 Use for free 5 winning shot", callback_data: `use_free_trial|${sub.id}` }]
+        ]
+      }
+    } : {};
+
+    const trialPrompt = (!sub.freeTrialUsed && (sub.freeTrialWins || 0) < 5)
+      ? `\n\n🎁 <b>Free Trial Offer:</b>\nNeeche diye gaye button par click karke aap apna <b>5 Free Winning Shots</b> trial abhi claim kar sakte hain! 👇`
+      : "";
+
     await sendDirect(chatId,
       `📩 <b>Verification Request Submitted!</b>\n\n` +
       `Your Account UID: <code>${esc(text)}</code>\n` +
       `Status: ⏳ <b>Waiting for Administrator Review</b>\n\n` +
-      `Admin aapki ID ko verify kar raha hai.`
+      `Admin aapki ID ko verify kar raha hai.` + trialPrompt,
+      extra
     );
     processServerVerification(sub.id, text);
     return;
@@ -813,6 +831,48 @@ async function handleCallback(cq) {
     }
 
     await sendStepVideo(chatId, 2, captionText, extra);
+    return;
+  }
+
+  // User clicked "Use for free 5 winning shot"
+  if (data.startsWith("use_free_trial|")) {
+    const userId = Number(data.slice("use_free_trial|".length));
+    const sub = state.subs.find(s => s.id === userId) || getOrAddUser(from);
+    if (!sub) return;
+
+    if (sub.freeTrialUsed || (sub.freeTrialWins || 0) >= 5) {
+      await tg("answerCallbackQuery", {
+        callback_query_id: cq.id,
+        text: "⚠️ Aapka 5 Free Winning Shots trial already use ho chuka hai!",
+        show_alert: true
+      });
+      return;
+    }
+
+    sub.freeTrialActive = true;
+    sub.active = true;
+    sub.waitingForWin = false;
+    persist();
+
+    await tg("answerCallbackQuery", {
+      callback_query_id: cq.id,
+      text: "🎉 5 Free Winning Shots activated!",
+      show_alert: false
+    });
+
+    if (chatId) {
+      await sendDirect(chatId,
+        `🎉 <b>5 Free Winning Shots Activated!</b>\n\n` +
+        `Account UID: <code>${esc(sub.uid || "")}</code>\n\n` +
+        `Aapko live predictions milna shuru ho gaye hain!\n` +
+        `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.freeTrialWins || 0}/5 wins)\n\n` +
+        `⚠️ 5 winning shots complete hote hi yeh free trial pause ho jayega. Regular daily access ke liye deposit verify karwayein.\n\n` +
+        `Tap <b>${BTN_OFF}</b> anytime to pause.`,
+        { reply_markup: MAIN_KEYBOARD }
+      );
+    }
+    await syncBotProfile();
+    info(`user ${userId} activated 5 free winning shots trial`);
     return;
   }
 
@@ -925,9 +985,15 @@ export async function broadcast(period, prediction, numbers, level) {
   const fullText = buildPost(period, prediction, numbers, level);
 
   const now = Date.now();
-  // Broadcast ONLY to verified, active subscribers who are not in cooldown and have not completed daily wins
+  // Broadcast to active free trial users OR verified active subscribers
   const eligibleSubs = state.subs.filter(s => {
-    if (!s.active || s.uidStatus !== "VERIFIED") return false;
+    if (!s.active) return false;
+    // 1. Free Trial User:
+    if (s.freeTrialActive && (s.freeTrialWins || 0) < 5) {
+      return true;
+    }
+    // 2. Regular Verified User:
+    if (s.uidStatus !== "VERIFIED") return false;
     if (s.waitingForWin) return false;
     ensureSubSession(s);
     if (s.dailyWins >= DAILY_WIN_LIMIT) return false;
@@ -936,7 +1002,7 @@ export async function broadcast(period, prediction, numbers, level) {
   });
 
   if (!state.cfg.botToken || !eligibleSubs.length) {
-    if (!eligibleSubs.length) warn(`nothing published for ..${period.slice(-4)} — no eligible active verified subscriber`);
+    if (!eligibleSubs.length) warn(`nothing published for ..${period.slice(-4)} — no eligible active subscriber`);
     return false;
   }
 
@@ -952,7 +1018,8 @@ export async function broadcast(period, prediction, numbers, level) {
   const dead = [];
 
   await mapConcurrent(eligibleSubs, CONCURRENCY, async (s) => {
-    const subPost = buildPost(period, prediction, numbers, level, s.sessionWins || 0);
+    const winsToShow = s.freeTrialActive ? (s.freeTrialWins || 0) : (s.sessionWins || 0);
+    const subPost = buildPost(period, prediction, numbers, level, winsToShow);
     const r = await sendDirect(s.id, subPost, { reply_markup: MAIN_KEYBOARD }, true);
     if (!r.ok && r.blocked) dead.push(s.id);
   });
@@ -966,7 +1033,7 @@ export async function broadcast(period, prediction, numbers, level) {
   }
 
   const elapsed = Date.now() - startMs;
-  info(`broadcast ..${period.slice(-4)} complete to ${eligibleSubs.length} verified subscriber(s) in ${elapsed}ms`);
+  info(`broadcast ..${period.slice(-4)} complete to ${eligibleSubs.length} subscriber(s) in ${elapsed}ms`);
 
   state.statLines.posts++;
   persist();
@@ -982,6 +1049,42 @@ export async function settleSubscriberWins(resolved) {
     if (sub.lastPendingPeriod === resolved.period) {
       sub.lastPendingPeriod = null;
       if (isWin) {
+        // 1. Handle Free Trial Users
+        if (sub.freeTrialActive && !sub.freeTrialUsed) {
+          sub.freeTrialWins = (sub.freeTrialWins || 0) + 1;
+          info(`free trial win for user ${sub.id}: ${sub.freeTrialWins}/5`);
+          if (sub.freeTrialWins >= 5) {
+            sub.freeTrialActive = false;
+            sub.freeTrialUsed = true;
+            if (sub.uidStatus !== "VERIFIED") {
+              sub.active = false;
+            }
+            persist();
+
+            const depositExtra = sub.uidStatus === "PENDING" ? {
+              reply_markup: {
+                inline_keyboard: [
+                  [{ text: "💳 Maine Deposit Kar Liya", callback_data: `deposited|${sub.id}` }]
+                ]
+              }
+            } : { reply_markup: MAIN_KEYBOARD };
+
+            await sendDirect(sub.id,
+              `🎉 <b>Badhai Ho! Aapke 5 Free Winning Shots Poore Ho Chuke Hain!</b>\n\n` +
+              `Aapka 1-time free trial safaltapoorvak complete ho gaya hai (5/5 Wins!)\n\n` +
+              `Permanent aur daily live predictions jari rakhne ke liye apna deposit complete karein.\n\n` +
+              (sub.uidStatus === "PENDING"
+                ? `👇 Niche diye gaye button par click karein:`
+                : `Admin aapki ID aur deposit verify karke regular access unlock karega.`),
+              depositExtra
+            ).catch(() => {});
+          } else {
+            persist();
+          }
+          continue;
+        }
+
+        // 2. Handle Regular Verified Users
         ensureSubSession(sub);
         sub.sessionWins = (sub.sessionWins || 0) + 1;
         sub.dailyWins = (sub.dailyWins || 0) + 1;
@@ -1033,7 +1136,7 @@ export async function settleSubscriberWins(resolved) {
       await sendDirect(sub.id,
         `✅ <b>Server Win Confirmed! Session Synced!</b>\n\n` +
         `Aapka prediction session ab server ke saath safely connect ho gaya hai.\n` +
-        `Abhi rules ke mutabiq 2 rounds ⏳ <b>SKIP</b> rahenge, uske baad fresh <b>Level 1</b> se aapko signals aana shuru ho jayenge.\n\n` +
+        `Agle round se aapko live signals milna shuru ho jayenge.\n\n` +
         `📍 <b>Session:</b> ${sub.sessionNumber}\n` +
         `🎯 <b>Target:</b> 5 winning shots (Current progress: ${sub.sessionWins || 0}/5 wins)\n` +
         `🏆 <b>Aaj ke kul wins:</b> ${sub.dailyWins || 0}/${DAILY_WIN_LIMIT}\n\n` +
@@ -1050,27 +1153,14 @@ export async function checkSubscriberCooldowns() {
   for (const sub of state.subs) {
     if (sub.active && sub.uidStatus === "VERIFIED" && sub.cooldownUntil && now >= sub.cooldownUntil) {
       sub.cooldownUntil = null;
-      const canJoinImmediately = Boolean(state.strategy && state.strategy.skipRemaining > 0);
-      if (canJoinImmediately) {
-        sub.waitingForWin = false;
-        persist();
-        await sendDirect(sub.id,
-          `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
-          `Aapka <b>Session ${sub.sessionNumber}</b> ab shuru ho raha hai!\n` +
-          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/${DAILY_WIN_LIMIT})`,
-          { reply_markup: MAIN_KEYBOARD }
-        ).catch(() => {});
-      } else {
-        sub.waitingForWin = true;
-        persist();
-        await sendDirect(sub.id,
-          `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
-          `Aapka <b>Session ${sub.sessionNumber}</b> activate ho gaya hai!\n` +
-          `Safe entry ke liye server ke agle <b>WIN</b> ka wait kiya ja raha hai. Jaise hi win aayega, 2 Skips ke baad Level 1 se signals shuru honge.\n` +
-          `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/${DAILY_WIN_LIMIT})`,
-          { reply_markup: MAIN_KEYBOARD }
-        ).catch(() => {});
-      }
+      sub.waitingForWin = false;
+      persist();
+      await sendDirect(sub.id,
+        `🚀 <b>Waiting Time Poora Hua!</b>\n\n` +
+        `Aapka <b>Session ${sub.sessionNumber}</b> ab shuru ho raha hai!\n` +
+        `🎯 Agle 5 winning shots ke liye taiyar rahein. (Current progress: 0/5 wins | Kul: ${sub.dailyWins}/${DAILY_WIN_LIMIT})`,
+        { reply_markup: MAIN_KEYBOARD }
+      ).catch(() => {});
     }
   }
 }
