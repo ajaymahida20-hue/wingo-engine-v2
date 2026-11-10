@@ -40,16 +40,28 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-10",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261110100052190",
+      "lastPendingPeriod": "20261110100052191",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 0,
-      "pastLog": [],
+      "pastLog": [
+        {
+          "period": "20261110100052190",
+          "side": "SMALL",
+          "status": "LOSS"
+        }
+      ],
       "waitingForWin": false
     }
   ],
   "subOffset": 700547213,
   "history": [
+    {
+      "period": "20261110100052190",
+      "number": 6,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261110100052189",
       "number": 1,
@@ -3043,12 +3055,6 @@
       "number": 0,
       "result": "SMALL",
       "color": "red,violet"
-    },
-    {
-      "period": "20261110100051690",
-      "number": 4,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3066,10 +3072,16 @@
   },
   "log": [
     {
-      "period": "20261110100052190",
-      "label": "SMALL",
+      "period": "20261110100052191",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261110100052190",
+      "label": "SMALL",
+      "actual": "BIG (6)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261110100052189",
@@ -3094,12 +3106,6 @@
       "label": "BIG",
       "actual": "BIG (5)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261110100052185",
-      "label": "BIG",
-      "actual": "SMALL (0)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -3114,14 +3120,14 @@
   },
   "run": {
     "mode": "7-PERIOD LOOKBACK",
-    "prediction": "SMALL",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
     "isSkip": false,
-    "predictionForPeriod": "20261110100052190"
+    "predictionForPeriod": "20261110100052191"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794334489981
+  "savedAt": 1794334498385
 }
