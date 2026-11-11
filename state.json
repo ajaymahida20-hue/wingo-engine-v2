@@ -1318,6 +1318,12 @@
   "subOffset": 700547505,
   "history": [
     {
+      "period": "20261111100051226",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
+    {
       "period": "20261111100051225",
       "number": 7,
       "result": "BIG",
@@ -4310,12 +4316,6 @@
       "number": 8,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261111100050726",
-      "number": 1,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -4333,10 +4333,16 @@
   },
   "log": [
     {
-      "period": "20261111100051226",
-      "label": "BIG",
+      "period": "20261111100051227",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100051226",
+      "label": "BIG",
+      "actual": "SMALL (4)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261111100051225",
@@ -4361,34 +4367,28 @@
       "label": "SMALL",
       "actual": "SMALL (4)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261111100051221",
-      "label": "SKIP",
-      "actual": "SMALL (3)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 224,
     "jackpots": 0,
-    "losses": 269,
+    "losses": 270,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 45,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "BIG",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261111100051226"
+    "isSkip": true,
+    "predictionForPeriod": "20261111100051227"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794391969914
+  "savedAt": 1794391978635
 }
