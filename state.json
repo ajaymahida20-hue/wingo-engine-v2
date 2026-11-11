@@ -23,7 +23,7 @@
       "username": "NXT_PRIME_369",
       "since": 1794370917317,
       "uid": "836366",
-      "uidStatus": "PENDING",
+      "uidStatus": "DEPOSIT_PENDING",
       "uidSubmittedAt": 1794370930174,
       "active": false,
       "msgs": [
@@ -45,7 +45,8 @@
         3079,
         3080,
         3082,
-        3083
+        3083,
+        3084
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -112,7 +113,7 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261111100050538",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 3,
@@ -235,8 +236,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547332,
+  "subOffset": 700547333,
   "history": [
+    {
+      "period": "20261111100050537",
+      "number": 9,
+      "result": "BIG",
+      "color": "green"
+    },
     {
       "period": "20261111100050536",
       "number": 9,
@@ -3230,12 +3237,6 @@
       "number": 4,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261111100050037",
-      "number": 3,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -3253,10 +3254,16 @@
   },
   "log": [
     {
-      "period": "20261111100050537",
-      "label": "SKIP",
+      "period": "20261111100050538",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050537",
+      "label": "SKIP",
+      "actual": "BIG (9)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100050536",
@@ -3281,12 +3288,6 @@
       "label": "SKIP",
       "actual": "BIG (5)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100050532",
-      "label": "BIG",
-      "actual": "BIG (7)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -3300,15 +3301,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100050537"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100050538"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794371301022
+  "savedAt": 1794371308247
 }
