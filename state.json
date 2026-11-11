@@ -54,7 +54,7 @@
       "uid": "82636",
       "uidStatus": "VERIFIED",
       "uidSubmittedAt": 1794372145643,
-      "active": false,
+      "active": true,
       "msgs": [
         3148,
         3149,
@@ -82,14 +82,15 @@
         3197,
         3198,
         3201,
-        3202
+        3202,
+        3204
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261111100050586",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
@@ -269,8 +270,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547357,
+  "subOffset": 700547358,
   "history": [
+    {
+      "period": "20261111100050585",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261111100050584",
       "number": 5,
@@ -3264,12 +3271,6 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261111100050085",
-      "number": 4,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3287,10 +3288,16 @@
   },
   "log": [
     {
-      "period": "20261111100050585",
-      "label": "SKIP",
+      "period": "20261111100050586",
+      "label": "SMALL",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050585",
+      "label": "SKIP",
+      "actual": "SMALL (1)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100050584",
@@ -3315,18 +3322,12 @@
       "label": "SKIP",
       "actual": "BIG (6)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100050580",
-      "label": "BIG",
-      "actual": "SMALL (0)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 252,
+    "wins": 253,
     "jackpots": 0,
-    "losses": 241,
+    "losses": 240,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -3334,15 +3335,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "SMALL",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100050585"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100050586"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794372741349
+  "savedAt": 1794372748365
 }
