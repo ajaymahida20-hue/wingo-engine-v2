@@ -45,6 +45,7 @@
   <nav class="cyber-nav">
     <button class="nav-tab active" data-tab="tab-hud" onclick="switchTab('tab-hud')">⚡ LIVE ENGINE</button>
     <button class="nav-tab" data-tab="tab-subs" onclick="switchTab('tab-subs')">👥 USERS &amp; UID <span class="nav-badge" id="navSubBadge">0</span></button>
+    <button class="nav-tab" data-tab="tab-channel" onclick="switchTab('tab-channel')">📢 CHANNEL / GROUP FORWARD <span class="nav-badge" id="navChBadge" style="display:none; background:#ff0055;">LIVE</span></button>
     <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">🤖 BOT &amp; PROMO SETTINGS</button>
     <button class="nav-tab" data-tab="tab-console" onclick="switchTab('tab-console')">💻 CONSOLE LOGS</button>
   </nav>
@@ -159,6 +160,60 @@
       </div>
 
       <p class="note">Users submit their 10-12 digit UID via the bot. You can verify or reject them here or let the server auto-verify them.</p>
+    </div>
+  </div>
+
+  <!-- ================= TAB: CHANNEL / GROUP FORWARD ================= -->
+  <div id="tab-channel" class="tab-pane hidden">
+    <div class="card">
+      <div class="card-head">
+        <h2>📢 Telegram Channel / Group Live Forwarding <span class="pill" id="chStatusPill">IDLE</span></h2>
+      </div>
+      <p class="muted" style="margin-bottom:14px;">
+        Apne Telegram Channel ya Group ka link ya username yahan daalein. Pehle hamare Bot ko us Channel/Group me <b>Admin</b> banayein, fir <b>VERIFY</b> karein.
+      </p>
+
+      <div class="field">
+        <label>Telegram Channel / Group Username, Link, ya Chat ID</label>
+        <div class="row" style="gap:10px;">
+          <input type="text" id="chInput" placeholder="@my_channel_username ya https://t.me/my_channel" style="flex:1;">
+          <button class="primary" id="btnChVerify" onclick="verifyChannel()">🔍 VERIFY BOT ADMIN</button>
+        </div>
+        <div id="chVerifyError" class="bad" style="margin-top:6px; font-size:12px; font-weight:700;"></div>
+      </div>
+
+      <div id="chVerifyResult" class="hidden" style="margin-top:14px; padding:12px; background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid #1f293d;">
+        <div class="grid">
+          <div class="kv"><label>Channel / Group Title</label><b id="chTitle">—</b></div>
+          <div class="kv"><label>Username</label><b id="chUsername" class="cy">—</b></div>
+          <div class="kv"><label>Chat ID</label><b id="chChatId" class="mono">—</b></div>
+          <div class="kv"><label>Admin Status</label><b id="chAdminStatus" class="ok">VERIFIED ADMIN ✅</b></div>
+        </div>
+      </div>
+
+      <hr style="border:0; border-top:1px solid #1f293d; margin:20px 0;">
+
+      <div class="card-head" style="margin-bottom:10px;">
+        <h3>🚀 Live Forwarding Controls (5 Winning Shots Target)</h3>
+        <div class="row">
+          <span class="pill" id="chWinsBadge" style="font-size:13px; font-weight:700;">0 / 5 Wins</span>
+        </div>
+      </div>
+
+      <div class="row" style="gap:10px; margin-top:10px;">
+        <button class="primary" id="btnChStart" onclick="toggleChannelForward('start')">▶ START FORWARD PREDICTION</button>
+        <button class="danger" id="btnChStop" onclick="toggleChannelForward('stop')" disabled>⏸ STOP FORWARDING</button>
+        <button onclick="toggleChannelForward('reset')">🔄 RESET COUNTER</button>
+      </div>
+
+      <div style="margin-top:20px; padding:14px; background:#0d1527; border-left:3px solid var(--cyan); border-radius:4px;">
+        <label style="color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">5 Wins Poore Hone Par Channel Me Jane Wala Auto Message:</label>
+        <pre style="margin-top:8px; font-family:inherit; font-size:12.5px; color:#e0e6ed; white-space:pre-wrap; line-height:1.5;">हमारा WINNING पूरा हुआ अब आप नीचे दिए गए बॉट को यूस करके PROSNAL में प्रॉफिट कर अक्ते हो 
+
+🛑 FIX 4 LEVEL SERVER BOT 🛑
+
+🤖:- @NXT_3_LEVEL_SERVER_BOT</pre>
+      </div>
     </div>
   </div>
 
