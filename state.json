@@ -695,11 +695,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100052203",
+      "lastPendingPeriod": "20261111100052204",
       "freeTrialActive": true,
       "freeTrialUsed": false,
-      "freeTrialWins": 3,
+      "freeTrialWins": 4,
       "pastLog": [
+        {
+          "period": "20261111100052203",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261111100052202",
           "side": "SMALL",
@@ -719,11 +724,6 @@
           "period": "20261111100052199",
           "side": "BIG",
           "status": "WIN"
-        },
-        {
-          "period": "20261111100052198",
-          "side": "BIG",
-          "status": "LOSS"
         }
       ],
       "id": 1952722932,
@@ -2243,6 +2243,12 @@
   ],
   "subOffset": 700547693,
   "history": [
+    {
+      "period": "20261111100052203",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261111100052202",
       "number": 4,
@@ -5236,12 +5242,6 @@
       "number": 6,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261111100051703",
-      "number": 1,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -5259,10 +5259,16 @@
   },
   "log": [
     {
-      "period": "20261111100052203",
+      "period": "20261111100052204",
       "label": "SMALL",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100052203",
+      "label": "SMALL",
+      "actual": "SMALL (1)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261111100052202",
@@ -5287,18 +5293,12 @@
       "label": "BIG",
       "actual": "BIG (5)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261111100052198",
-      "label": "BIG",
-      "actual": "SMALL (3)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 245,
+    "wins": 246,
     "jackpots": 0,
-    "losses": 254,
+    "losses": 253,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -5312,7 +5312,7 @@
     "numbers": [],
     "level": 1,
     "isSkip": false,
-    "predictionForPeriod": "20261111100052203"
+    "predictionForPeriod": "20261111100052204"
   },
   "engine": {
     "enabled": true
@@ -5331,5 +5331,5 @@
     "lastPendingPeriod": null,
     "pastLog": []
   },
-  "savedAt": 1794421281598
+  "savedAt": 1794421288338
 }
