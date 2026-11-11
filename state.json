@@ -206,7 +206,7 @@
       "dailyWins": 10,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261111100050646",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
@@ -388,6 +388,12 @@
   ],
   "subOffset": 700547365,
   "history": [
+    {
+      "period": "20261111100050645",
+      "number": 9,
+      "result": "BIG",
+      "color": "green"
+    },
     {
       "period": "20261111100050644",
       "number": 5,
@@ -3381,12 +3387,6 @@
       "number": 4,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261111100050145",
-      "number": 2,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3404,10 +3404,16 @@
   },
   "log": [
     {
-      "period": "20261111100050645",
-      "label": "SKIP",
+      "period": "20261111100050646",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050645",
+      "label": "SKIP",
+      "actual": "BIG (9)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100050644",
@@ -3432,18 +3438,12 @@
       "label": "SKIP",
       "actual": "BIG (7)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100050640",
-      "label": "SMALL",
-      "actual": "SMALL (3)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
-    "wins": 257,
+    "wins": 256,
     "jackpots": 0,
-    "losses": 236,
+    "losses": 237,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -3451,15 +3451,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100050645"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100050646"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794374541374
+  "savedAt": 1794374547817
 }
