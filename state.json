@@ -44,7 +44,7 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261111100050572",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 2,
@@ -119,7 +119,7 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261111100050572",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 2,
@@ -297,6 +297,12 @@
   ],
   "subOffset": 700547349,
   "history": [
+    {
+      "period": "20261111100050571",
+      "number": 3,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261111100050570",
       "number": 3,
@@ -3290,12 +3296,6 @@
       "number": 1,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261111100050071",
-      "number": 2,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3313,10 +3313,16 @@
   },
   "log": [
     {
-      "period": "20261111100050571",
-      "label": "SKIP",
+      "period": "20261111100050572",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050571",
+      "label": "SKIP",
+      "actual": "SMALL (3)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100050570",
@@ -3341,18 +3347,12 @@
       "label": "SKIP",
       "actual": "BIG (5)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100050566",
-      "label": "BIG",
-      "actual": "SMALL (1)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 256,
+    "wins": 255,
     "jackpots": 0,
-    "losses": 237,
+    "losses": 238,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -3360,15 +3360,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100050571"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100050572"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794372321580
+  "savedAt": 1794372328378
 }
