@@ -28,7 +28,8 @@
       "active": false,
       "msgs": [
         3358,
-        3359
+        3359,
+        3360
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -562,8 +563,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547383,
+  "subOffset": 700547384,
   "history": [
+    {
+      "period": "20261111100050678",
+      "number": 1,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261111100050677",
       "number": 9,
@@ -3557,12 +3564,6 @@
       "number": 5,
       "result": "BIG",
       "color": "green,violet"
-    },
-    {
-      "period": "20261111100050178",
-      "number": 8,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -3580,10 +3581,16 @@
   },
   "log": [
     {
-      "period": "20261111100050678",
-      "label": "BIG",
+      "period": "20261111100050679",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050678",
+      "label": "BIG",
+      "actual": "SMALL (1)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261111100050677",
@@ -3608,34 +3615,28 @@
       "label": "BIG",
       "actual": "BIG (9)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261111100050673",
-      "label": "SKIP",
-      "actual": "BIG (5)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 260,
     "jackpots": 0,
-    "losses": 233,
+    "losses": 234,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 53,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "BIG",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261111100050678"
+    "isSkip": true,
+    "predictionForPeriod": "20261111100050679"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794375530509
+  "savedAt": 1794375538415
 }
