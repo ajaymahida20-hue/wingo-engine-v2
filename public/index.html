@@ -45,7 +45,8 @@
   <nav class="cyber-nav">
     <button class="nav-tab active" data-tab="tab-hud" onclick="switchTab('tab-hud')">⚡ LIVE ENGINE</button>
     <button class="nav-tab" data-tab="tab-subs" onclick="switchTab('tab-subs')">👥 USERS &amp; UID <span class="nav-badge" id="navSubBadge">0</span></button>
-    <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">🤖 BOT &amp; VIDEO SETTINGS</button>
+    <button class="nav-tab" data-tab="tab-channel" onclick="switchTab('tab-channel')">📢 CHANNEL / GROUP FORWARD <span class="nav-badge" id="navChBadge" style="display:none; background:#ff0055;">LIVE</span></button>
+    <button class="nav-tab" data-tab="tab-bot" onclick="switchTab('tab-bot')">🤖 BOT &amp; PROMO SETTINGS</button>
     <button class="nav-tab" data-tab="tab-console" onclick="switchTab('tab-console')">💻 CONSOLE LOGS</button>
   </nav>
 
@@ -122,19 +123,22 @@
       <div class="card-head">
         <h2>👥 Bot Subscribers &amp; UID Verification <span class="pill on" id="subCount">0</span></h2>
         <div class="row">
-          <button onclick="setSubFilter('all')" class="nav-tab active" id="subFilterAll" style="padding:4px 10px; font-size:11px;">ALL</button>
-          <button onclick="setSubFilter('pending')" class="nav-tab" id="subFilterPending" style="padding:4px 10px; font-size:11px;">PENDING UID</button>
-          <button onclick="setSubFilter('verified')" class="nav-tab" id="subFilterVerified" style="padding:4px 10px; font-size:11px;">VERIFIED</button>
-          <button onclick="setSubFilter('live')" class="nav-tab" id="subFilterLive" style="padding:4px 10px; font-size:11px;">PREDICTING</button>
+          <button onclick="setSubFilter('all')" class="nav-tab active" id="subFilterAll" style="padding:6px 12px; font-size:11.5px;">ALL (<span id="cntAll">0</span>)</button>
+          <button onclick="setSubFilter('pending_uid')" class="nav-tab" id="subFilterPendingUid" style="padding:6px 12px; font-size:11.5px;">PENDING UID (<span id="cntPendingUid">0</span>)</button>
+          <button onclick="setSubFilter('deposit')" class="nav-tab" id="subFilterDeposit" style="padding:6px 12px; font-size:11.5px; border-color:rgba(255,183,0,0.4); color:var(--gold);">⚠️ DEPOSIT PENDING (<span id="cntDeposit">0</span>)</button>
+          <button onclick="setSubFilter('pending')" class="nav-tab" id="subFilterPending" style="padding:6px 12px; font-size:11.5px; border-color:rgba(0,229,255,0.4); color:var(--cyan);">⏳ PENDING (<span id="cntPending">0</span>)</button>
+          <button onclick="setSubFilter('verified')" class="nav-tab" id="subFilterVerified" style="padding:6px 12px; font-size:11.5px; border-color:rgba(0,255,136,0.4); color:var(--green);">✅ VERIFIED (<span id="cntVerified">0</span>)</button>
+          <button onclick="setSubFilter('live')" class="nav-tab" id="subFilterLive" style="padding:6px 12px; font-size:11.5px;">🟢 PREDICTING (<span id="cntLive">0</span>)</button>
         </div>
       </div>
 
       <!-- Quick Metrics -->
       <div class="grid" style="margin-bottom:12px;">
         <div class="kv"><label>Total Registered</label><b class="cy" id="kTotalUsers">—</b></div>
+        <div class="kv"><label>Pending UID</label><b class="cy" id="kPendingUidUsers">—</b></div>
+        <div class="kv"><label>⚠️ Deposit Pending</label><b style="color:var(--gold);" id="kDepositPendingUsers">—</b></div>
+        <div class="kv"><label>⏳ Pending</label><b style="color:var(--cyan);" id="kPendingUsers">—</b></div>
         <div class="kv"><label>Verified Members</label><b class="ok" id="kVerifiedUsers">—</b></div>
-        <div class="kv"><label>Pending Verification</label><b class="cy" id="kPendingUsers">—</b></div>
-        <div class="kv"><label>Live Predicting</label><b class="ok" id="kLiveUsers">—</b></div>
       </div>
 
       <!-- Search Filter -->
@@ -159,12 +163,69 @@
     </div>
   </div>
 
-  <!-- ================= TAB 3: BOT & VIDEO SETTINGS ================= -->
-  <div id="tab-bot" class="tab-pane hidden">
-    <!-- Bot Listener Settings -->
+  <!-- ================= TAB: CHANNEL / GROUP FORWARD ================= -->
+  <div id="tab-channel" class="tab-pane hidden">
     <div class="card">
       <div class="card-head">
-        <h2>🤖 Bot Configuration <span class="pill" id="listenerPill">—</span></h2>
+        <h2>📢 Telegram Channel / Group Live Forwarding <span class="pill" id="chStatusPill">IDLE</span></h2>
+        <a href="/forward" target="_blank" style="text-decoration:none;">
+          <button style="background:#1b263b; color:var(--cyan); border:1px solid var(--cyan); font-weight:700; cursor:pointer;">🔗 OPEN PUBLIC FORWARD PAGE ↗</button>
+        </a>
+      </div>
+      <p class="muted" style="margin-bottom:14px;">
+        Apne Telegram Channel ya Group ka link ya username yahan daalein. Pehle hamare Bot ko us Channel/Group me <b>Admin</b> banayein, fir <b>VERIFY</b> karein.
+      </p>
+
+      <div class="field">
+        <label>Telegram Channel / Group Username, Link, ya Chat ID</label>
+        <div class="row" style="gap:10px;">
+          <input type="text" id="chInput" placeholder="@my_channel_username ya https://t.me/my_channel" style="flex:1;">
+          <button class="primary" id="btnChVerify" onclick="verifyChannel()">🔍 VERIFY BOT ADMIN</button>
+        </div>
+        <div id="chVerifyError" class="bad" style="margin-top:6px; font-size:12px; font-weight:700;"></div>
+      </div>
+
+      <div id="chVerifyResult" class="hidden" style="margin-top:14px; padding:12px; background:rgba(0,0,0,0.3); border-radius:8px; border:1px solid #1f293d;">
+        <div class="grid">
+          <div class="kv"><label>Channel / Group Title</label><b id="chTitle">—</b></div>
+          <div class="kv"><label>Username</label><b id="chUsername" class="cy">—</b></div>
+          <div class="kv"><label>Chat ID</label><b id="chChatId" class="mono">—</b></div>
+          <div class="kv"><label>Admin Status</label><b id="chAdminStatus" class="ok">VERIFIED ADMIN ✅</b></div>
+        </div>
+      </div>
+
+      <hr style="border:0; border-top:1px solid #1f293d; margin:20px 0;">
+
+      <div class="card-head" style="margin-bottom:10px;">
+        <h3>🚀 Live Forwarding Controls (5 Winning Shots Target)</h3>
+        <div class="row">
+          <span class="pill" id="chWinsBadge" style="font-size:13px; font-weight:700;">0 / 5 Wins</span>
+        </div>
+      </div>
+
+      <div class="row" style="gap:10px; margin-top:10px;">
+        <button class="primary" id="btnChStart" onclick="toggleChannelForward('start')">▶ START FORWARD PREDICTION</button>
+        <button class="danger" id="btnChStop" onclick="toggleChannelForward('stop')" disabled>⏸ STOP FORWARDING</button>
+        <button onclick="toggleChannelForward('reset')">🔄 RESET COUNTER</button>
+      </div>
+
+      <div style="margin-top:20px; padding:14px; background:#0d1527; border-left:3px solid var(--cyan); border-radius:4px;">
+        <label style="color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-weight:700;">5 Wins Poore Hone Par Channel Me Jane Wala Auto Message:</label>
+        <pre style="margin-top:8px; font-family:inherit; font-size:12.5px; color:#e0e6ed; white-space:pre-wrap; line-height:1.5;">हमारा WINNING पूरा हुआ अब आप नीचे दिए गए बॉट को यूस करके PROSNAL में प्रॉफिट कर अक्ते हो 
+
+🛑 FIX 4 LEVEL SERVER BOT 🛑
+
+🤖:- @NXT_3_LEVEL_SERVER_BOT</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TAB 3: BOT & PROMOTION SETTINGS ================= -->
+  <div id="tab-bot" class="tab-pane hidden">
+    <!-- Bot Configuration -->
+    <div class="card">
+      <div class="card-head">
+        <h2>🤖 Bot &amp; Promotion Settings <span class="pill" id="listenerPill">—</span></h2>
         <div class="row">
           <button onclick="listenerAction('start')">START BOT LISTENER</button>
           <button class="danger" onclick="listenerAction('stop')">STOP</button>
@@ -181,21 +242,27 @@
       </div>
 
       <div class="field">
-        <label>Instruction Video (Telegram file_id, Direct URL, or local path)</label>
-        <input type="text" id="inpWelcomeVideo" placeholder="e.g. BAACAgUAAxkBA... or https://...">
-        <p class="note" style="margin-top:4px;">When a user sends /start, this video is sent with the instructions below.</p>
+        <label>🔗 Promotion / Registration Link (URL)</label>
+        <input type="text" id="inpCustomLink" placeholder="https://... (Enter your registration or promo link)">
+        <p class="note" style="margin-top:4px;">Yeh link welcome photo ke baad second UID request message ke sath ekdam structured format aur clickable button me jayega.</p>
       </div>
 
       <div class="field">
-        <label>Video Message / Deposit Instructions (Sent with video)</label>
-        <textarea id="inpVideoMessage" rows="3" placeholder="Watch this video carefully and send your UID..."></textarea>
+        <label>Promotion Button Text (Inline Button)</label>
+        <input type="text" id="inpCustomLinkText" placeholder="👉 REGISTER / OPEN LINK">
+      </div>
+
+      <div class="field">
+        <label>Second Message (UID Request Message Text)</label>
+        <textarea id="inpUidMessage" rows="3" placeholder="📹 Pehle video check karo, uske baad Niche diye gaye link se registration karo and UID number bhejo..."></textarea>
+        <p class="note" style="margin-top:4px;">User ko welcome photo ke turant baad yeh message bhejkar UID maangi jaati hai.</p>
       </div>
 
       <div class="field">
         <label class="switchline">
           <span class="sw" id="swAutoVerify" onclick="toggleAutoVerify()"></span> Auto-verify UID immediately on server hit
         </label>
-        <p class="note" style="margin-top:4px;">When ON, user UID is automatically verified when sent to server. In next step, connect your server API.</p>
+        <p class="note" style="margin-top:4px;">When ON, user UID is automatically verified. When OFF, admin manually approves from Users tab.</p>
       </div>
 
       <div class="field">
@@ -214,30 +281,6 @@
         <button onclick="post('/api/commands').then(refresh)">SET BOT MENU</button>
       </div>
       <p class="note" id="cfgNote">—</p>
-    </div>
-
-    <!-- Prediction Media / Photos -->
-    <div class="card">
-      <div class="card-head">
-        <h2>🖼️ Prediction Broadcast Media</h2>
-        <label class="switchline">
-          <span class="sw" id="swPhotos" onclick="togglePhotos()"></span> Attach photo to prediction signals
-        </label>
-      </div>
-
-      <div class="field">
-        <label>BIG Prediction Photo (file_id or direct https URL)</label>
-        <input type="text" id="inpPhotoBig" placeholder="AgACAg… or https://…">
-      </div>
-
-      <div class="field">
-        <label>SMALL Prediction Photo (file_id or direct https URL)</label>
-        <input type="text" id="inpPhotoSmall" placeholder="AgACAg… or https://…">
-      </div>
-
-      <div class="row" style="margin-top:12px;">
-        <button class="primary" onclick="saveConfig()">💾 SAVE PHOTO CODES</button>
-      </div>
     </div>
   </div>
 
@@ -262,6 +305,25 @@
         <button onclick="importCfg()">📥 IMPORT CONFIG</button>
       </div>
       <textarea id="cfgBox" rows="3" placeholder='{"botToken":"…"}' style="margin-top:10px;"></textarea>
+    </div>
+  </div>
+
+  <!-- Modal for Sending Private Message to User -->
+  <div id="userMsgModal" class="modal-overlay hidden" onclick="if(event.target === this) closeUserMsgModal()">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="userMsgTitle">💬 Send Private Message</h3>
+        <button class="modal-close" onclick="closeUserMsgModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="muted" style="margin-bottom:8px;">Target User: <b id="userMsgTarget" style="color:var(--text);"></b></p>
+        <textarea id="userMsgInput" placeholder="Type personal message here... Ye message seedha user ke Telegram chat par jayega (Bot start rahe ya off rahe, deposit status ki chinta kiye bina)."></textarea>
+        <p class="muted" style="font-size:11.5px; margin-top:6px;">💡 Text, Emojis, aur HTML tags (&lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, &lt;code&gt;code&lt;/code&gt;) support hote hain.</p>
+      </div>
+      <div class="modal-actions">
+        <button onclick="closeUserMsgModal()" style="background:#1b263b; color:var(--muted); border:none; padding:8px 16px; border-radius:6px; cursor:pointer;">Cancel</button>
+        <button id="userMsgSendBtn" onclick="submitUserMsg()" style="background:var(--cyan); color:#000; font-weight:800; border:none; padding:8px 18px; border-radius:6px; cursor:pointer;">🚀 Send Message</button>
+      </div>
     </div>
   </div>
 
