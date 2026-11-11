@@ -53,7 +53,7 @@ async function tick() {
     // 2. publish the next signal, once per round
     const calc = computePrediction();
     if (!calc) {
-      if (state.statLines.polls % 15 === 1) warn(`waiting for history — only ${state.history.length} round(s) saved so far (need at least 7)`);
+      if (state.statLines.polls % 15 === 1) warn(`waiting for history — only ${state.history.length} round(s) saved so far`);
     } else if (state.run.predictionForPeriod === null) {
       const period = nextPeriod();
       state.run.prediction = calc.prediction;
