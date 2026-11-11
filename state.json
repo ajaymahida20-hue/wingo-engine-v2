@@ -1919,6 +1919,12 @@
   "subOffset": 700547699,
   "history": [
     {
+      "period": "20261111100052240",
+      "number": 6,
+      "result": "BIG",
+      "color": "red"
+    },
+    {
       "period": "20261111100052239",
       "number": 0,
       "result": "SMALL",
@@ -4911,12 +4917,6 @@
       "number": 7,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261111100051740",
-      "number": 1,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -4934,10 +4934,16 @@
   },
   "log": [
     {
-      "period": "20261111100052240",
+      "period": "20261111100052241",
       "label": "SMALL",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100052240",
+      "label": "SMALL",
+      "actual": "BIG (6)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261111100052239",
@@ -4962,43 +4968,37 @@
       "label": "SMALL",
       "actual": "BIG (9)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261111100052235",
-      "label": "BIG",
-      "actual": "SMALL (1)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 243,
+    "wins": 241,
     "jackpots": 0,
-    "losses": 256,
+    "losses": 258,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
-    "winRate": 49,
+    "winRate": 48,
     "totalTested": 499
   },
   "run": {
-    "mode": "TOP LATEST (2/2)",
-    "consecutiveLosses": 1,
+    "mode": "BOTTOM 10TH (1/2)",
+    "consecutiveLosses": 2,
     "prediction": "SMALL",
     "numbers": [],
-    "level": 2,
+    "level": 3,
     "isSkip": false,
-    "predictionForPeriod": "20261111100052240"
+    "predictionForPeriod": "20261111100052241"
   },
   "engine": {
     "enabled": true
   },
   "channelForward": {
-    "target": "",
-    "chatId": null,
-    "title": "",
-    "username": "",
-    "type": "",
-    "verified": false,
+    "target": "@NXT_TEAM_369",
+    "chatId": -1002486405463,
+    "title": "KHELV OFFICIAL",
+    "username": "@NXT_TEAM_369",
+    "type": "channel",
+    "verified": true,
     "active": false,
     "sessionWins": 0,
     "targetWins": 5,
@@ -5006,6 +5006,22 @@
     "lastPendingPeriod": null,
     "pastLog": []
   },
-  "forwardChannels": [],
-  "savedAt": 1794422391477
+  "forwardChannels": [
+    {
+      "chatId": -1002486405463,
+      "target": "@NXT_TEAM_369",
+      "title": "KHELV OFFICIAL",
+      "username": "@NXT_TEAM_369",
+      "type": "channel",
+      "verified": true,
+      "active": false,
+      "sessionWins": 0,
+      "targetWins": 5,
+      "status": "VERIFIED",
+      "lastPendingPeriod": null,
+      "pastLog": [],
+      "createdAt": 1794422397974
+    }
+  ],
+  "savedAt": 1794422398370
 }
