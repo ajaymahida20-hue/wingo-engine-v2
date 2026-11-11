@@ -542,6 +542,32 @@ export async function verifyChannelAdmin(chatTarget) {
     type: chat.type || "channel",
     verified: true
   };
+
+  if (!Array.isArray(state.forwardChannels)) state.forwardChannels = [];
+  let existing = state.forwardChannels.find(c => String(c.chatId) === String(chat.id) || (c.target && c.target.toLowerCase() === target.toLowerCase()));
+  if (!existing) {
+    existing = {
+      chatId: chat.id,
+      target,
+      title: chat.title || target,
+      username: chat.username ? `@${chat.username}` : "",
+      type: chat.type || "channel",
+      verified: true,
+      active: false,
+      sessionWins: 0,
+      targetWins: 5,
+      status: "VERIFIED",
+      lastPendingPeriod: null,
+      pastLog: [],
+      createdAt: Date.now()
+    };
+    state.forwardChannels.push(existing);
+  } else {
+    existing.verified = true;
+    existing.title = chat.title || target;
+    existing.username = chat.username ? `@${chat.username}` : existing.username;
+    existing.status = existing.active ? "RUNNING" : "VERIFIED";
+  }
   persist();
 
   return {
@@ -552,8 +578,71 @@ export async function verifyChannelAdmin(chatTarget) {
       username: chat.username ? `@${chat.username}` : "",
       type: chat.type,
       status: member.status
-    }
+    },
+    channel: existing
   };
+}
+
+export async function startChannelForward(chatTarget) {
+  let target = String(chatTarget || "").trim();
+  if (target.startsWith("https://t.me/")) {
+    target = "@" + target.replace("https://t.me/", "").replace(/\/$/, "");
+  }
+  if (!target.startsWith("@") && !target.startsWith("-") && isNaN(Number(target))) {
+    target = "@" + target;
+  }
+
+  let ch = (state.forwardChannels || []).find(c => (c.target && c.target.toLowerCase() === target.toLowerCase()) || String(c.chatId) === target);
+  if (!ch || !ch.verified) {
+    const vr = await verifyChannelAdmin(target);
+    if (!vr.ok) return vr;
+    ch = (state.forwardChannels || []).find(c => String(c.chatId) === String(vr.chat.id));
+  }
+
+  if (!ch) return { ok: false, error: "Channel verification failed" };
+
+  ch.active = true;
+  ch.sessionWins = 0;
+  ch.targetWins = 5;
+  ch.status = "RUNNING";
+  ch.pastLog = [];
+  ch.lastPendingPeriod = null;
+
+  state.channelForward = {
+    ...state.channelForward,
+    ...ch
+  };
+  persist();
+
+  info(`Channel forwarding STARTED for ${ch.title} (${ch.target})`);
+  return { ok: true, channel: ch };
+}
+
+export function stopChannelForward(chatTarget) {
+  let target = String(chatTarget || "").trim();
+  let ch = (state.forwardChannels || []).find(c => (c.target && c.target.toLowerCase() === target.toLowerCase()) || String(c.chatId) === target);
+  if (ch) {
+    ch.active = false;
+    ch.status = "PAUSED";
+  }
+  if (state.channelForward) {
+    state.channelForward.active = false;
+    state.channelForward.status = "PAUSED";
+  }
+  persist();
+  return { ok: true, channel: ch || state.channelForward };
+}
+
+export function getChannelForwardStatus(chatTarget) {
+  let target = String(chatTarget || "").trim();
+  if (target.startsWith("https://t.me/")) target = "@" + target.replace("https://t.me/", "").replace(/\/$/, "");
+  if (!target.startsWith("@") && !target.startsWith("-") && isNaN(Number(target))) target = "@" + target;
+
+  let ch = (state.forwardChannels || []).find(c => (c.target && c.target.toLowerCase() === target.toLowerCase()) || String(c.chatId) === target);
+  if (!ch && state.channelForward && ((state.channelForward.target && state.channelForward.target.toLowerCase() === target.toLowerCase()) || String(state.channelForward.chatId) === target)) {
+    ch = state.channelForward;
+  }
+  return { ok: true, channel: ch || state.channelForward || null };
 }
 
 export async function setSubscriberUidStatus(userId, status) {
@@ -1182,24 +1271,38 @@ export async function broadcast(period, prediction, numbers, level) {
     return true;
   });
 
-  const hasChannel = !!(state.channelForward?.active && state.channelForward?.chatId);
+  const activeChannels = [];
+  if (Array.isArray(state.forwardChannels)) {
+    for (const c of state.forwardChannels) {
+      if (c.active && c.chatId && (c.sessionWins || 0) < (c.targetWins || 5)) {
+        activeChannels.push(c);
+      }
+    }
+  }
+  if (state.channelForward?.active && state.channelForward?.chatId && (state.channelForward.sessionWins || 0) < (state.channelForward.targetWins || 5)) {
+    if (!activeChannels.some(c => String(c.chatId) === String(state.channelForward.chatId))) {
+      activeChannels.push(state.channelForward);
+    }
+  }
+
+  const hasChannel = activeChannels.length > 0;
 
   if (!state.cfg.botToken || (!eligibleSubs.length && !hasChannel)) {
     if (!eligibleSubs.length && !hasChannel) warn(`nothing published for ..${period.slice(-4)} — no eligible active subscriber or channel`);
     return false;
   }
 
-  // Forward prediction to verified Telegram Channel / Group if active
-  if (hasChannel) {
+  // Forward prediction to verified Telegram Channels / Groups if active
+  for (const ch of activeChannels) {
     if (prediction !== "SKIP") {
-      state.channelForward.lastPendingPeriod = period;
+      ch.lastPendingPeriod = period;
     }
-    const chWins = state.channelForward.sessionWins || 0;
-    const chLog = Array.isArray(state.channelForward.pastLog) ? state.channelForward.pastLog : [];
+    const chWins = ch.sessionWins || 0;
+    const chLog = Array.isArray(ch.pastLog) ? ch.pastLog : [];
     const chPost = buildPost(period, prediction, numbers, level, chWins, chLog);
-    sendDirect(state.channelForward.chatId, chPost, {}, true).then(r => {
-      if (!r.ok) warn(`channel forward delivery failed: ${r.description || "error"}`);
-    }).catch(e => warn(`channel forward delivery error: ${e.message}`));
+    sendDirect(ch.chatId, chPost, {}, true).then(r => {
+      if (!r.ok) warn(`channel forward delivery failed for ${ch.title}: ${r.description || "error"}`);
+    }).catch(e => warn(`channel forward delivery error for ${ch.title}: ${e.message}`));
   }
 
   // Mark pending period for eligible subscribers if this is a real prediction round (not SKIP)
@@ -1360,29 +1463,35 @@ export async function settleSubscriberWins(resolved) {
     }
   }
 
-  // 1b. Settle Channel/Group Forwarding
-  if (state.channelForward && state.channelForward.active && state.channelForward.chatId) {
-    if (state.channelForward.lastPendingPeriod === resolved.period) {
-      state.channelForward.lastPendingPeriod = null;
-      if (!Array.isArray(state.channelForward.pastLog)) state.channelForward.pastLog = [];
-      state.channelForward.pastLog.unshift({
+  // 1b. Settle Channel/Group Forwarding for all active channels
+  const allForwardChannels = [];
+  if (Array.isArray(state.forwardChannels)) allForwardChannels.push(...state.forwardChannels);
+  if (state.channelForward && !allForwardChannels.some(c => String(c.chatId) === String(state.channelForward.chatId))) {
+    allForwardChannels.push(state.channelForward);
+  }
+
+  for (const ch of allForwardChannels) {
+    if (ch.active && ch.chatId && ch.lastPendingPeriod === resolved.period) {
+      ch.lastPendingPeriod = null;
+      if (!Array.isArray(ch.pastLog)) ch.pastLog = [];
+      ch.pastLog.unshift({
         period: resolved.period,
         side: resolved.label,
         status: isWin ? "WIN" : "LOSS"
       });
-      if (state.channelForward.pastLog.length > 5) state.channelForward.pastLog.length = 5;
+      if (ch.pastLog.length > 5) ch.pastLog.length = 5;
 
       if (isWin) {
-        state.channelForward.sessionWins = (state.channelForward.sessionWins || 0) + 1;
-        const wins = state.channelForward.sessionWins;
-        info(`channel forward win: ${wins}/5 for ${state.channelForward.title || state.channelForward.chatId}`);
+        ch.sessionWins = (ch.sessionWins || 0) + 1;
+        const wins = ch.sessionWins;
+        info(`channel forward win: ${wins}/5 for ${ch.title || ch.chatId}`);
 
-        if (wins >= 5) {
-          state.channelForward.active = false;
-          state.channelForward.status = "COMPLETED";
-          state.channelForward.completedAt = Date.now();
-          const finalChLog = [...state.channelForward.pastLog];
-          const targetChatId = state.channelForward.chatId;
+        if (wins >= (ch.targetWins || 5)) {
+          ch.active = false;
+          ch.status = "COMPLETED";
+          ch.completedAt = Date.now();
+          const finalChLog = [...ch.pastLog];
+          const targetChatId = ch.chatId;
           persist();
 
           (async () => {
