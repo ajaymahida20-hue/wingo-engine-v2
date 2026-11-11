@@ -98,7 +98,7 @@
       "username": "Jay_baba_0076",
       "since": 1794398677615,
       "uid": "105637",
-      "uidStatus": "PENDING_UID",
+      "uidStatus": "PENDING",
       "uidSubmittedAt": 1794398723961,
       "active": false,
       "msgs": [
@@ -108,7 +108,8 @@
         4117,
         4118,
         4120,
-        4122
+        4122,
+        4160
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -310,18 +311,24 @@
         4151,
         4153,
         4156,
-        4158
+        4158,
+        4161
       ],
       "sessionWins": 2,
       "sessionNumber": 3,
       "dailyWins": 12,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100051468",
+      "lastPendingPeriod": null,
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
       "pastLog": [
+        {
+          "period": "20261111100051468",
+          "side": "SMALL",
+          "status": "LOSS"
+        },
         {
           "period": "20261111100051466",
           "side": "BIG",
@@ -341,11 +348,6 @@
           "period": "20261111100051460",
           "side": "BIG",
           "status": "WIN"
-        },
-        {
-          "period": "20261111100051458",
-          "side": "SMALL",
-          "status": "LOSS"
         }
       ],
       "waitingForWin": false
@@ -1762,6 +1764,12 @@
   ],
   "subOffset": 700547597,
   "history": [
+    {
+      "period": "20261111100051468",
+      "number": 6,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261111100051467",
       "number": 9,
@@ -4755,12 +4763,6 @@
       "number": 4,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261111100050968",
-      "number": 7,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -4778,10 +4780,16 @@
   },
   "log": [
     {
-      "period": "20261111100051468",
-      "label": "SMALL",
+      "period": "20261111100051469",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100051468",
+      "label": "SMALL",
+      "actual": "BIG (6)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261111100051467",
@@ -4806,12 +4814,6 @@
       "label": "SMALL",
       "actual": "BIG (8)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261111100051463",
-      "label": "SKIP",
-      "actual": "BIG (8)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
@@ -4825,15 +4827,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "SMALL",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261111100051468"
+    "isSkip": true,
+    "predictionForPeriod": "20261111100051469"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794399231481
+  "savedAt": 1794399238493
 }
