@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8">
+  <title>WinGo VIP Prediction Forwarding — Channel / Group Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="panel.css">
+  <style>
+    body {
+      background: #090d16;
+      color: #e0e6ed;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+    .forward-container {
+      width: 100%;
+      max-width: 680px;
+      margin: 20px auto;
+    }
+    .header-banner {
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: #101726;
+      border: 1px solid #1f2a3e;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .header-banner h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      color: var(--cyan, #00f2fe);
+      letter-spacing: 0.5px;
+    }
+    .header-banner p {
+      margin: 0;
+      color: #94a3b8;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .step-box {
+      background: #101726;
+      border: 1px solid #1f2a3e;
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .step-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .step-num {
+      background: var(--cyan, #00f2fe);
+      color: #000;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .instruction-list {
+      margin: 0 0 16px 0;
+      padding-left: 20px;
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .instruction-list b {
+      color: #38bdf8;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    @media (max-width: 580px) {
+      .input-row {
+        flex-direction: column;
+      }
+    }
+    .target-input {
+      flex: 1;
+      background: #090d16;
+      border: 1px solid #2d3b55;
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #f8fafc;
+      font-size: 15px;
+      font-family: monospace;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .target-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    .btn-action {
+      background: #00f2fe;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-action:hover:not(:disabled) {
+      opacity: 0.92;
+      transform: translateY(-1px);
+    }
+    .btn-action:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-danger {
+      background: #ef4444;
+      color: #fff;
+    }
+    .status-card {
+      margin-top: 18px;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+    .grid-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .info-item {
+      background: #0b1120;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+    }
+    .info-label {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .info-val {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #f1f5f9;
+      word-break: break-all;
+    }
+    .badge-verified {
+      background: #10b981;
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-block;
+    }
+    .badge-running {
+      background: #3b82f6;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+    .badge-completed {
+      background: #a855f7;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-block;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    .progress-box {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 14px;
+      margin: 14px 0;
+      text-align: center;
+    }
+    .progress-num {
+      font-size: 26px;
+      font-weight: 900;
+      color: #38bdf8;
+      margin: 6px 0;
+    }
+    .preview-box {
+      margin-top: 18px;
+      padding: 14px;
+      background: #0b1120;
+      border-left: 3px solid #00f2fe;
+      border-radius: 4px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+    .preview-box pre {
+      margin: 8px 0 0;
+      font-family: inherit;
+      white-space: pre-wrap;
+      color: #f8fafc;
+      font-weight: 600;
+    }
+    .alert-err {
+      color: #f87171;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .alert-success {
+      color: #34d399;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="forward-container">
+
+  <!-- HEADER -->
+  <div class="header-banner">
+    <h1>📢 VIP WINGO PREDICTION FORWARDING</h1>
+    <p>Apne Telegram Channel ya Group me live VIP predictions activate karein (5 Winning Shots Target).</p>
+  </div>
+
+  <!-- STEP 1 & 2: INSTRUCTIONS & INPUT -->
+  <div class="step-box">
+    <div class="step-title">
+      <span class="step-num">1</span>
+      <span>Bot Ko Admin Banayein &amp; Verify Karein</span>
+    </div>
+
+    <ol class="instruction-list">
+      <li>Pehle hamare Bot ko apne Telegram Channel ya Group me <b>Admin</b> banayein (with <b>Post Messages</b> permission).</li>
+      <li>Neeche diye gaye box me apna <b>Group / Channel Username</b> (jaise: <code>@my_channel</code>) ya Link daalein.</li>
+      <li><b>VERIFY BOT ADMIN</b> button par click karein.</li>
+    </ol>
+
+    <div class="input-row">
+      <input type="text" id="targetInput" class="target-input" placeholder="@your_channel ya https://t.me/your_channel" autofocus>
+      <button class="btn-action" id="btnVerify" onclick="verifyGroup()">
+        🔍 VERIFY BOT ADMIN
+      </button>
+    </div>
+    <div id="verifyMsg"></div>
+
+    <!-- VERIFIED RESULT CARD -->
+    <div id="verifiedCard" class="status-card hidden">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span class="badge-verified" id="badgeStatus">VERIFIED ADMIN ✅</span>
+        <span id="targetType" style="font-size:12px; color:#94a3b8; text-transform:uppercase;">CHANNEL</span>
+      </div>
+
+      <div class="grid-info">
+        <div class="info-item">
+          <div class="info-label">Title / Name</div>
+          <div class="info-val" id="dispTitle">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Username</div>
+          <div class="info-val" id="dispUser" style="color:#38bdf8;">—</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Chat ID</div>
+          <div class="info-val" id="dispId" style="font-family:monospace;">—</div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; text-align:center;">
+        <p style="margin:0 0 10px; font-size:13.5px; color:#34d399; font-weight:700;">
+          🎉 हाँ, हो गया सब कुछ! बॉट आपके चैनल/ग्रुप का एडमिन है।
+        </p>
+
+        <!-- START / STOP BUTTONS -->
+        <button class="btn-action" id="btnStart" onclick="startForwarding()" style="font-size:15px; padding:13px 26px;">
+          🚀 START PREDICTION FORWARD (5 WINS)
+        </button>
+        <button class="btn-action btn-danger hidden" id="btnStop" onclick="stopForwarding()" style="font-size:15px; padding:13px 26px;">
+          ⏸ STOP FORWARDING
+        </button>
+      </div>
+
+      <!-- LIVE PROGRESS -->
+      <div id="progressCard" class="progress-box hidden">
+        <div style="font-size:12px; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">Live 5-Wins Target Progress</div>
+        <div class="progress-num" id="dispWins">0 / 5 WINS</div>
+        <div id="liveSubText" style="font-size:12px; color:#cbd5e1;">Live round predictions aapke group me forward ho rahe hain...</div>
+      </div>
+
+      <!-- 5 WINS COMPLETED MESSAGE -->
+      <div id="completedCard" class="status-card hidden" style="border-color:#a855f7; background:rgba(168, 85, 247, 0.1);">
+        <div style="text-align:center;">
+          <span class="badge-completed">🎯 5 WINNING SHOTS COMPLETED</span>
+          <p style="margin:10px 0 6px; font-weight:800; color:#f8fafc; font-size:15px;">5 विनिंग शॉट्स पूरे हो चुके हैं!</p>
+          <p style="margin:0; font-size:12.5px; color:#cbd5e1;">अब इस चैनल में फॉरवर्डिंग समाप्त हो गई है और नीचे दिया गया अंतिम संदेश चैनल में पोस्ट कर दिया गया है।</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMPLETION MESSAGE PREVIEW -->
+  <div class="preview-box">
+    <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#94a3b8; font-weight:700;">
+      📌 5 Wins Poore Hone Par Channel Me Jane Wala Auto Message:
+    </span>
+    <pre>हमारा WINNING पूरा हुआ अब आप नीचे दिए गए बॉट को यूस करके PROSNAL में प्रॉफिट कर अक्ते हो 
+
+🛑 FIX 4 LEVEL SERVER BOT 🛑
+
+🤖:- @NXT_3_LEVEL_SERVER_BOT</pre>
+  </div>
+
+</div>
+
+<script>
+  let currentTarget = "";
+  let pollInterval = null;
+
+  const $ = id => document.getElementById(id);
+
+  async function verifyGroup() {
+    const raw = $("targetInput").value.trim();
+    if (!raw) {
+      $("verifyMsg").innerHTML = '<div class="alert-err">⚠️ Kripya channel ya group ka username / link dalein.</div>';
+      return;
+    }
+
+    $("btnVerify").disabled = true;
+    $("verifyMsg").innerHTML = '<div style="color:#38bdf8; font-size:13px; margin-top:8px;">⏳ Bot Admin status check kiya ja raha hai...</div>';
+
+    try {
+      const res = await fetch("/api/public/channel-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: raw })
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        currentTarget = raw;
+        $("verifyMsg").innerHTML = '<div class="alert-success">✅ Verification Successful! Bot is Administrator.</div>';
+        $("dispTitle").textContent = data.chat.title || raw;
+        $("dispUser").textContent = data.chat.username || "—";
+        $("dispId").textContent = data.chat.id;
+        $("targetType").textContent = data.chat.type || "CHANNEL";
+
+        $("verifiedCard").classList.remove("hidden");
+
+        const ch = data.channel;
+        if (ch && ch.active) {
+          showRunningState(ch.sessionWins || 0);
+        } else if (ch && ch.status === "COMPLETED") {
+          showCompletedState();
+        } else {
+          showIdleState();
+        }
+      } else {
+        $("verifyMsg").innerHTML = `<div class="alert-err">❌ ${data.error || "Verification failed."}</div>`;
+      }
+    } catch (e) {
+      $("verifyMsg").innerHTML = `<div class="alert-err">❌ Error: ${e.message}</div>`;
+    } finally {
+      $("btnVerify").disabled = false;
+    }
+  }
+
+  async function startForwarding() {
+    if (!currentTarget) return;
+    $("btnStart").disabled = true;
+    try {
+      const res = await fetch("/api/public/channel-start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: currentTarget })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        showRunningState(data.channel?.sessionWins || 0);
+        startPolling();
+      } else {
+        alert(data.error || "Could not start forwarding.");
+      }
+    } catch (e) {
+      alert("Error: " + e.message);
+    } finally {
+      $("btnStart").disabled = false;
+    }
+  }
+
+  async function stopForwarding() {
+    if (!confirm("Kya aap forwarding pause karna chahte hain?")) return;
+    try {
+      await fetch("/api/channel/toggle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "stop" })
+      });
+      showIdleState();
+      if (pollInterval) clearInterval(pollInterval);
+    } catch (e) {
+      alert("Error: " + e.message);
+    }
+  }
+
+  function showIdleState() {
+    $("btnStart").classList.remove("hidden");
+    $("btnStop").classList.add("hidden");
+    $("progressCard").classList.add("hidden");
+    $("completedCard").classList.add("hidden");
+    $("badgeStatus").textContent = "VERIFIED ADMIN ✅";
+    $("badgeStatus").className = "badge-verified";
+  }
+
+  function showRunningState(wins) {
+    $("btnStart").classList.add("hidden");
+    $("btnStop").classList.remove("hidden");
+    $("progressCard").classList.remove("hidden");
+    $("completedCard").classList.add("hidden");
+    $("dispWins").textContent = `${wins} / 5 WINS`;
+    $("badgeStatus").textContent = "LIVE FORWARDING 🟢";
+    $("badgeStatus").className = "badge-running";
+  }
+
+  function showCompletedState() {
+    $("btnStart").classList.remove("hidden");
+    $("btnStart").textContent = "🔄 START NEW 5 WINS SESSION";
+    $("btnStop").classList.add("hidden");
+    $("progressCard").classList.add("hidden");
+    $("completedCard").classList.remove("hidden");
+    $("badgeStatus").textContent = "COMPLETED 🎯";
+    $("badgeStatus").className = "badge-completed";
+  }
+
+  async function checkLiveStatus() {
+    if (!currentTarget) return;
+    try {
+      const res = await fetch(`/api/public/channel-status?target=${encodeURIComponent(currentTarget)}`);
+      const data = await res.json();
+      if (data.ok && data.channel) {
+        const ch = data.channel;
+        if (ch.status === "COMPLETED" || (ch.sessionWins || 0) >= 5) {
+          showCompletedState();
+          if (pollInterval) clearInterval(pollInterval);
+        } else if (ch.active) {
+          showRunningState(ch.sessionWins || 0);
+        }
+      }
+    } catch (e) {}
+  }
+
+  function startPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(checkLiveStatus, 2500);
+  }
+
+  $("targetInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") verifyGroup();
+  });
+</script>
+</body>
+</html>
