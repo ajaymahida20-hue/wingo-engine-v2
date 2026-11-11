@@ -691,11 +691,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100052199",
+      "lastPendingPeriod": "20261111100052200",
       "freeTrialActive": true,
       "freeTrialUsed": false,
-      "freeTrialWins": 0,
+      "freeTrialWins": 1,
       "pastLog": [
+        {
+          "period": "20261111100052199",
+          "side": "BIG",
+          "status": "WIN"
+        },
         {
           "period": "20261111100052198",
           "side": "BIG",
@@ -2224,6 +2229,12 @@
   ],
   "subOffset": 700547693,
   "history": [
+    {
+      "period": "20261111100052199",
+      "number": 5,
+      "result": "BIG",
+      "color": "green,violet"
+    },
     {
       "period": "20261111100052198",
       "number": 3,
@@ -5217,12 +5228,6 @@
       "number": 7,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261111100051699",
-      "number": 5,
-      "result": "BIG",
-      "color": "green,violet"
     }
   ],
   "strategy": {
@@ -5240,10 +5245,16 @@
   },
   "log": [
     {
-      "period": "20261111100052199",
+      "period": "20261111100052200",
       "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100052199",
+      "label": "BIG",
+      "actual": "BIG (5)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261111100052198",
@@ -5268,12 +5279,6 @@
       "label": "SMALL",
       "actual": "SMALL (2)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261111100052194",
-      "label": "SMALL",
-      "actual": "SMALL (2)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -5287,13 +5292,13 @@
     "totalTested": 499
   },
   "run": {
-    "mode": "BOTTOM 10TH (2/2)",
-    "consecutiveLosses": 3,
+    "mode": "TOP LATEST (1/2)",
+    "consecutiveLosses": 0,
     "prediction": "BIG",
     "numbers": [],
-    "level": 4,
+    "level": 1,
     "isSkip": false,
-    "predictionForPeriod": "20261111100052199"
+    "predictionForPeriod": "20261111100052200"
   },
   "engine": {
     "enabled": true
@@ -5312,5 +5317,5 @@
     "lastPendingPeriod": null,
     "pastLog": []
   },
-  "savedAt": 1794421161248
+  "savedAt": 1794421168351
 }
