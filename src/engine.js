@@ -1,126 +1,207 @@
-// The prediction engine — four rules, one vote, two target balls.
+// WinGo Top/Bottom Loss-Alternating Prediction Engine
 //
-// This is the browser page's rule set moved to the server. The old four-stage
-// ladder is gone; the strategy below is the only thing that decides a call now.
-//
-//  Rule 1 (parity flip):  the gap between the last two draws picks the side. An
-//    even gap keeps the newest side, an odd gap flips it.
-//  Rule 2 (mean revert):  if the last two draws landed on the same side, keep it;
-//    otherwise take the opposite of the newest.
-//  Rule 3 (time mix):     the predicted period's last four digits plus the wall
-//    clock minute choose a side by parity.
-//  Rule 4 (sine wave):    sin(periodSuffix * (newest + 1)) chooses a side.
-//
-//  The four calls are counted and the majority wins; a 2-2 tie falls to rule 4.
-//  Only one ball is shown beside the call: the one on the OPPOSITE side of it, so
-//  a SMALL call shows a big ball and a BIG call shows a small one. A result that
-//  equals that ball is a JACKPOT.
+// Calculation Rule:
+// 1. Initially (or after ANY WIN):
+//    Take the TOP (latest) history round (e.g. if predicting 213, take 212).
+// 2. If it results in LOSS (1st loss):
+//    Take the TOP (latest) history round again (2nd try of top).
+// 3. If it results in LOSS (2nd loss):
+//    Take the BOTTOM 10th history round from the first page (index 9).
+// 4. If it results in LOSS (3rd loss):
+//    Take the BOTTOM 10th history round again (2nd try of bottom).
+// 5. If it results in LOSS (4th loss):
+//    Switch back to TOP (latest) history round.
+// Pattern on consecutive losses:
+//    2 times TOP -> 2 times BOTTOM -> 2 times TOP -> 2 times BOTTOM...
+// AND ON ANY WIN:
+//    Instantly reset back to TOP (latest) history round!
 
 import { state, persist } from "./store.js";
 import { nextPeriod } from "./history.js";
 
-// The feed reports violet balls as combined strings like "green,violet", so match
-// on the words. Anything unrecognised falls back to the plain WinGo colour.
+// Helper (kept for compatibility)
+export const invertPrediction = (p) => {
+  const s = String(p || "").toUpperCase();
+  if (s === "BIG") return "SMALL";
+  if (s === "SMALL") return "BIG";
+  return s;
+};
+
 export function ballColor(round) {
   const c = String(round?.color || "").toLowerCase();
   if (c.includes("green")) return "green";
   if (c.includes("red")) return "red";
-  const n = round ? round.number : 0;
+  const n = round ? (round.number ?? 0) : 0;
   return n % 2 === 1 ? "green" : "red";
 }
 
 export const isViolet = round => !!round && (round.number === 0 || round.number === 5);
+export const isColourCall = () => false;
+export const colourFollow = round => ballColor(round);
 
-// Violet counts as green. Kept because the Telegram module still imports this
-// name; the current strategy never calls it.
-export function colourFollow(round) {
-  if (isViolet(round)) return "green";
-  return ballColor(round);
-}
-
-// Maps the log wording to the tag used inside a post's PAST RESULTS block.
 export function outcomeTag(resultText) {
   if (resultText.includes("JACKPOT")) return "[🎰 JACKPOT]";
   if (resultText.includes("WIN")) return "[✅ WIN]";
-  if (resultText.includes("LOSE")) return "[❌ LOSS]";
+  if (resultText.includes("LOSE") || resultText.includes("LOSS")) return "[❌ LOSS]";
+  if (resultText.includes("SKIP")) return "[⏳ SKIP]";
   return "";
 }
 
-export function isColourCall(prediction) {
-  return prediction === "GREEN" || prediction === "RED";
-}
+// ==========================================
+// 🧠 HISTORICAL SIMULATION
+// ==========================================
+export function simulateStrategy(historyList = state.history) {
+  if (!historyList || historyList.length < 2) {
+    return {
+      canPredict: false,
+      reason: `Need history rounds to backtest.`,
+      simulatedRecords: [],
+      stats: { totalTested: 0, totalWins: 0, totalLosses: 0, winRate: 0 },
+      nextLivePrediction: null
+    };
+  }
 
-const sideOf = n => (n >= 5 ? "BIG" : "SMALL");
+  // historyList is newest-first. chrono is oldest-first.
+  const chrono = [...historyList].reverse();
+  const stats = { totalTested: 0, totalWins: 0, totalLosses: 0, winRate: 0 };
+  const simulatedRecords = [];
+  let simLosses = 0;
 
-// The four rules voted into one call, plus the two target balls. Pure logic, so
-// the panel or a test can run it on numbers without touching any state.
-export function votePrediction(newest, previous, periodSuffix, minute) {
-  const gap = Math.abs(newest - previous);
+  for (let i = 1; i < chrono.length; i++) {
+    const currentRound = chrono[i];
+    const step = simLosses % 4;
+    const isTop = (step === 0 || step === 1);
 
-  // rule 1 — parity flip
-  const v1 = (gap % 2 === 0)
-    ? (newest >= 5 ? "BIG" : "SMALL")
-    : (newest >= 5 ? "SMALL" : "BIG");
+    let refRound;
+    if (isTop) {
+      refRound = chrono[i - 1]; // Previous round (Top)
+    } else {
+      const bottomIdx = Math.max(0, i - 10);
+      refRound = chrono[bottomIdx]; // 10 rounds back (Bottom)
+    }
 
-  // rule 2 — mean reversion
-  const lb = sideOf(newest);
-  const pb = sideOf(previous);
-  const v2 = (lb === pb) ? lb : (lb === "BIG" ? "SMALL" : "BIG");
+    if (!refRound) continue;
 
-  // rule 3 — time mix
-  const ts = periodSuffix + minute;
-  const v3 = (ts % 2 === 0) ? "SMALL" : "BIG";
+    const currentPeriod = String(currentRound.period || currentRound.issueNumber || "");
+    const actualNum = parseInt(currentRound.number ?? currentRound.Number, 10);
+    const actualType = currentRound.result || (actualNum >= 5 ? "BIG" : "SMALL");
 
-  // rule 4 — sine wave
-  const wv = Math.sin(periodSuffix * (newest + 1));
-  const v4 = (wv >= 0) ? "BIG" : "SMALL";
+    const refNum = parseInt(refRound.number ?? refRound.Number, 10);
+    const predictedType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
 
-  // majority vote; a 2-2 tie falls to the sine rule
-  let bigCount = 0, smallCount = 0;
-  for (const v of [v1, v2, v3, v4]) { if (v === "BIG") bigCount++; else smallCount++; }
-  const prediction = (bigCount === smallCount) ? v4 : (bigCount > smallCount ? "BIG" : "SMALL");
+    const isWin = (actualType === predictedType);
+    stats.totalTested++;
 
-  // Show only the ball on the opposite side of the call. The same-side ball is
-  // dropped, so a SMALL call carries a big ball and a BIG call carries a small one.
-  let omni = Math.floor(Math.abs(wv) * 1000) % 10;
-  if (prediction === "BIG" && omni < 5) omni += 5;
-  if (prediction === "SMALL" && omni >= 5) omni -= 5;
-  const numbers = [(omni + 5) % 10];
+    if (isWin) {
+      stats.totalWins++;
+      simLosses = 0;
+      simulatedRecords.unshift({
+        period: currentPeriod,
+        actualNumber: actualNum,
+        actualType,
+        predictedType,
+        level: step + 1,
+        status: "WIN"
+      });
+    } else {
+      stats.totalLosses++;
+      simLosses++;
+      simulatedRecords.unshift({
+        period: currentPeriod,
+        actualNumber: actualNum,
+        actualType,
+        predictedType,
+        level: step + 1,
+        status: "LOSS"
+      });
+    }
+  }
+
+  stats.winRate = stats.totalTested > 0 ? Math.round((stats.totalWins / stats.totalTested) * 100) : 0;
+
+  const liveLosses = state.run?.consecutiveLosses || 0;
+  const liveStep = liveLosses % 4;
+  const liveIsTop = (liveStep === 0 || liveStep === 1);
+  const liveRef = liveIsTop ? historyList[0] : historyList[Math.min(historyList.length - 1, 9)];
+
+  let nextLivePrediction = null;
+  if (liveRef) {
+    const rNum = parseInt(liveRef.number ?? liveRef.Number, 10);
+    const pType = (liveRef.result || (rNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    nextLivePrediction = {
+      isSkip: false,
+      level: liveStep + 1,
+      predictedType: pType,
+      mode: liveIsTop ? `TOP (LATEST, Round ${liveStep + 1}/2)` : `BOTTOM (10TH, Round ${liveStep - 1}/2)`,
+      refPeriod: String(liveRef.period || liveRef.issueNumber || ""),
+      refNumber: rNum
+    };
+  }
 
   return {
-    prediction, numbers,
-    rules: { v1, v2, v3, v4, bigCount, smallCount, gap, ts, wv }
+    canPredict: !!nextLivePrediction,
+    reason: "",
+    simulatedRecords: simulatedRecords.slice(0, 30),
+    stats,
+    nextLivePrediction
   };
 }
 
-// Works out the next signal. Does not publish anything — the caller decides that.
+// ==========================================
+// 🔮 COMPUTE NEXT PREDICTION
+// ==========================================
 export function computePrediction() {
-  const history = state.history;
-  if (history.length < 2) return null;          // needs the last two draws
+  if (!state.history || state.history.length === 0) {
+    return null; // wait until completed round exists
+  }
 
-  const latest = history[0];
-  const previous = history[1];
-  const period = nextPeriod();
-  if (!period) return null;
+  const period = nextPeriod(); // Upcoming period
+  const losses = state.run.consecutiveLosses || 0;
+  const step = losses % 4;
+  const isTop = (step === 0 || step === 1);
 
-  const periodSuffix = parseInt(period.slice(-4), 10);
-  const { prediction, numbers, rules } =
-    votePrediction(latest.number, previous.number, periodSuffix, new Date().getMinutes());
+  // If top: history[0] (latest history)
+  // If bottom: 10th history (history[9], or oldest available if fewer than 10)
+  const refIndex = isTop ? 0 : Math.min(state.history.length - 1, 9);
+  const refRound = state.history[refIndex];
+  if (!refRound) return null;
+
+  const refNum = parseInt(refRound.number ?? refRound.Number, 10);
+  const prediction = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+
+  const sim = simulateStrategy(state.history);
+  if (sim && sim.stats) {
+    state.stats.wins = sim.stats.totalWins;
+    state.stats.losses = sim.stats.totalLosses;
+    state.stats.winRate = sim.stats.winRate;
+    state.stats.totalTested = sim.stats.totalTested;
+  }
+
+  const modeName = isTop
+    ? `TOP LATEST (${step + 1}/2)`
+    : `BOTTOM 10TH (${step - 1}/2)`;
 
   const detail = {
-    mode: "FLOW",
-    latestNumber: latest.number,
-    latestResult: latest.result,
-    topColor: ballColor(latest),
-    previousNumber: previous.number,
-    periodSuffix,
+    mode: modeName,
     prediction,
-    numbers,
-    consecutiveLosses: state.run.consecutiveLosses,
-    rules
+    numbers: [],
+    level: step + 1,
+    isSkip: false,
+    refPeriod: String(refRound.period || refRound.issueNumber || ""),
+    refNumber: refNum,
+    refType: prediction,
+    consecutiveLosses: losses,
+    stats: sim ? sim.stats : state.stats
   };
   state.lastDetail = detail;
-  return { prediction, numbers, detail };
+
+  return {
+    prediction,
+    numbers: [],
+    level: step + 1,
+    isSkip: false,
+    detail
+  };
 }
 
 const cmpPeriod = (a, b) => {
@@ -128,72 +209,77 @@ const cmpPeriod = (a, b) => {
   return A < B ? -1 : A > B ? 1 : 0;
 };
 
-// Settles the signal that was published for the round that has just finished.
-// Returns a log entry, or null when this round was not ours to settle.
+// ==========================================
+// 🎯 ROUND SETTLEMENT
+// ==========================================
 export function resolvePending(newest) {
   const run = state.run;
   if (!run.predictionForPeriod) return null;
 
   const cmp = cmpPeriod(newest.period, run.predictionForPeriod);
-  if (cmp < 0) return null;                    // the predicted round is still running
+  if (cmp < 0) return null; // the predicted round is still running
 
-  const label = run.prediction + " " + (run.numbers || []).join(",");
+  const label = run.prediction;
 
   if (cmp > 0) {
-    // The round we predicted for never arrived — the process slept, restarted, or the
-    // feed jumped past it. Clearing it here matters: a stale period would otherwise
-    // block every future signal, which looks exactly like "the engine is not running".
     const entry = {
-      period: run.predictionForPeriod, label,
-      actualText: "missed", resultText: "⏭️ MISSED", resultClass: "value"
+      period: run.predictionForPeriod,
+      label,
+      actualText: "missed",
+      resultText: "⏭️ MISSED",
+      resultClass: "value"
     };
     run.predictionForPeriod = null;
     persist();
     return entry;
   }
 
-  const predicted = run.prediction;            // BIG or SMALL
-  const targets = run.numbers || [];
-  const actual = newest.result;
-  const actualNumber = newest.number;
+  const predicted = run.prediction;
+  const actualNum = parseInt(newest.number ?? newest.Number, 10);
+  const actualResult = (newest.result || (actualNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
 
-  let resultText, resultClass;
+  const isWin = (predicted === actualResult);
+  const resultText = isWin ? "✅ WIN" : "❌ LOSS";
+  const resultClass = isWin ? "big" : "small";
 
-  if (targets.includes(actualNumber)) {
-    // A target ball landed — still a win, counted apart.
-    state.stats.jackpots++;
-    run.consecutiveLosses = 0;
-    resultText = `🎰 JACKPOT ${actualNumber}`;
-    resultClass = "big";
-  } else if (predicted === actual) {
+  if (isWin) {
     state.stats.wins++;
-    run.consecutiveLosses = 0;
-    resultText = "✅ WIN";
-    resultClass = "big";
+    run.consecutiveLosses = 0; // On ANY win, reset immediately back to TOP!
   } else {
     state.stats.losses++;
-    run.consecutiveLosses++;
-    resultText = "❌ LOSE";
-    resultClass = "small";
+    run.consecutiveLosses = (run.consecutiveLosses || 0) + 1;
   }
 
-  run.mode = "FLOW";                           // the vote has no stages to walk
+  // Clear any skipRemaining so rounds run continuously
+  state.strategy.skipRemaining = 0;
+
+  const total = state.stats.wins + state.stats.losses;
+  state.stats.winRate = total > 0 ? Math.round((state.stats.wins / total) * 100) : 0;
+  state.stats.totalTested = total;
+
   run.predictionForPeriod = null;
   persist();
 
   return {
     period: newest.period,
     label,
-    actualText: `${actual} ${actualNumber}`,
+    actualText: `${actualResult} (${actualNum})`,
     resultText,
     resultClass
   };
 }
 
 export function resetStrategy() {
+  state.strategy.skipRemaining = 0;
   state.run = {
-    mode: "FLOW", consecutiveLosses: 0,
-    prediction: null, numbers: [], predictionForPeriod: null
+    mode: "TOP LATEST (1/2)",
+    consecutiveLosses: 0,
+    prediction: null,
+    numbers: [],
+    level: 1,
+    isSkip: false,
+    predictionForPeriod: null
   };
+  state.stats = { wins: 0, jackpots: 0, losses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, winRate: 0, totalTested: 0 };
   state.lastDetail = null;
 }
