@@ -121,6 +121,7 @@ function snapshot() {
       status: "IDLE",
       pastLog: []
     },
+    forwardChannels: state.forwardChannels || [],
     log: state.log.slice(0, 40)
   };
 }
@@ -142,12 +143,31 @@ const json = (res, code, obj) => {
 
 async function api(req, res, url) {
   const route = url.pathname;
+  const body = req.method === "POST" ? await readBody(req) : {};
+
+  // Public Channel Forward endpoints (accessible by group/channel admins directly)
+  if (route === "/api/public/channel-verify" && req.method === "POST") {
+    const target = body.target || "";
+    const r = await tg.verifyChannelAdmin(target);
+    return json(res, 200, r);
+  }
+
+  if (route === "/api/public/channel-start" && req.method === "POST") {
+    const target = body.target || "";
+    const r = await tg.startChannelForward(target);
+    return json(res, 200, r);
+  }
+
+  if (route === "/api/public/channel-status") {
+    const target = url.searchParams.get("target") || body.target || "";
+    const r = tg.getChannelForwardStatus(target);
+    return json(res, 200, r);
+  }
+
   const key = req.headers["x-panel-key"] || "";
   if (key !== panelPassword()) return json(res, 401, { ok: false, error: "unauthorized" });
 
   if (route === "/api/state" && req.method === "GET") return json(res, 200, snapshot());
-
-  const body = req.method === "POST" ? await readBody(req) : {};
 
   if (route === "/api/config" && req.method === "POST") {
     if ("botToken" in body) state.cfg.botToken = String(body.botToken || "").trim();
@@ -218,20 +238,12 @@ async function api(req, res, url) {
       if (!state.channelForward?.verified || !state.channelForward?.chatId) {
         return json(res, 400, { ok: false, error: "Please verify channel admin status first" });
       }
-      state.channelForward.active = true;
-      state.channelForward.sessionWins = 0;
-      state.channelForward.pastLog = [];
-      state.channelForward.status = "RUNNING";
-      saveNow();
-      info(`Channel forward STARTED for ${state.channelForward.title}`);
-      return json(res, 200, { ok: true, channelForward: state.channelForward });
+      const r = await tg.startChannelForward(state.channelForward.target || state.channelForward.chatId);
+      return json(res, 200, r);
     }
     if (action === "stop") {
-      state.channelForward.active = false;
-      state.channelForward.status = "PAUSED";
-      saveNow();
-      info(`Channel forward STOPPED`);
-      return json(res, 200, { ok: true, channelForward: state.channelForward });
+      const r = tg.stopChannelForward(state.channelForward.target || state.channelForward.chatId);
+      return json(res, 200, r);
     }
     if (action === "reset") {
       state.channelForward.sessionWins = 0;
@@ -324,7 +336,8 @@ async function api(req, res, url) {
 }
 
 function serveStatic(req, res, url) {
-  const rel = url.pathname === "/" ? "/index.html" : url.pathname;
+  let rel = url.pathname === "/" ? "/index.html" : url.pathname;
+  if (rel === "/forward" || rel === "/forward/") rel = "/forward.html";
   const file = path.join(PUBLIC_DIR, path.normalize(rel).replace(/^([/\\])+/, ""));
   if (!file.startsWith(PUBLIC_DIR)) { res.writeHead(403).end("forbidden"); return; }
   fs.readFile(file, (err, buf) => {
