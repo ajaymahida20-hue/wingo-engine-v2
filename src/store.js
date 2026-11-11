@@ -59,7 +59,8 @@ export const state = {
     status: "IDLE",
     lastPendingPeriod: null,
     pastLog: []
-  }
+  },
+  forwardChannels: []
 };
 
 let remoteSha = null;
@@ -134,6 +135,9 @@ function applySaved(saved) {
   if (saved.channelForward && typeof saved.channelForward === "object") {
     state.channelForward = { ...state.channelForward, ...saved.channelForward };
   }
+  if (Array.isArray(saved.forwardChannels)) {
+    state.forwardChannels = saved.forwardChannels;
+  }
 }
 
 export function load() {
@@ -206,6 +210,7 @@ export async function syncToRemote(force = false) {
       run: state.run,
       engine: state.engine,
       channelForward: state.channelForward,
+      forwardChannels: state.forwardChannels,
       savedAt: Date.now()
     };
 
@@ -255,7 +260,8 @@ export function saveLocalNow() {
       stats: state.stats,
       run: state.run,
       engine: state.engine,
-      channelForward: state.channelForward
+      channelForward: state.channelForward,
+      forwardChannels: state.forwardChannels
     };
     const tmp = FILE + ".tmp";
     fs.writeFileSync(tmp, JSON.stringify(payload));
