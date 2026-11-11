@@ -78,11 +78,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100050932",
+      "lastPendingPeriod": null,
       "freeTrialActive": true,
       "freeTrialUsed": false,
-      "freeTrialWins": 1,
+      "freeTrialWins": 2,
       "pastLog": [
+        {
+          "period": "20261111100050932",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261111100050930",
           "side": "BIG",
@@ -100,11 +105,6 @@
         },
         {
           "period": "20261111100050924",
-          "side": "BIG",
-          "status": "LOSS"
-        },
-        {
-          "period": "20261111100050922",
           "side": "BIG",
           "status": "LOSS"
         }
@@ -315,11 +315,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100050932",
+      "lastPendingPeriod": null,
       "freeTrialActive": true,
       "freeTrialUsed": false,
-      "freeTrialWins": 3,
+      "freeTrialWins": 4,
       "pastLog": [
+        {
+          "period": "20261111100050932",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261111100050930",
           "side": "BIG",
@@ -337,11 +342,6 @@
         },
         {
           "period": "20261111100050924",
-          "side": "BIG",
-          "status": "LOSS"
-        },
-        {
-          "period": "20261111100050922",
           "side": "BIG",
           "status": "LOSS"
         }
@@ -410,11 +410,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100050932",
+      "lastPendingPeriod": null,
       "freeTrialActive": true,
       "freeTrialUsed": false,
-      "freeTrialWins": 2,
+      "freeTrialWins": 3,
       "pastLog": [
+        {
+          "period": "20261111100050932",
+          "side": "SMALL",
+          "status": "WIN"
+        },
         {
           "period": "20261111100050930",
           "side": "BIG",
@@ -432,11 +437,6 @@
         },
         {
           "period": "20261111100050924",
-          "side": "BIG",
-          "status": "LOSS"
-        },
-        {
-          "period": "20261111100050922",
           "side": "BIG",
           "status": "LOSS"
         }
@@ -1257,6 +1257,12 @@
   ],
   "subOffset": 700547470,
   "history": [
+    {
+      "period": "20261111100050932",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261111100050931",
       "number": 5,
@@ -4250,12 +4256,6 @@
       "number": 8,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261111100050432",
-      "number": 6,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -4273,10 +4273,16 @@
   },
   "log": [
     {
-      "period": "20261111100050932",
-      "label": "SMALL",
+      "period": "20261111100050933",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050932",
+      "label": "SMALL",
+      "actual": "SMALL (0)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261111100050931",
@@ -4301,34 +4307,28 @@
       "label": "BIG",
       "actual": "SMALL (2)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261111100050927",
-      "label": "SKIP",
-      "actual": "SMALL (3)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 251,
+    "wins": 252,
     "jackpots": 0,
     "losses": 242,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 51,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "SMALL",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261111100050932"
+    "isSkip": true,
+    "predictionForPeriod": "20261111100050933"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794383151511
+  "savedAt": 1794383158352
 }
