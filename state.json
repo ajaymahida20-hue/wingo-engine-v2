@@ -409,7 +409,8 @@
         3812,
         3813,
         3814,
-        3815
+        3815,
+        3816
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -1362,8 +1363,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547509,
+  "subOffset": 700547510,
   "history": [
+    {
+      "period": "20261111100051254",
+      "number": 3,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261111100051253",
       "number": 1,
@@ -4357,12 +4364,6 @@
       "number": 2,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261111100050754",
-      "number": 5,
-      "result": "BIG",
-      "color": "green,violet"
     }
   ],
   "strategy": {
@@ -4380,10 +4381,16 @@
   },
   "log": [
     {
-      "period": "20261111100051254",
-      "label": "SMALL",
+      "period": "20261111100051255",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100051254",
+      "label": "SMALL",
+      "actual": "SMALL (3)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261111100051253",
@@ -4408,34 +4415,28 @@
       "label": "BIG",
       "actual": "BIG (7)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261111100051249",
-      "label": "SKIP",
-      "actual": "BIG (5)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
-    "wins": 231,
+    "wins": 232,
     "jackpots": 0,
     "losses": 262,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 47,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "SMALL",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261111100051254"
+    "isSkip": true,
+    "predictionForPeriod": "20261111100051255"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794392810657
+  "savedAt": 1794392818110
 }
