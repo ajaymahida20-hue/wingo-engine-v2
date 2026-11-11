@@ -209,14 +209,15 @@
       "name": "𝖳𝖾𝖺𝖼𝗁𝖾𝗋 𝖯𝗋𝖾𝗍𝗍𝗒",
       "username": "TeacherPretty",
       "since": 1794378824468,
-      "uid": null,
-      "uidStatus": "NONE",
-      "uidSubmittedAt": null,
+      "uid": "410153",
+      "uidStatus": "PENDING_UID",
+      "uidSubmittedAt": 1794381863733,
       "active": false,
       "msgs": [
         3461,
         3462,
-        3470
+        3470,
+        3549
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -1065,7 +1066,7 @@
       "dailyWins": 4,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": null,
+      "lastPendingPeriod": "20261111100050890",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 5,
@@ -1172,8 +1173,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547458,
+  "subOffset": 700547459,
   "history": [
+    {
+      "period": "20261111100050889",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261111100050888",
       "number": 7,
@@ -4167,12 +4174,6 @@
       "number": 8,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261111100050389",
-      "number": 9,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -4190,10 +4191,16 @@
   },
   "log": [
     {
-      "period": "20261111100050889",
-      "label": "SKIP",
+      "period": "20261111100050890",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050889",
+      "label": "SKIP",
+      "actual": "SMALL (0)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100050888",
@@ -4218,12 +4225,6 @@
       "label": "SKIP",
       "actual": "SMALL (1)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100050884",
-      "label": "BIG",
-      "actual": "SMALL (3)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -4237,15 +4238,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100050889"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100050890"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794381860947
+  "savedAt": 1794381868082
 }
