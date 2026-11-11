@@ -28,7 +28,8 @@
       "active": false,
       "msgs": [
         2999,
-        3000
+        3000,
+        3001
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -273,8 +274,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547316,
+  "subOffset": 700547317,
   "history": [
+    {
+      "period": "20261111100050377",
+      "number": 4,
+      "result": "SMALL",
+      "color": "red"
+    },
     {
       "period": "20261111100050376",
       "number": 3,
@@ -3268,12 +3275,6 @@
       "number": 4,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261110100052757",
-      "number": 3,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -3291,10 +3292,16 @@
   },
   "log": [
     {
-      "period": "20261111100050377",
-      "label": "SKIP",
+      "period": "20261111100050378",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050377",
+      "label": "SKIP",
+      "actual": "SMALL (4)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100050376",
@@ -3319,18 +3326,12 @@
       "label": "SKIP",
       "actual": "SMALL (2)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100050372",
-      "label": "BIG",
-      "actual": "SMALL (4)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 268,
+    "wins": 267,
     "jackpots": 0,
-    "losses": 225,
+    "losses": 226,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -3338,15 +3339,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100050377"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100050378"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794366501433
+  "savedAt": 1794366508392
 }
