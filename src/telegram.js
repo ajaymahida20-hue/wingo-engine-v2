@@ -490,6 +490,72 @@ export async function sendAskDeposit(userId) {
   return { ok: true, status: sub.uidStatus };
 }
 
+export async function verifyChannelAdmin(chatTarget) {
+  let target = String(chatTarget || "").trim();
+  if (!target) return { ok: false, error: "Please enter a valid channel or group username / link / ID" };
+
+  if (target.startsWith("https://t.me/")) {
+    target = "@" + target.replace("https://t.me/", "").replace(/\/$/, "");
+  }
+  if (!target.startsWith("@") && !target.startsWith("-") && isNaN(Number(target))) {
+    target = "@" + target;
+  }
+
+  const bot = await ensureBotInfo();
+  if (!bot || !bot.id) {
+    return { ok: false, error: "Bot token is not configured or bot is offline." };
+  }
+
+  const chatRes = await tg("getChat", { chat_id: target });
+  if (!chatRes.ok || !chatRes.result) {
+    return {
+      ok: false,
+      error: `चैनल/ग्रुप नहीं मिला (${chatRes.description || "Not Found"}). कृपया सुनिश्चित करें कि बॉट को ग्रुप/चैनल में ऐड किया गया है और यूजरनेम सही है।`
+    };
+  }
+
+  const chat = chatRes.result;
+  const memberRes = await tg("getChatMember", { chat_id: chat.id, user_id: bot.id });
+  if (!memberRes.ok || !memberRes.result) {
+    return {
+      ok: false,
+      error: `बॉट का स्टेटस चेक नहीं कर पाए: ${memberRes.description || "Failed to get chat member"}`
+    };
+  }
+
+  const member = memberRes.result;
+  const isAdmin = (member.status === "administrator" || member.status === "creator");
+
+  if (!isAdmin) {
+    return {
+      ok: false,
+      error: `बॉट इस चैनल/ग्रुप में एडमिन नहीं है (वर्तमान स्टेटस: ${member.status})। कृपया @${bot.username || "Bot"} को एडमिन बनाएं और 'Post Messages' परमिशन दें।`
+    };
+  }
+
+  state.channelForward = {
+    ...state.channelForward,
+    target,
+    chatId: chat.id,
+    title: chat.title || target,
+    username: chat.username ? `@${chat.username}` : "",
+    type: chat.type || "channel",
+    verified: true
+  };
+  persist();
+
+  return {
+    ok: true,
+    chat: {
+      id: chat.id,
+      title: chat.title,
+      username: chat.username ? `@${chat.username}` : "",
+      type: chat.type,
+      status: member.status
+    }
+  };
+}
+
 export async function setSubscriberUidStatus(userId, status) {
   const sub = state.subs.find(s => String(s.id) === String(userId));
   if (!sub) return { ok: false, error: "user not found" };
@@ -1116,9 +1182,24 @@ export async function broadcast(period, prediction, numbers, level) {
     return true;
   });
 
-  if (!state.cfg.botToken || !eligibleSubs.length) {
-    if (!eligibleSubs.length) warn(`nothing published for ..${period.slice(-4)} — no eligible active subscriber`);
+  const hasChannel = !!(state.channelForward?.active && state.channelForward?.chatId);
+
+  if (!state.cfg.botToken || (!eligibleSubs.length && !hasChannel)) {
+    if (!eligibleSubs.length && !hasChannel) warn(`nothing published for ..${period.slice(-4)} — no eligible active subscriber or channel`);
     return false;
+  }
+
+  // Forward prediction to verified Telegram Channel / Group if active
+  if (hasChannel) {
+    if (prediction !== "SKIP") {
+      state.channelForward.lastPendingPeriod = period;
+    }
+    const chWins = state.channelForward.sessionWins || 0;
+    const chLog = Array.isArray(state.channelForward.pastLog) ? state.channelForward.pastLog : [];
+    const chPost = buildPost(period, prediction, numbers, level, chWins, chLog);
+    sendDirect(state.channelForward.chatId, chPost, {}, true).then(r => {
+      if (!r.ok) warn(`channel forward delivery failed: ${r.description || "error"}`);
+    }).catch(e => warn(`channel forward delivery error: ${e.message}`));
   }
 
   // Mark pending period for eligible subscribers if this is a real prediction round (not SKIP)
@@ -1270,6 +1351,53 @@ export async function settleSubscriberWins(resolved) {
               { reply_markup: MAIN_KEYBOARD }
             ).catch(() => {});
           })().catch(e => warn(`session completion delivery error (${userId}): ${e.message}`));
+        } else {
+          persist();
+        }
+      } else {
+        persist();
+      }
+    }
+  }
+
+  // 1b. Settle Channel/Group Forwarding
+  if (state.channelForward && state.channelForward.active && state.channelForward.chatId) {
+    if (state.channelForward.lastPendingPeriod === resolved.period) {
+      state.channelForward.lastPendingPeriod = null;
+      if (!Array.isArray(state.channelForward.pastLog)) state.channelForward.pastLog = [];
+      state.channelForward.pastLog.unshift({
+        period: resolved.period,
+        side: resolved.label,
+        status: isWin ? "WIN" : "LOSS"
+      });
+      if (state.channelForward.pastLog.length > 5) state.channelForward.pastLog.length = 5;
+
+      if (isWin) {
+        state.channelForward.sessionWins = (state.channelForward.sessionWins || 0) + 1;
+        const wins = state.channelForward.sessionWins;
+        info(`channel forward win: ${wins}/5 for ${state.channelForward.title || state.channelForward.chatId}`);
+
+        if (wins >= 5) {
+          state.channelForward.active = false;
+          state.channelForward.status = "COMPLETED";
+          state.channelForward.completedAt = Date.now();
+          const finalChLog = [...state.channelForward.pastLog];
+          const targetChatId = state.channelForward.chatId;
+          persist();
+
+          (async () => {
+            const finalPost = buildCompletedPost(5, finalChLog);
+            await sendDirect(targetChatId, finalPost, {}, true).catch(() => {});
+            await sleep(1500);
+
+            const completionMsg =
+              "हमारा WINNING पूरा हुआ अब आप नीचे दिए गए बॉट को यूस करके PROSNAL में प्रॉफिट कर अक्ते हो \n\n" +
+              "🛑 FIX 4 LEVEL SERVER BOT 🛑\n\n" +
+              "🤖:- @NXT_3_LEVEL_SERVER_BOT";
+
+            await sendDirect(targetChatId, completionMsg, {}, true).catch(() => {});
+            info(`channel forward 5 wins completion message sent to ${targetChatId}`);
+          })().catch(e => warn(`channel forward completion delivery error: ${e.message}`));
         } else {
           persist();
         }
