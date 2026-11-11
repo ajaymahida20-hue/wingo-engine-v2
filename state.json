@@ -1306,6 +1306,12 @@
   "subOffset": 700547491,
   "history": [
     {
+      "period": "20261111100051099",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
+    {
       "period": "20261111100051098",
       "number": 1,
       "result": "SMALL",
@@ -4298,12 +4304,6 @@
       "number": 0,
       "result": "SMALL",
       "color": "red,violet"
-    },
-    {
-      "period": "20261111100050599",
-      "number": 6,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -4321,10 +4321,16 @@
   },
   "log": [
     {
-      "period": "20261111100051099",
-      "label": "SKIP",
+      "period": "20261111100051100",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100051099",
+      "label": "SKIP",
+      "actual": "SMALL (0)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100051098",
@@ -4349,12 +4355,6 @@
       "label": "SKIP",
       "actual": "SMALL (1)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100051094",
-      "label": "SMALL",
-      "actual": "BIG (9)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -4368,15 +4368,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100051099"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100051100"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794388161436
+  "savedAt": 1794388168723
 }
