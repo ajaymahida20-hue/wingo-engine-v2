@@ -183,6 +183,33 @@ function render() {
   // Subscribers List
   renderSubscribers(S.subscribers);
 
+  // Channel / Group Forward Status
+  const ch = S.channelForward || {};
+  if ($("chStatusPill")) {
+    $("chStatusPill").textContent = ch.active ? "RUNNING (ACTIVE)" : (ch.status || "IDLE");
+    $("chStatusPill").className = "pill " + (ch.active ? "on" : "");
+  }
+  if ($("navChBadge")) {
+    $("navChBadge").style.display = ch.active ? "inline-block" : "none";
+  }
+  if ($("chWinsBadge")) {
+    $("chWinsBadge").textContent = `${ch.sessionWins || 0} / ${ch.targetWins || 5} Wins`;
+    $("chWinsBadge").className = "pill " + ((ch.sessionWins >= (ch.targetWins || 5)) ? "ok" : (ch.active ? "on" : ""));
+  }
+  if ($("btnChStart")) $("btnChStart").disabled = !ch.verified || ch.active;
+  if ($("btnChStop")) $("btnChStop").disabled = !ch.active;
+
+  if (ch.verified && ch.title) {
+    if ($("chVerifyResult")) $("chVerifyResult").classList.remove("hidden");
+    if ($("chTitle")) $("chTitle").textContent = ch.title || "—";
+    if ($("chUsername")) $("chUsername").textContent = ch.username || "—";
+    if ($("chChatId")) $("chChatId").textContent = ch.chatId || "—";
+    if ($("chAdminStatus")) $("chAdminStatus").textContent = "VERIFIED ADMIN ✅";
+    if ($("chInput") && !$("chInput").value && ch.target) {
+      $("chInput").value = ch.target;
+    }
+  }
+
   // Console Logs
   const logBox = $("logBox");
   if (Array.isArray(S.logs)) {
@@ -485,6 +512,42 @@ async function saveConfig() {
   $("cfgNote").textContent = r.ok ? "✅ Settings saved successfully." : "❌ Failed to save settings.";
   setTimeout(() => { $("cfgNote").textContent = "—"; }, 4000);
   refresh();
+}
+
+async function verifyChannel() {
+  const target = $("chInput") ? $("chInput").value.trim() : "";
+  if (!target) {
+    if ($("chVerifyError")) $("chVerifyError").textContent = "⚠️ Please enter a channel or group username / link";
+    return;
+  }
+  if ($("btnChVerify")) $("btnChVerify").disabled = true;
+  if ($("chVerifyError")) $("chVerifyError").textContent = "Checking Bot Admin status...";
+  try {
+    const r = await post("/api/channel/verify", { target });
+    if (r.ok) {
+      if ($("chVerifyError")) $("chVerifyError").textContent = "";
+      alert(`✅ Verified! Bot is Administrator in: ${r.chat?.title || target}`);
+    } else {
+      if ($("chVerifyError")) $("chVerifyError").textContent = `❌ ${r.error || "Verification failed"}`;
+    }
+    refresh();
+  } catch (e) {
+    if ($("chVerifyError")) $("chVerifyError").textContent = `❌ Error: ${e.message}`;
+  } finally {
+    if ($("btnChVerify")) $("btnChVerify").disabled = false;
+  }
+}
+
+async function toggleChannelForward(action) {
+  try {
+    const r = await post("/api/channel/toggle", { action });
+    if (!r.ok) {
+      alert(`⚠️ ${r.error || "Action failed"}`);
+    }
+    refresh();
+  } catch (e) {
+    alert(`Error: ${e.message}`);
+  }
 }
 
 async function clearHistory() {
