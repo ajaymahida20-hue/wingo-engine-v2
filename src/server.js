@@ -36,6 +36,7 @@ function panelPassword() {
 }
 
 function snapshot() {
+  tg.checkDailyResets();
   const { period, secondsLeft } = roundStatus();
   return {
     ok: true,
@@ -68,13 +69,18 @@ function snapshot() {
       botToken: state.cfg.botToken,
       header: state.cfg.header,
       footer: state.cfg.footer,
-      photoBig: state.cfg.photoBig,
-      photoSmall: state.cfg.photoSmall,
-      usePhotos: state.cfg.usePhotos,
       welcomePhoto: state.cfg.welcomePhoto,
       welcomeVideo: state.cfg.welcomeVideo || "",
-      videoMessage: state.cfg.videoMessage || "",
-      autoVerifyUid: state.cfg.autoVerifyUid !== false
+      step1Video: state.cfg.step1Video || "",
+      step2Video: state.cfg.step2Video || "",
+      depositVideo: state.cfg.depositVideo || "",
+      verifiedVideo: state.cfg.verifiedVideo || "",
+      uidVerifiedVideo: state.cfg.uidVerifiedVideo || state.cfg.verifiedVideo || "",
+      finalVideo: state.cfg.finalVideo || state.cfg.welcomeVideo || "",
+      uidMessage: state.cfg.uidMessage || "",
+      customLink: state.cfg.customLink || "",
+      customLinkText: state.cfg.customLinkText || "👉 REGISTER / OPEN LINK",
+      autoVerifyUid: state.cfg.autoVerifyUid === true
     },
     subscribers: state.subs.map(s => ({
       id: s.id,
@@ -84,14 +90,38 @@ function snapshot() {
       uidStatus: s.uidStatus || "NONE",
       uidSubmittedAt: s.uidSubmittedAt || null,
       active: s.active === true,
-      tracked: (s.msgs || []).length
+      freeTrialActive: s.freeTrialActive === true,
+      freeTrialUsed: s.freeTrialUsed === true,
+      freeTrialWins: s.freeTrialWins || 0,
+      tracked: (s.msgs || []).length,
+      sessionNumber: s.sessionNumber || 1,
+      sessionWins: s.sessionWins || 0,
+      dailyWins: s.dailyWins || 0,
+      cooldownUntil: s.cooldownUntil || null
     })),
     totals: {
       users: state.subs.length,
       verified: state.subs.filter(s => s.uidStatus === "VERIFIED").length,
+      pendingUid: state.subs.filter(s => s.uidStatus === "PENDING_UID").length,
+      depositPending: state.subs.filter(s => s.uidStatus === "DEPOSIT_PENDING").length,
       pending: state.subs.filter(s => s.uidStatus === "PENDING").length,
-      live: state.subs.filter(s => s.active && s.uidStatus === "VERIFIED").length
+      freeTrial: state.subs.filter(s => s.freeTrialActive && (s.freeTrialWins || 0) < 5).length,
+      live: state.subs.filter(s => s.active && (s.uidStatus === "VERIFIED" || (s.freeTrialActive && (s.freeTrialWins || 0) < 5))).length
     },
+    channelForward: state.channelForward || {
+      target: "",
+      chatId: null,
+      title: "",
+      username: "",
+      type: "",
+      verified: false,
+      active: false,
+      sessionWins: 0,
+      targetWins: 5,
+      status: "IDLE",
+      pastLog: []
+    },
+    forwardChannels: state.forwardChannels || [],
     log: state.log.slice(0, 40)
   };
 }
@@ -113,22 +143,46 @@ const json = (res, code, obj) => {
 
 async function api(req, res, url) {
   const route = url.pathname;
+  const body = req.method === "POST" ? await readBody(req) : {};
+
+  // Public Channel Forward endpoints (accessible by group/channel admins directly)
+  if (route === "/api/public/channel-verify" && req.method === "POST") {
+    const target = body.target || "";
+    const r = await tg.verifyChannelAdmin(target);
+    return json(res, 200, r);
+  }
+
+  if (route === "/api/public/channel-start" && req.method === "POST") {
+    const target = body.target || "";
+    const r = await tg.startChannelForward(target);
+    return json(res, 200, r);
+  }
+
+  if (route === "/api/public/channel-status") {
+    const target = url.searchParams.get("target") || body.target || "";
+    const r = tg.getChannelForwardStatus(target);
+    return json(res, 200, r);
+  }
+
   const key = req.headers["x-panel-key"] || "";
   if (key !== panelPassword()) return json(res, 401, { ok: false, error: "unauthorized" });
 
   if (route === "/api/state" && req.method === "GET") return json(res, 200, snapshot());
 
-  const body = req.method === "POST" ? await readBody(req) : {};
-
   if (route === "/api/config" && req.method === "POST") {
     if ("botToken" in body) state.cfg.botToken = String(body.botToken || "").trim();
     if ("header" in body) state.cfg.header = String(body.header || "");
     if ("footer" in body) state.cfg.footer = String(body.footer || "").trim();
-    if ("photoBig" in body) state.cfg.photoBig = String(body.photoBig || "").trim();
-    if ("photoSmall" in body) state.cfg.photoSmall = String(body.photoSmall || "").trim();
-    if ("usePhotos" in body) state.cfg.usePhotos = !!body.usePhotos;
     if ("welcomeVideo" in body) state.cfg.welcomeVideo = String(body.welcomeVideo || "").trim();
-    if ("videoMessage" in body) state.cfg.videoMessage = String(body.videoMessage || "");
+    if ("step1Video" in body) state.cfg.step1Video = String(body.step1Video || "").trim();
+    if ("step2Video" in body) state.cfg.step2Video = String(body.step2Video || "").trim();
+    if ("depositVideo" in body) state.cfg.depositVideo = String(body.depositVideo || "").trim();
+    if ("verifiedVideo" in body) state.cfg.verifiedVideo = String(body.verifiedVideo || "").trim();
+    if ("uidVerifiedVideo" in body) state.cfg.uidVerifiedVideo = String(body.uidVerifiedVideo || "").trim();
+    if ("finalVideo" in body) state.cfg.finalVideo = String(body.finalVideo || "").trim();
+    if ("uidMessage" in body) state.cfg.uidMessage = String(body.uidMessage || "");
+    if ("customLink" in body) state.cfg.customLink = String(body.customLink || "").trim();
+    if ("customLinkText" in body) state.cfg.customLinkText = String(body.customLinkText || "").trim();
     if ("autoVerifyUid" in body) state.cfg.autoVerifyUid = !!body.autoVerifyUid;
     saveNow();
     if (state.cfg.botToken && !state.listener.running) await tg.startListener();
@@ -136,8 +190,8 @@ async function api(req, res, url) {
   }
 
   if (route === "/api/verify-token" && req.method === "POST") {
-    const r = await tg.verifyToken();
-    if (r.ok && !state.listener.running) await tg.startListener();
+    const token = body.botToken ? String(body.botToken).trim() : "";
+    const r = await tg.verifyToken(token);
     return json(res, 200, r);
   }
 
@@ -171,18 +225,67 @@ async function api(req, res, url) {
   if (route === "/api/webhook" && req.method === "POST") return json(res, 200, await tg.removeWebhook());
   if (route === "/api/commands" && req.method === "POST") return json(res, 200, await tg.setBotCommands());
 
+  // Channel / Group forward controls
+  if (route === "/api/channel/verify" && req.method === "POST") {
+    const target = body.target || "";
+    const r = await tg.verifyChannelAdmin(target);
+    return json(res, 200, r);
+  }
+
+  if (route === "/api/channel/toggle" && req.method === "POST") {
+    const action = body.action; // "start" | "stop" | "reset"
+    if (action === "start") {
+      if (!state.channelForward?.verified || !state.channelForward?.chatId) {
+        return json(res, 400, { ok: false, error: "Please verify channel admin status first" });
+      }
+      const r = await tg.startChannelForward(state.channelForward.target || state.channelForward.chatId);
+      return json(res, 200, r);
+    }
+    if (action === "stop") {
+      const r = tg.stopChannelForward(state.channelForward.target || state.channelForward.chatId);
+      return json(res, 200, r);
+    }
+    if (action === "reset") {
+      state.channelForward.sessionWins = 0;
+      state.channelForward.pastLog = [];
+      state.channelForward.status = "IDLE";
+      state.channelForward.active = false;
+      saveNow();
+      return json(res, 200, { ok: true, channelForward: state.channelForward });
+    }
+    return json(res, 400, { ok: false, error: "unknown action" });
+  }
+
   // Subscriber UID verification & management
   if (route === "/api/subscribers" && req.method === "POST") {
     const id = body.id;
     const action = body.action;
 
-    if (action === "verify") {
+    if (action === "verify_id") {
+      const r = await tg.sendIdVerifiedDeposit(id);
+      return json(res, 200, r);
+    }
+    if (action === "verify" || action === "full_verify") {
       const r = await tg.setSubscriberUidStatus(id, "VERIFIED");
+      return json(res, 200, r);
+    }
+    if (action === "deposit_pending" || action === "ask_deposit") {
+      const r = await tg.sendAskDeposit(id);
       return json(res, 200, r);
     }
     if (action === "reject") {
       const r = await tg.setSubscriberUidStatus(id, "REJECTED");
       return json(res, 200, r);
+    }
+    if (action === "send_message") {
+      const message = String(body.message || "").trim();
+      if (!message) return json(res, 400, { ok: false, error: "message cannot be empty" });
+      const r = await tg.sendDirect(id, message);
+      if (r.ok) {
+        info(`Admin sent personal message to user ${id}: ${message.slice(0, 40)}`);
+        return json(res, 200, { ok: true });
+      }
+      return json(res, 400, { ok: false, error: r.description || "Failed to deliver message" });
     }
     if (action === "delete") {
       state.subs = state.subs.filter(s => String(s.id) !== String(id));
@@ -191,6 +294,10 @@ async function api(req, res, url) {
       return json(res, 200, { ok: true });
     }
     return json(res, 400, { ok: false, error: "unknown action" });
+  }
+
+  if (route === "/api/history" && req.method === "GET") {
+    return json(res, 200, { ok: true, history: state.history, strategy: state.strategy });
   }
 
   if (route === "/api/clear-history" && req.method === "POST") {
@@ -216,11 +323,11 @@ async function api(req, res, url) {
     if (typeof cfg.botToken === "string") state.cfg.botToken = cfg.botToken;
     if (typeof cfg.header === "string") state.cfg.header = cfg.header;
     if (typeof cfg.footer === "string") state.cfg.footer = cfg.footer;
-    if (typeof cfg.photoBig === "string") state.cfg.photoBig = cfg.photoBig;
-    if (typeof cfg.photoSmall === "string") state.cfg.photoSmall = cfg.photoSmall;
-    if (typeof cfg.usePhotos === "boolean") state.cfg.usePhotos = cfg.usePhotos;
     if (typeof cfg.welcomeVideo === "string") state.cfg.welcomeVideo = cfg.welcomeVideo;
-    if (typeof cfg.videoMessage === "string") state.cfg.videoMessage = cfg.videoMessage;
+    if (typeof cfg.uidMessage === "string") state.cfg.uidMessage = cfg.uidMessage;
+    if (typeof cfg.customLink === "string") state.cfg.customLink = cfg.customLink;
+    if (typeof cfg.customLinkText === "string") state.cfg.customLinkText = cfg.customLinkText;
+    if (typeof cfg.autoVerifyUid === "boolean") state.cfg.autoVerifyUid = cfg.autoVerifyUid;
     saveNow();
     return json(res, 200, { ok: true });
   }
@@ -229,7 +336,8 @@ async function api(req, res, url) {
 }
 
 function serveStatic(req, res, url) {
-  const rel = url.pathname === "/" ? "/index.html" : url.pathname;
+  let rel = url.pathname === "/" ? "/index.html" : url.pathname;
+  if (rel === "/forward" || rel === "/forward/") rel = "/forward.html";
   const file = path.join(PUBLIC_DIR, path.normalize(rel).replace(/^([/\\])+/, ""));
   if (!file.startsWith(PUBLIC_DIR)) { res.writeHead(403).end("forbidden"); return; }
   fs.readFile(file, (err, buf) => {
