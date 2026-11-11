@@ -47,11 +47,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100050484",
+      "lastPendingPeriod": null,
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 0,
       "pastLog": [
+        {
+          "period": "20261111100050484",
+          "side": "BIG",
+          "status": "LOSS"
+        },
         {
           "period": "20261111100050482",
           "side": "SMALL",
@@ -165,6 +170,12 @@
   ],
   "subOffset": 700547321,
   "history": [
+    {
+      "period": "20261111100050484",
+      "number": 3,
+      "result": "SMALL",
+      "color": "green"
+    },
     {
       "period": "20261111100050483",
       "number": 1,
@@ -3158,12 +3169,6 @@
       "number": 7,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261110100052864",
-      "number": 5,
-      "result": "BIG",
-      "color": "green,violet"
     }
   ],
   "strategy": {
@@ -3181,10 +3186,16 @@
   },
   "log": [
     {
-      "period": "20261111100050484",
-      "label": "BIG",
+      "period": "20261111100050485",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050484",
+      "label": "BIG",
+      "actual": "SMALL (3)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261111100050483",
@@ -3209,34 +3220,28 @@
       "label": "BIG",
       "actual": "SMALL (2)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261111100050479",
-      "label": "SKIP",
-      "actual": "SMALL (3)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 261,
     "jackpots": 0,
-    "losses": 232,
+    "losses": 233,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 53,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "BIG",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261111100050484"
+    "isSkip": true,
+    "predictionForPeriod": "20261111100050485"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794369711135
+  "savedAt": 1794369718291
 }
