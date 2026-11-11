@@ -1,16 +1,25 @@
-// WinGo 7-Period Lookback Prediction Engine (Opposite Strategy)
+// WinGo Top/Bottom Loss-Alternating Prediction Engine
 //
 // Calculation Rule:
-// For the current prediction period P (e.g. 213), look 7 periods behind: P - 7 (e.g. 206).
-// If round (P - 7) was BIG (number 5-9) -> predict SMALL (Opposite).
-// If round (P - 7) was SMALL (number 0-4) -> predict BIG (Opposite).
-// Alternate round SKIP after every prediction.
-// Pure BIG / SMALL prediction.
+// 1. Initially (or after ANY WIN):
+//    Take the TOP (latest) history round (e.g. if predicting 213, take 212).
+// 2. If it results in LOSS (1st loss):
+//    Take the TOP (latest) history round again (2nd try of top).
+// 3. If it results in LOSS (2nd loss):
+//    Take the BOTTOM 10th history round from the first page (index 9).
+// 4. If it results in LOSS (3rd loss):
+//    Take the BOTTOM 10th history round again (2nd try of bottom).
+// 5. If it results in LOSS (4th loss):
+//    Switch back to TOP (latest) history round.
+// Pattern on consecutive losses:
+//    2 times TOP -> 2 times BOTTOM -> 2 times TOP -> 2 times BOTTOM...
+// AND ON ANY WIN:
+//    Instantly reset back to TOP (latest) history round!
 
 import { state, persist } from "./store.js";
 import { nextPeriod } from "./history.js";
 
-// Oppositer: inverts BIG to SMALL, and SMALL to BIG
+// Helper (kept for compatibility)
 export const invertPrediction = (p) => {
   const s = String(p || "").toUpperCase();
   if (s === "BIG") return "SMALL";
@@ -18,7 +27,6 @@ export const invertPrediction = (p) => {
   return s;
 };
 
-// Winner color helper (kept for compatibility)
 export function ballColor(round) {
   const c = String(round?.color || "").toLowerCase();
   if (c.includes("green")) return "green";
@@ -40,57 +48,70 @@ export function outcomeTag(resultText) {
 }
 
 // ==========================================
-// 🧠 HISTORICAL SIMULATION (7-Period Lookback)
+// 🧠 HISTORICAL SIMULATION
 // ==========================================
 export function simulateStrategy(historyList = state.history) {
-  if (!historyList || historyList.length < 8) {
+  if (!historyList || historyList.length < 2) {
     return {
       canPredict: false,
-      reason: `Need at least 8 history rounds to backtest (have ${historyList ? historyList.length : 0}).`,
+      reason: `Need history rounds to backtest.`,
       simulatedRecords: [],
-      stats: { totalTested: 0, totalWins: 0, totalLosses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, l4Wins: 0, winRate: 0 },
+      stats: { totalTested: 0, totalWins: 0, totalLosses: 0, winRate: 0 },
       nextLivePrediction: null
     };
   }
 
   // historyList is newest-first. chrono is oldest-first.
   const chrono = [...historyList].reverse();
-  const stats = { totalTested: 0, totalWins: 0, totalLosses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, l4Wins: 0, winRate: 0 };
+  const stats = { totalTested: 0, totalWins: 0, totalLosses: 0, winRate: 0 };
   const simulatedRecords = [];
+  let simLosses = 0;
 
-  for (let i = 7; i < chrono.length; i++) {
+  for (let i = 1; i < chrono.length; i++) {
     const currentRound = chrono[i];
-    const refRound = chrono[i - 7];
+    const step = simLosses % 4;
+    const isTop = (step === 0 || step === 1);
+
+    let refRound;
+    if (isTop) {
+      refRound = chrono[i - 1]; // Previous round (Top)
+    } else {
+      const bottomIdx = Math.max(0, i - 10);
+      refRound = chrono[bottomIdx]; // 10 rounds back (Bottom)
+    }
+
+    if (!refRound) continue;
 
     const currentPeriod = String(currentRound.period || currentRound.issueNumber || "");
     const actualNum = parseInt(currentRound.number ?? currentRound.Number, 10);
     const actualType = currentRound.result || (actualNum >= 5 ? "BIG" : "SMALL");
 
     const refNum = parseInt(refRound.number ?? refRound.Number, 10);
-    const rawType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
-    const predictedType = invertPrediction(rawType);
+    const predictedType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
 
     const isWin = (actualType === predictedType);
     stats.totalTested++;
 
     if (isWin) {
       stats.totalWins++;
+      simLosses = 0;
       simulatedRecords.unshift({
         period: currentPeriod,
         actualNumber: actualNum,
         actualType,
         predictedType,
-        level: 0,
+        level: step + 1,
         status: "WIN"
       });
     } else {
       stats.totalLosses++;
+      simLosses++;
       simulatedRecords.unshift({
         period: currentPeriod,
         actualNumber: actualNum,
         actualType,
         predictedType,
-        level: 0,
+        level: step + 1,
         status: "LOSS"
       });
     }
@@ -98,23 +119,22 @@ export function simulateStrategy(historyList = state.history) {
 
   stats.winRate = stats.totalTested > 0 ? Math.round((stats.totalWins / stats.totalTested) * 100) : 0;
 
-  // Next live prediction from history:
-  // Upcoming period is P. History has [P-1 (idx 0), P-2 (idx 1) ... P-7 (idx 6)]
-  const refRoundForLive = historyList[6];
+  const liveLosses = state.run?.consecutiveLosses || 0;
+  const liveStep = liveLosses % 4;
+  const liveIsTop = (liveStep === 0 || liveStep === 1);
+  const liveRef = liveIsTop ? historyList[0] : historyList[Math.min(historyList.length - 1, 9)];
+
   let nextLivePrediction = null;
-  if (refRoundForLive) {
-    const refNum = parseInt(refRoundForLive.number ?? refRoundForLive.Number, 10);
-    const rawPred = (refRoundForLive.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
-    const pred = invertPrediction(rawPred);
+  if (liveRef) {
+    const rNum = parseInt(liveRef.number ?? liveRef.Number, 10);
+    const pType = (liveRef.result || (rNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
     nextLivePrediction = {
       isSkip: false,
-      skipCount: 0,
-      level: 0,
-      predictedType: pred,
-      isShadow: false,
-      mode: "7-PERIOD LOOKBACK (OPPOSITE)",
-      refPeriod: String(refRoundForLive.period || refRoundForLive.issueNumber || ""),
-      refNumber: refNum
+      level: liveStep + 1,
+      predictedType: pType,
+      mode: liveIsTop ? `TOP (LATEST, Round ${liveStep + 1}/2)` : `BOTTOM (10TH, Round ${liveStep - 1}/2)`,
+      refPeriod: String(liveRef.period || liveRef.issueNumber || ""),
+      refNumber: rNum
     };
   }
 
@@ -131,55 +151,23 @@ export function simulateStrategy(historyList = state.history) {
 // 🔮 COMPUTE NEXT PREDICTION
 // ==========================================
 export function computePrediction() {
-  if (!state.history || state.history.length < 7) {
-    return null; // wait until at least 7 completed rounds exist
+  if (!state.history || state.history.length === 0) {
+    return null; // wait until completed round exists
   }
 
-  // If a prediction round just completed, this round must be a SKIP (alternate skip flow)
-  if ((state.strategy.skipRemaining || 0) > 0) {
-    state.strategy.skipRemaining = 0;
-    const detail = {
-      mode: "PAUSED / WAIT",
-      prediction: "SKIP",
-      numbers: [],
-      level: 0,
-      isSkip: true,
-      refPeriod: "",
-      refNumber: 0,
-      refType: "",
-      stats: state.stats
-    };
-    state.lastDetail = detail;
-    return {
-      prediction: "SKIP",
-      numbers: [],
-      level: 0,
-      isSkip: true,
-      detail
-    };
-  }
+  const period = nextPeriod(); // Upcoming period
+  const losses = state.run.consecutiveLosses || 0;
+  const step = losses % 4;
+  const isTop = (step === 0 || step === 1);
 
-  const period = nextPeriod(); // Upcoming period P (e.g. 213)
-  
-  // Find round 7 periods back (P - 7, e.g. 206)
-  let refRound = null;
-  try {
-    const targetPeriod = BigInt(period) - 7n;
-    refRound = state.history.find(h => BigInt(h.period || h.issueNumber) === targetPeriod);
-  } catch (e) {}
-
-  // Fallback to the 7th item in history (index 6, where index 0 is P-1)
-  if (!refRound) {
-    refRound = state.history[6];
-  }
-
+  // If top: history[0] (latest history)
+  // If bottom: 10th history (history[9], or oldest available if fewer than 10)
+  const refIndex = isTop ? 0 : Math.min(state.history.length - 1, 9);
+  const refRound = state.history[refIndex];
   if (!refRound) return null;
 
   const refNum = parseInt(refRound.number ?? refRound.Number, 10);
-  const refType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
-
-  // OPPOSITE PREDICTION (Oppositer): invert 7-period lookback call
-  const prediction = invertPrediction(refType);
+  const prediction = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
 
   const sim = simulateStrategy(state.history);
   if (sim && sim.stats) {
@@ -189,15 +177,20 @@ export function computePrediction() {
     state.stats.totalTested = sim.stats.totalTested;
   }
 
+  const modeName = isTop
+    ? `TOP LATEST (${step + 1}/2)`
+    : `BOTTOM 10TH (${step - 1}/2)`;
+
   const detail = {
-    mode: "7-PERIOD LOOKBACK (OPPOSITE)",
+    mode: modeName,
     prediction,
     numbers: [],
-    level: 0,
+    level: step + 1,
     isSkip: false,
     refPeriod: String(refRound.period || refRound.issueNumber || ""),
     refNumber: refNum,
-    refType,
+    refType: prediction,
+    consecutiveLosses: losses,
     stats: sim ? sim.stats : state.stats
   };
   state.lastDetail = detail;
@@ -205,7 +198,7 @@ export function computePrediction() {
   return {
     prediction,
     numbers: [],
-    level: 0,
+    level: step + 1,
     isSkip: false,
     detail
   };
@@ -245,33 +238,20 @@ export function resolvePending(newest) {
   const actualNum = parseInt(newest.number ?? newest.Number, 10);
   const actualResult = (newest.result || (actualNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
 
-  // Settle SKIP rounds without modifying win/loss counters
-  if (predicted === "SKIP") {
-    run.predictionForPeriod = null;
-    persist();
-    return {
-      period: newest.period,
-      label: "SKIP",
-      actualText: `${actualResult} (${actualNum})`,
-      resultText: "⏳ SKIP",
-      resultClass: "value"
-    };
-  }
-
   const isWin = (predicted === actualResult);
   const resultText = isWin ? "✅ WIN" : "❌ LOSS";
   const resultClass = isWin ? "big" : "small";
 
   if (isWin) {
     state.stats.wins++;
-    run.consecutiveLosses = 0;
+    run.consecutiveLosses = 0; // On ANY win, reset immediately back to TOP!
   } else {
     state.stats.losses++;
     run.consecutiveLosses = (run.consecutiveLosses || 0) + 1;
   }
 
-  // After every real prediction (WIN or LOSS), the next round must be SKIPPED!
-  state.strategy.skipRemaining = 1;
+  // Clear any skipRemaining so rounds run continuously
+  state.strategy.skipRemaining = 0;
 
   const total = state.stats.wins + state.stats.losses;
   state.stats.winRate = total > 0 ? Math.round((state.stats.wins / total) * 100) : 0;
@@ -292,11 +272,11 @@ export function resolvePending(newest) {
 export function resetStrategy() {
   state.strategy.skipRemaining = 0;
   state.run = {
-    mode: "7-PERIOD LOOKBACK (OPPOSITE)",
+    mode: "TOP LATEST (1/2)",
     consecutiveLosses: 0,
     prediction: null,
     numbers: [],
-    level: 0,
+    level: 1,
     isSkip: false,
     predictionForPeriod: null
   };
