@@ -53,7 +53,8 @@
       "active": false,
       "msgs": [
         4048,
-        4050
+        4050,
+        4052
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -1528,8 +1529,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547567,
+  "subOffset": 700547568,
   "history": [
+    {
+      "period": "20261111100051415",
+      "number": 8,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261111100051414",
       "number": 5,
@@ -4523,12 +4530,6 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261111100050915",
-      "number": 2,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -4546,10 +4547,16 @@
   },
   "log": [
     {
-      "period": "20261111100051415",
-      "label": "SKIP",
+      "period": "20261111100051416",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100051415",
+      "label": "SKIP",
+      "actual": "BIG (8)",
+      "resultText": "⏳ SKIP"
     },
     {
       "period": "20261111100051414",
@@ -4574,18 +4581,12 @@
       "label": "SKIP",
       "actual": "BIG (5)",
       "resultText": "⏳ SKIP"
-    },
-    {
-      "period": "20261111100051410",
-      "label": "SMALL",
-      "actual": "BIG (7)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 225,
+    "wins": 226,
     "jackpots": 0,
-    "losses": 268,
+    "losses": 267,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -4593,15 +4594,15 @@
     "totalTested": 493
   },
   "run": {
-    "mode": "PAUSED / WAIT",
-    "prediction": "SKIP",
+    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
+    "prediction": "BIG",
     "numbers": [],
     "level": 0,
-    "isSkip": true,
-    "predictionForPeriod": "20261111100051415"
+    "isSkip": false,
+    "predictionForPeriod": "20261111100051416"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794397640060
+  "savedAt": 1794397647953
 }
