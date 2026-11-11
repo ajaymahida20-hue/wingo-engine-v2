@@ -108,6 +108,19 @@ function snapshot() {
       freeTrial: state.subs.filter(s => s.freeTrialActive && (s.freeTrialWins || 0) < 5).length,
       live: state.subs.filter(s => s.active && (s.uidStatus === "VERIFIED" || (s.freeTrialActive && (s.freeTrialWins || 0) < 5))).length
     },
+    channelForward: state.channelForward || {
+      target: "",
+      chatId: null,
+      title: "",
+      username: "",
+      type: "",
+      verified: false,
+      active: false,
+      sessionWins: 0,
+      targetWins: 5,
+      status: "IDLE",
+      pastLog: []
+    },
     log: state.log.slice(0, 40)
   };
 }
@@ -191,6 +204,45 @@ async function api(req, res, url) {
 
   if (route === "/api/webhook" && req.method === "POST") return json(res, 200, await tg.removeWebhook());
   if (route === "/api/commands" && req.method === "POST") return json(res, 200, await tg.setBotCommands());
+
+  // Channel / Group forward controls
+  if (route === "/api/channel/verify" && req.method === "POST") {
+    const target = body.target || "";
+    const r = await tg.verifyChannelAdmin(target);
+    return json(res, 200, r);
+  }
+
+  if (route === "/api/channel/toggle" && req.method === "POST") {
+    const action = body.action; // "start" | "stop" | "reset"
+    if (action === "start") {
+      if (!state.channelForward?.verified || !state.channelForward?.chatId) {
+        return json(res, 400, { ok: false, error: "Please verify channel admin status first" });
+      }
+      state.channelForward.active = true;
+      state.channelForward.sessionWins = 0;
+      state.channelForward.pastLog = [];
+      state.channelForward.status = "RUNNING";
+      saveNow();
+      info(`Channel forward STARTED for ${state.channelForward.title}`);
+      return json(res, 200, { ok: true, channelForward: state.channelForward });
+    }
+    if (action === "stop") {
+      state.channelForward.active = false;
+      state.channelForward.status = "PAUSED";
+      saveNow();
+      info(`Channel forward STOPPED`);
+      return json(res, 200, { ok: true, channelForward: state.channelForward });
+    }
+    if (action === "reset") {
+      state.channelForward.sessionWins = 0;
+      state.channelForward.pastLog = [];
+      state.channelForward.status = "IDLE";
+      state.channelForward.active = false;
+      saveNow();
+      return json(res, 200, { ok: true, channelForward: state.channelForward });
+    }
+    return json(res, 400, { ok: false, error: "unknown action" });
+  }
 
   // Subscriber UID verification & management
   if (route === "/api/subscribers" && req.method === "POST") {
