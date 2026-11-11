@@ -13,14 +13,27 @@ export const state = {
   cfg: structuredClone(DEFAULT_CONFIG),
   subs: [],                 // [{ id, name, username, since, msgs: [messageId] }]
   subOffset: 0,             // Telegram getUpdates offset
-  history: [],              // rolling rounds, newest first (kept in-memory, max 10)
+  history: [],              // rolling rounds, newest first (up to 500 rounds)
+  strategy: {
+    level: 1,
+    mode: "COLOR",
+    consecutiveLosses: 0,
+    skipRemaining: 0,
+    shadowMode: false,
+    shadowPrediction: null,
+    targetNumber: null,
+    refPeriod: null,
+    refNumber: null
+  },
   log: [],                  // published signals, newest first (capped at 6)
-  stats: { wins: 0, jackpots: 0, losses: 0 },
-  run: {                    // the four-stage ladder
-    mode: "FLOW",           // FLOW | COLOR | COLOR_FLOW
+  stats: { wins: 0, jackpots: 0, losses: 0, l1Wins: 0, l2Wins: 0, l3Wins: 0, winRate: 0, totalTested: 0 },
+  run: {
+    mode: "LEVEL 1",
     consecutiveLosses: 0,
     prediction: null,
     numbers: [],
+    level: 1,
+    isSkip: false,
     predictionForPeriod: null
   },
   lastDetail: null,         // what the panel shows on the CALC card
@@ -32,7 +45,22 @@ export const state = {
   startedAt: Date.now(),
   lastPoll: 0,
   lastPollError: "",
-  statLines: { polls: 0, rounds: 0, posts: 0 }
+  statLines: { polls: 0, rounds: 0, posts: 0 },
+  channelForward: {
+    target: "",
+    chatId: null,
+    title: "",
+    username: "",
+    type: "",
+    verified: false,
+    active: false,
+    sessionWins: 0,
+    targetWins: 5,
+    status: "IDLE",
+    lastPendingPeriod: null,
+    pastLog: []
+  },
+  forwardChannels: []
 };
 
 let remoteSha = null;
@@ -41,17 +69,61 @@ let lastRemoteSync = 0;
 
 function applySaved(saved) {
   if (!saved || typeof saved !== "object") return;
-  if (saved.cfg) state.cfg = { ...structuredClone(DEFAULT_CONFIG), ...state.cfg, ...saved.cfg };
+  if (saved.cfg) {
+    state.cfg = { ...structuredClone(DEFAULT_CONFIG), ...state.cfg, ...saved.cfg };
+    if (!state.cfg.header || state.cfg.header.includes("𓆩❣️S❣️𓆪") || state.cfg.header.includes("ⲦRȺᎠER")) {
+      state.cfg.header = DEFAULT_HEADER;
+    }
+  }
   if (!state.cfg.botToken && process.env.BOT_TOKEN) state.cfg.botToken = process.env.BOT_TOKEN.trim();
+  if (Array.isArray(saved.history) && saved.history.length) {
+    const existingPeriods = new Set(state.history.map(h => String(h.period || h.issueNumber)));
+    const merged = [...state.history];
+    for (const h of saved.history) {
+      const p = String(h.period || h.issueNumber);
+      if (!existingPeriods.has(p)) {
+        merged.push(h);
+        existingPeriods.add(p);
+      }
+    }
+    merged.sort((a, b) => {
+      const A = BigInt(a.period || a.issueNumber || 0);
+      const B = BigInt(b.period || b.issueNumber || 0);
+      return A > B ? -1 : A < B ? 1 : 0;
+    });
+    state.history = merged.slice(0, 500);
+  }
+  if (saved.strategy && typeof saved.strategy === "object") {
+    state.strategy = { ...state.strategy, ...saved.strategy };
+  }
   if (Array.isArray(saved.subs) && saved.subs.length) {
-    state.subs = saved.subs.map(s => ({
-      uid: null,
-      uidStatus: "NONE",
-      uidSubmittedAt: null,
-      active: false,
-      msgs: [],
-      ...s
-    }));
+    const existingMap = new Map(state.subs.map(s => [s.id, s]));
+    for (const s of saved.subs) {
+      if (!existingMap.has(s.id)) {
+        existingMap.set(s.id, {
+          uid: null,
+          uidStatus: "NONE",
+          uidSubmittedAt: null,
+          active: false,
+          msgs: [],
+          sessionWins: 0,
+          sessionNumber: 1,
+          dailyWins: 0,
+          dailyDate: null,
+          cooldownUntil: null,
+          lastPendingPeriod: null,
+          freeTrialActive: false,
+          freeTrialUsed: false,
+          freeTrialWins: 0,
+          pastLog: [],
+          ...s
+        });
+      } else {
+        const cur = existingMap.get(s.id);
+        Object.assign(cur, s);
+      }
+    }
+    state.subs = Array.from(existingMap.values());
   }
   if (Number.isFinite(saved.subOffset)) state.subOffset = saved.subOffset;
   if (Array.isArray(saved.log) && saved.log.length) {
@@ -60,6 +132,12 @@ function applySaved(saved) {
   if (saved.stats) state.stats = { ...state.stats, ...saved.stats };
   if (saved.run) state.run = { ...state.run, ...saved.run };
   if (saved.engine) state.engine = { ...state.engine, ...saved.engine };
+  if (saved.channelForward && typeof saved.channelForward === "object") {
+    state.channelForward = { ...state.channelForward, ...saved.channelForward };
+  }
+  if (Array.isArray(saved.forwardChannels)) {
+    state.forwardChannels = saved.forwardChannels;
+  }
 }
 
 export function load() {
@@ -106,31 +184,33 @@ export async function syncToRemote(force = false) {
   if (!token || !repo) return false;
 
   const now = Date.now();
-  // Throttle automatic periodic syncs to once every 3 minutes unless forced
-  if (!force && now - lastRemoteSync < 180000) return false;
+  // Throttle automatic periodic syncs to once every 20 seconds unless forced
+  if (!force && now - lastRemoteSync < 20000) return false;
   if (syncingRemote) return false;
 
   syncingRemote = true;
   try {
-    if (!remoteSha) {
-      const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/state.json?ref=${branch}`, {
-        headers: { "Authorization": `Bearer ${token}`, "User-Agent": "Wingo-Engine" },
-        signal: AbortSignal.timeout(8000)
-      });
-      if (getRes.ok) {
-        const d = await getRes.json();
-        remoteSha = d.sha;
-      }
+    const getRes = await fetch(`https://api.github.com/repos/${repo}/contents/state.json?ref=${branch}`, {
+      headers: { "Authorization": `Bearer ${token}`, "User-Agent": "Wingo-Engine" },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (getRes.ok) {
+      const d = await getRes.json();
+      remoteSha = d.sha;
     }
 
     const payload = {
       cfg: state.cfg,
       subs: state.subs,
       subOffset: state.subOffset,
+      history: state.history.slice(0, 500),
+      strategy: state.strategy,
       log: state.log.slice(0, 6),
       stats: state.stats,
       run: state.run,
       engine: state.engine,
+      channelForward: state.channelForward,
+      forwardChannels: state.forwardChannels,
       savedAt: Date.now()
     };
 
@@ -167,17 +247,21 @@ export async function syncToRemote(force = false) {
   }
 }
 
-function saveLocalNow() {
+export function saveLocalNow() {
   try {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     const payload = {
       cfg: state.cfg,
       subs: state.subs,
       subOffset: state.subOffset,
+      history: state.history.slice(0, 500),
+      strategy: state.strategy,
       log: state.log.slice(0, 6),
       stats: state.stats,
       run: state.run,
-      engine: state.engine
+      engine: state.engine,
+      channelForward: state.channelForward,
+      forwardChannels: state.forwardChannels
     };
     const tmp = FILE + ".tmp";
     fs.writeFileSync(tmp, JSON.stringify(payload));
