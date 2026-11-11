@@ -689,11 +689,17 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-11",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261111100052197",
+      "lastPendingPeriod": "20261111100052198",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 0,
-      "pastLog": [],
+      "pastLog": [
+        {
+          "period": "20261111100052197",
+          "side": "BIG",
+          "status": "LOSS"
+        }
+      ],
       "id": 1952722932,
       "name": "ᵗʰᵉ→ＲＩＣ HＩ戀",
       "username": "NXT_PRIME_369",
@@ -2211,6 +2217,12 @@
   ],
   "subOffset": 700547693,
   "history": [
+    {
+      "period": "20261111100052197",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261111100052196",
       "number": 9,
@@ -5204,12 +5216,6 @@
       "number": 9,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261111100051697",
-      "number": 1,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -5227,10 +5233,16 @@
   },
   "log": [
     {
-      "period": "20261111100052197",
+      "period": "20261111100052198",
       "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100052197",
+      "label": "BIG",
+      "actual": "SMALL (0)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261111100052196",
@@ -5255,12 +5267,6 @@
       "label": "SMALL",
       "actual": "BIG (5)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261111100052192",
-      "label": "BIG",
-      "actual": "SMALL (2)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -5274,13 +5280,13 @@
     "totalTested": 499
   },
   "run": {
-    "mode": "TOP LATEST (2/2)",
-    "consecutiveLosses": 1,
+    "mode": "BOTTOM 10TH (1/2)",
+    "consecutiveLosses": 2,
     "prediction": "BIG",
     "numbers": [],
-    "level": 2,
+    "level": 3,
     "isSkip": false,
-    "predictionForPeriod": "20261111100052197"
+    "predictionForPeriod": "20261111100052198"
   },
   "engine": {
     "enabled": true
@@ -5299,5 +5305,5 @@
     "lastPendingPeriod": null,
     "pastLog": []
   },
-  "savedAt": 1794421101840
+  "savedAt": 1794421108387
 }
