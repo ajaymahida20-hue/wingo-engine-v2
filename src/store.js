@@ -45,7 +45,21 @@ export const state = {
   startedAt: Date.now(),
   lastPoll: 0,
   lastPollError: "",
-  statLines: { polls: 0, rounds: 0, posts: 0 }
+  statLines: { polls: 0, rounds: 0, posts: 0 },
+  channelForward: {
+    target: "",
+    chatId: null,
+    title: "",
+    username: "",
+    type: "",
+    verified: false,
+    active: false,
+    sessionWins: 0,
+    targetWins: 5,
+    status: "IDLE",
+    lastPendingPeriod: null,
+    pastLog: []
+  }
 };
 
 let remoteSha = null;
@@ -117,6 +131,9 @@ function applySaved(saved) {
   if (saved.stats) state.stats = { ...state.stats, ...saved.stats };
   if (saved.run) state.run = { ...state.run, ...saved.run };
   if (saved.engine) state.engine = { ...state.engine, ...saved.engine };
+  if (saved.channelForward && typeof saved.channelForward === "object") {
+    state.channelForward = { ...state.channelForward, ...saved.channelForward };
+  }
 }
 
 export function load() {
@@ -188,6 +205,7 @@ export async function syncToRemote(force = false) {
       stats: state.stats,
       run: state.run,
       engine: state.engine,
+      channelForward: state.channelForward,
       savedAt: Date.now()
     };
 
@@ -236,7 +254,8 @@ export function saveLocalNow() {
       log: state.log.slice(0, 6),
       stats: state.stats,
       run: state.run,
-      engine: state.engine
+      engine: state.engine,
+      channelForward: state.channelForward
     };
     const tmp = FILE + ".tmp";
     fs.writeFileSync(tmp, JSON.stringify(payload));
