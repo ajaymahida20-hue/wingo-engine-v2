@@ -22,14 +22,15 @@
       "name": "Prince Saww",
       "username": "prince4534",
       "since": 1794373020274,
-      "uid": null,
-      "uidStatus": "NONE",
-      "uidSubmittedAt": null,
+      "uid": "407168",
+      "uidStatus": "PENDING_UID",
+      "uidSubmittedAt": 1794373372297,
       "active": false,
       "msgs": [
         3217,
         3218,
-        3221
+        3221,
+        3228
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -314,8 +315,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547360,
+  "subOffset": 700547361,
   "history": [
+    {
+      "period": "20261111100050606",
+      "number": 7,
+      "result": "BIG",
+      "color": "green"
+    },
     {
       "period": "20261111100050605",
       "number": 3,
@@ -3309,12 +3316,6 @@
       "number": 8,
       "result": "BIG",
       "color": "red"
-    },
-    {
-      "period": "20261111100050106",
-      "number": 0,
-      "result": "SMALL",
-      "color": "red,violet"
     }
   ],
   "strategy": {
@@ -3332,10 +3333,16 @@
   },
   "log": [
     {
-      "period": "20261111100050606",
-      "label": "SMALL",
+      "period": "20261111100050607",
+      "label": "SKIP",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261111100050606",
+      "label": "SMALL",
+      "actual": "BIG (7)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261111100050605",
@@ -3360,34 +3367,28 @@
       "label": "BIG",
       "actual": "BIG (6)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261111100050601",
-      "label": "SKIP",
-      "actual": "BIG (7)",
-      "resultText": "⏳ SKIP"
     }
   ],
   "stats": {
     "wins": 255,
     "jackpots": 0,
-    "losses": 238,
+    "losses": 239,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
     "winRate": 52,
-    "totalTested": 493
+    "totalTested": 494
   },
   "run": {
-    "mode": "7-PERIOD LOOKBACK (OPPOSITE)",
-    "prediction": "SMALL",
+    "mode": "PAUSED / WAIT",
+    "prediction": "SKIP",
     "numbers": [],
     "level": 0,
-    "isSkip": false,
-    "predictionForPeriod": "20261111100050606"
+    "isSkip": true,
+    "predictionForPeriod": "20261111100050607"
   },
   "engine": {
     "enabled": true
   },
-  "savedAt": 1794373371099
+  "savedAt": 1794373378054
 }
