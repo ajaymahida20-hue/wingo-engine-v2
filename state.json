@@ -356,7 +356,8 @@
         4552,
         4588,
         4590,
-        4640
+        4640,
+        4711
       ],
       "sessionWins": 0,
       "sessionNumber": 1,
@@ -2389,8 +2390,14 @@
       "waitingForWin": false
     }
   ],
-  "subOffset": 700547774,
+  "subOffset": 700547775,
   "history": [
+    {
+      "period": "20261112100051011",
+      "number": 0,
+      "result": "SMALL",
+      "color": "red,violet"
+    },
     {
       "period": "20261112100051010",
       "number": 7,
@@ -5384,12 +5391,6 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261112100050511",
-      "number": 0,
-      "result": "SMALL",
-      "color": "red,violet"
     }
   ],
   "strategy": {
@@ -5407,10 +5408,16 @@
   },
   "log": [
     {
-      "period": "20261112100051011",
-      "label": "BIG",
+      "period": "20261112100051012",
+      "label": "SMALL",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261112100051011",
+      "label": "BIG",
+      "actual": "SMALL (0)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261112100051010",
@@ -5435,32 +5442,26 @@
       "label": "SMALL",
       "actual": "SMALL (0)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261112100051006",
-      "label": "BIG",
-      "actual": "SMALL (4)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 257,
+    "wins": 256,
     "jackpots": 0,
-    "losses": 242,
+    "losses": 243,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
-    "winRate": 52,
+    "winRate": 51,
     "totalTested": 499
   },
   "run": {
-    "mode": "TOP LATEST (1/2)",
-    "consecutiveLosses": 0,
-    "prediction": "BIG",
+    "mode": "TOP LATEST (2/2)",
+    "consecutiveLosses": 1,
+    "prediction": "SMALL",
     "numbers": [],
-    "level": 1,
+    "level": 2,
     "isSkip": false,
-    "predictionForPeriod": "20261112100051011"
+    "predictionForPeriod": "20261112100051012"
   },
   "engine": {
     "enabled": true
@@ -5497,5 +5498,5 @@
       "createdAt": 1794422397974
     }
   ],
-  "savedAt": 1794471920986
+  "savedAt": 1794471928078
 }
