@@ -609,11 +609,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-12",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261112100050204",
+      "lastPendingPeriod": "20261112100050205",
       "freeTrialActive": true,
       "freeTrialUsed": false,
-      "freeTrialWins": 3,
+      "freeTrialWins": 4,
       "pastLog": [
+        {
+          "period": "20261112100050204",
+          "side": "BIG",
+          "status": "WIN"
+        },
         {
           "period": "20261112100050203",
           "side": "SMALL",
@@ -631,11 +636,6 @@
         },
         {
           "period": "20261112100050200",
-          "side": "BIG",
-          "status": "WIN"
-        },
-        {
-          "period": "20261112100050199",
           "side": "BIG",
           "status": "WIN"
         }
@@ -2082,6 +2082,12 @@
   ],
   "subOffset": 700547713,
   "history": [
+    {
+      "period": "20261112100050204",
+      "number": 6,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261112100050203",
       "number": 8,
@@ -5075,12 +5081,6 @@
       "number": 2,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261111100052584",
-      "number": 3,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -5098,10 +5098,16 @@
   },
   "log": [
     {
-      "period": "20261112100050204",
+      "period": "20261112100050205",
       "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261112100050204",
+      "label": "BIG",
+      "actual": "BIG (6)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261112100050203",
@@ -5126,12 +5132,6 @@
       "label": "BIG",
       "actual": "BIG (5)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261112100050199",
-      "label": "BIG",
-      "actual": "BIG (5)",
-      "resultText": "✅ WIN"
     }
   ],
   "stats": {
@@ -5145,13 +5145,13 @@
     "totalTested": 499
   },
   "run": {
-    "mode": "TOP LATEST (2/2)",
-    "consecutiveLosses": 1,
+    "mode": "TOP LATEST (1/2)",
+    "consecutiveLosses": 0,
     "prediction": "BIG",
     "numbers": [],
-    "level": 2,
+    "level": 1,
     "isSkip": false,
-    "predictionForPeriod": "20261112100050204"
+    "predictionForPeriod": "20261112100050205"
   },
   "engine": {
     "enabled": true
@@ -5188,5 +5188,5 @@
       "createdAt": 1794422397974
     }
   ],
-  "savedAt": 1794447711365
+  "savedAt": 1794447718335
 }
