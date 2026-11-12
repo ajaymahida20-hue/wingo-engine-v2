@@ -55,16 +55,21 @@
         4868,
         4869
       ],
-      "sessionWins": 2,
+      "sessionWins": 3,
       "sessionNumber": 2,
-      "dailyWins": 7,
+      "dailyWins": 8,
       "dailyDate": "2026-11-12",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261112100052119",
+      "lastPendingPeriod": "20261112100052120",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 0,
       "pastLog": [
+        {
+          "period": "20261112100052119",
+          "side": "BIG",
+          "status": "WIN"
+        },
         {
           "period": "20261112100052118",
           "side": "BIG",
@@ -83,11 +88,6 @@
         {
           "period": "20261112100052115",
           "side": "BIG",
-          "status": "LOSS"
-        },
-        {
-          "period": "20261112100052114",
-          "side": "SMALL",
           "status": "LOSS"
         }
       ],
@@ -2322,6 +2322,12 @@
   ],
   "subOffset": 700547875,
   "history": [
+    {
+      "period": "20261112100052119",
+      "number": 5,
+      "result": "BIG",
+      "color": "green,violet"
+    },
     {
       "period": "20261112100052118",
       "number": 4,
@@ -5315,12 +5321,6 @@
       "number": 1,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261112100051063",
-      "number": 3,
-      "result": "SMALL",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -5338,10 +5338,16 @@
   },
   "log": [
     {
-      "period": "20261112100052119",
+      "period": "20261112100052120",
       "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261112100052119",
+      "label": "BIG",
+      "actual": "BIG (5)",
+      "resultText": "✅ WIN"
     },
     {
       "period": "20261112100052118",
@@ -5366,12 +5372,6 @@
       "label": "BIG",
       "actual": "SMALL (2)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261112100052114",
-      "label": "SMALL",
-      "actual": "BIG (6)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -5385,13 +5385,13 @@
     "totalTested": 499
   },
   "run": {
-    "mode": "PAST LOOKUP (1st Match, Round 3)",
-    "consecutiveLosses": 2,
+    "mode": "TOP LATEST (Round 1/2)",
+    "consecutiveLosses": 0,
     "prediction": "BIG",
     "numbers": [],
-    "level": 3,
+    "level": 1,
     "isSkip": false,
-    "predictionForPeriod": "20261112100052119"
+    "predictionForPeriod": "20261112100052120"
   },
   "engine": {
     "enabled": true
@@ -5440,5 +5440,5 @@
       "createdAt": 1794422397974
     }
   ],
-  "savedAt": 1794505162523
+  "savedAt": 1794505168615
 }
