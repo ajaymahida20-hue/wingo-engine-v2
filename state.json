@@ -71,11 +71,16 @@
       "dailyWins": 10,
       "dailyDate": "2026-11-12",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261112100052147",
+      "lastPendingPeriod": "20261112100052148",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 0,
       "pastLog": [
+        {
+          "period": "20261112100052147",
+          "side": "SMALL",
+          "status": "LOSS"
+        },
         {
           "period": "20261112100052146",
           "side": "SMALL",
@@ -2322,6 +2327,12 @@
   ],
   "subOffset": 700547879,
   "history": [
+    {
+      "period": "20261112100052147",
+      "number": 9,
+      "result": "BIG",
+      "color": "green"
+    },
     {
       "period": "20261112100052146",
       "number": 8,
@@ -5315,12 +5326,6 @@
       "number": 4,
       "result": "SMALL",
       "color": "red"
-    },
-    {
-      "period": "20261112100051091",
-      "number": 8,
-      "result": "BIG",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -5338,10 +5343,16 @@
   },
   "log": [
     {
-      "period": "20261112100052147",
-      "label": "SMALL",
+      "period": "20261112100052148",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261112100052147",
+      "label": "SMALL",
+      "actual": "BIG (9)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261112100052146",
@@ -5366,18 +5377,12 @@
       "label": "BIG",
       "actual": "BIG (7)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261112100052142",
-      "label": "SMALL",
-      "actual": "BIG (5)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 233,
+    "wins": 235,
     "jackpots": 0,
-    "losses": 266,
+    "losses": 264,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
@@ -5385,13 +5390,13 @@
     "totalTested": 499
   },
   "run": {
-    "mode": "PAST LOOKUP (2nd Match, Round 4)",
-    "consecutiveLosses": 3,
-    "prediction": "SMALL",
+    "mode": "TOP LATEST (Extended, Round 5)",
+    "consecutiveLosses": 4,
+    "prediction": "BIG",
     "numbers": [],
-    "level": 4,
+    "level": 5,
     "isSkip": false,
-    "predictionForPeriod": "20261112100052147"
+    "predictionForPeriod": "20261112100052148"
   },
   "engine": {
     "enabled": true
@@ -5440,5 +5445,5 @@
       "createdAt": 1794422397974
     }
   ],
-  "savedAt": 1794506002368
+  "savedAt": 1794506008670
 }
