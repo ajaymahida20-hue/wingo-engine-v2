@@ -1,4 +1,4 @@
-// The control panel: a tiny JSON API plus the static page that drives it.
+﻿// The control panel: a tiny JSON API plus the static page that drives it.
 // Focuses on Engine controls, Feed diagnostics, and Bot Member UID Verification.
 
 import http from "node:http";
@@ -105,8 +105,8 @@ function snapshot() {
       pendingUid: state.subs.filter(s => s.uidStatus === "PENDING_UID").length,
       depositPending: state.subs.filter(s => s.uidStatus === "DEPOSIT_PENDING").length,
       pending: state.subs.filter(s => s.uidStatus === "PENDING").length,
-      freeTrial: state.subs.filter(s => s.freeTrialActive && (s.freeTrialWins || 0) < 5).length,
-      live: state.subs.filter(s => s.active && (s.uidStatus === "VERIFIED" || (s.freeTrialActive && (s.freeTrialWins || 0) < 5))).length
+      freeTrial: 0,
+      live: state.subs.filter(s => s.active && s.uidStatus === "VERIFIED").length
     },
     channelForward: state.channelForward || {
       target: "",
