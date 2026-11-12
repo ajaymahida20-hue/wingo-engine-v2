@@ -1,20 +1,21 @@
-// WinGo Top/Bottom Loss-Alternating Prediction Engine
+﻿// WinGo Adaptive Loss-Progression Prediction Engine
 //
-// Calculation Rule:
+// Calculation Flow:
 // 1. Initially (or after ANY WIN):
-//    Take the TOP (latest) history round (e.g. if predicting 213, take 212).
+//    Round 1 (0 Losses): Take the TOP (latest) history round.
 // 2. If it results in LOSS (1st loss):
-//    Take the TOP (latest) history round again (2nd try of top).
+//    Round 2 (1 Loss): Take the TOP (latest) history round again.
 // 3. If it results in LOSS (2nd loss):
-//    Take the BOTTOM 10th history round from the first page (index 9).
+//    Round 3 (2 Losses): Take the number of the top history round, find its 1st past
+//    occurrence in history, and take the result of the round directly above it.
 // 4. If it results in LOSS (3rd loss):
-//    Take the BOTTOM 10th history round again (2nd try of bottom).
-// 5. If it results in LOSS (4th loss):
-//    Switch back to TOP (latest) history round.
-// Pattern on consecutive losses:
-//    2 times TOP -> 2 times BOTTOM -> 2 times TOP -> 2 times BOTTOM...
+//    Round 4 (3 Losses): Take the number of the top history round, find its 2nd past
+//    occurrence in history (skipping the 1st match), and take the result of the round directly above it.
+// 5. If it results in LOSS (4+ losses):
+//    Round 5+ (4+ Losses): Take the TOP (latest) history round repeatedly until WIN.
+//
 // AND ON ANY WIN:
-//    Instantly reset back to TOP (latest) history round!
+//    Instantly reset consecutiveLosses = 0 and restart flow from Round 1!
 
 import { state, persist } from "./store.js";
 import { nextPeriod } from "./history.js";
@@ -48,6 +49,115 @@ export function outcomeTag(resultText) {
 }
 
 // ==========================================
+// 🎯 CORE STRATEGY TARGET SELECTOR
+// ==========================================
+export function getStrategyTarget(historyList, losses = 0) {
+  if (!historyList || historyList.length === 0) return null;
+
+  const topRound = historyList[0];
+  const topNum = parseInt(topRound.number ?? topRound.Number, 10);
+
+  // Round 1 (losses === 0) & Round 2 (losses === 1): TOP
+  if (losses === 0 || losses === 1) {
+    const refNum = parseInt(topRound.number ?? topRound.Number, 10);
+    const predictedType = (topRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    return {
+      refRound: topRound,
+      predictedType,
+      refNumber: refNum,
+      mode: `TOP LATEST (Round ${losses + 1}/2)`,
+      level: losses + 1,
+      targetNumber: null
+    };
+  }
+
+  // Round 3 (losses === 2): 1st past match of top number -> round above it
+  if (losses === 2) {
+    let foundIndex = -1;
+    for (let i = 1; i < historyList.length; i++) {
+      const n = parseInt(historyList[i].number ?? historyList[i].Number, 10);
+      if (n === topNum) {
+        foundIndex = i;
+        break;
+      }
+    }
+
+    let refRound = topRound;
+    let mode = `PAST LOOKUP (1st Match, Round 3)`;
+    if (foundIndex > 0) {
+      refRound = historyList[foundIndex - 1]; // Round directly above the match in history
+    } else {
+      mode = `PAST LOOKUP (Fallback Top, Round 3)`;
+    }
+
+    const refNum = parseInt(refRound.number ?? refRound.Number, 10);
+    const predictedType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    return {
+      refRound,
+      predictedType,
+      refNumber: refNum,
+      mode,
+      level: 3,
+      targetNumber: topNum,
+      matchIndex: foundIndex
+    };
+  }
+
+  // Round 4 (losses === 3): 2nd past match of top number -> round above it
+  if (losses === 3) {
+    let matchCount = 0;
+    let match1Index = -1;
+    let match2Index = -1;
+    for (let i = 1; i < historyList.length; i++) {
+      const n = parseInt(historyList[i].number ?? historyList[i].Number, 10);
+      if (n === topNum) {
+        matchCount++;
+        if (matchCount === 1) match1Index = i;
+        else if (matchCount === 2) {
+          match2Index = i;
+          break;
+        }
+      }
+    }
+
+    let refRound = topRound;
+    let mode = `PAST LOOKUP (2nd Match, Round 4)`;
+    if (match2Index > 0) {
+      refRound = historyList[match2Index - 1]; // Round directly above 2nd match
+    } else if (match1Index > 0) {
+      refRound = historyList[match1Index - 1];
+      mode = `PAST LOOKUP (1st Match Fallback, Round 4)`;
+    } else {
+      mode = `PAST LOOKUP (Fallback Top, Round 4)`;
+    }
+
+    const refNum = parseInt(refRound.number ?? refRound.Number, 10);
+    const predictedType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    return {
+      refRound,
+      predictedType,
+      refNumber: refNum,
+      mode,
+      level: 4,
+      targetNumber: topNum,
+      matchIndex: match2Index > 0 ? match2Index : match1Index
+    };
+  }
+
+  // Round 5+ (losses >= 4): TOP repeatedly until win
+  const refNum = parseInt(topRound.number ?? topRound.Number, 10);
+  const predictedType = (topRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+  return {
+    refRound: topRound,
+    predictedType,
+    refNumber: refNum,
+    mode: `TOP LATEST (Extended, Round ${losses + 1})`,
+    level: losses + 1,
+    targetNumber: null
+  };
+}
+
+// ==========================================
 // 🧠 HISTORICAL SIMULATION
 // ==========================================
 export function simulateStrategy(historyList = state.history) {
@@ -69,25 +179,15 @@ export function simulateStrategy(historyList = state.history) {
 
   for (let i = 1; i < chrono.length; i++) {
     const currentRound = chrono[i];
-    const step = simLosses % 4;
-    const isTop = (step === 0 || step === 1);
-
-    let refRound;
-    if (isTop) {
-      refRound = chrono[i - 1]; // Previous round (Top)
-    } else {
-      const bottomIdx = Math.max(0, i - 10);
-      refRound = chrono[bottomIdx]; // 10 rounds back (Bottom)
-    }
-
-    if (!refRound) continue;
+    // subHistory contains past rounds prior to currentRound in newest-first order
+    const subHistory = chrono.slice(0, i).reverse();
+    const target = getStrategyTarget(subHistory, simLosses);
+    if (!target || !target.refRound) continue;
 
     const currentPeriod = String(currentRound.period || currentRound.issueNumber || "");
     const actualNum = parseInt(currentRound.number ?? currentRound.Number, 10);
-    const actualType = currentRound.result || (actualNum >= 5 ? "BIG" : "SMALL");
-
-    const refNum = parseInt(refRound.number ?? refRound.Number, 10);
-    const predictedType = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    const actualType = (currentRound.result || (actualNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+    const predictedType = target.predictedType;
 
     const isWin = (actualType === predictedType);
     stats.totalTested++;
@@ -100,7 +200,7 @@ export function simulateStrategy(historyList = state.history) {
         actualNumber: actualNum,
         actualType,
         predictedType,
-        level: step + 1,
+        level: target.level,
         status: "WIN"
       });
     } else {
@@ -111,7 +211,7 @@ export function simulateStrategy(historyList = state.history) {
         actualNumber: actualNum,
         actualType,
         predictedType,
-        level: step + 1,
+        level: target.level,
         status: "LOSS"
       });
     }
@@ -120,21 +220,18 @@ export function simulateStrategy(historyList = state.history) {
   stats.winRate = stats.totalTested > 0 ? Math.round((stats.totalWins / stats.totalTested) * 100) : 0;
 
   const liveLosses = state.run?.consecutiveLosses || 0;
-  const liveStep = liveLosses % 4;
-  const liveIsTop = (liveStep === 0 || liveStep === 1);
-  const liveRef = liveIsTop ? historyList[0] : historyList[Math.min(historyList.length - 1, 9)];
+  const liveTarget = getStrategyTarget(historyList, liveLosses);
 
   let nextLivePrediction = null;
-  if (liveRef) {
-    const rNum = parseInt(liveRef.number ?? liveRef.Number, 10);
-    const pType = (liveRef.result || (rNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+  if (liveTarget && liveTarget.refRound) {
     nextLivePrediction = {
       isSkip: false,
-      level: liveStep + 1,
-      predictedType: pType,
-      mode: liveIsTop ? `TOP (LATEST, Round ${liveStep + 1}/2)` : `BOTTOM (10TH, Round ${liveStep - 1}/2)`,
-      refPeriod: String(liveRef.period || liveRef.issueNumber || ""),
-      refNumber: rNum
+      level: liveTarget.level,
+      predictedType: liveTarget.predictedType,
+      mode: liveTarget.mode,
+      refPeriod: String(liveTarget.refRound.period || liveTarget.refRound.issueNumber || ""),
+      refNumber: liveTarget.refNumber,
+      targetNumber: liveTarget.targetNumber
     };
   }
 
@@ -157,17 +254,11 @@ export function computePrediction() {
 
   const period = nextPeriod(); // Upcoming period
   const losses = state.run.consecutiveLosses || 0;
-  const step = losses % 4;
-  const isTop = (step === 0 || step === 1);
 
-  // If top: history[0] (latest history)
-  // If bottom: 10th history (history[9], or oldest available if fewer than 10)
-  const refIndex = isTop ? 0 : Math.min(state.history.length - 1, 9);
-  const refRound = state.history[refIndex];
-  if (!refRound) return null;
+  const target = getStrategyTarget(state.history, losses);
+  if (!target || !target.refRound) return null;
 
-  const refNum = parseInt(refRound.number ?? refRound.Number, 10);
-  const prediction = (refRound.result || (refNum >= 5 ? "BIG" : "SMALL")).toUpperCase();
+  const prediction = target.predictedType;
 
   const sim = simulateStrategy(state.history);
   if (sim && sim.stats) {
@@ -177,20 +268,17 @@ export function computePrediction() {
     state.stats.totalTested = sim.stats.totalTested;
   }
 
-  const modeName = isTop
-    ? `TOP LATEST (${step + 1}/2)`
-    : `BOTTOM 10TH (${step - 1}/2)`;
-
   const detail = {
-    mode: modeName,
+    mode: target.mode,
     prediction,
     numbers: [],
-    level: step + 1,
+    level: target.level,
     isSkip: false,
-    refPeriod: String(refRound.period || refRound.issueNumber || ""),
-    refNumber: refNum,
+    refPeriod: String(target.refRound.period || target.refRound.issueNumber || ""),
+    refNumber: target.refNumber,
     refType: prediction,
     consecutiveLosses: losses,
+    targetNumber: target.targetNumber,
     stats: sim ? sim.stats : state.stats
   };
   state.lastDetail = detail;
@@ -198,7 +286,7 @@ export function computePrediction() {
   return {
     prediction,
     numbers: [],
-    level: step + 1,
+    level: target.level,
     isSkip: false,
     detail
   };
@@ -272,7 +360,7 @@ export function resolvePending(newest) {
 export function resetStrategy() {
   state.strategy.skipRemaining = 0;
   state.run = {
-    mode: "TOP LATEST (1/2)",
+    mode: "TOP LATEST (Round 1/2)",
     consecutiveLosses: 0,
     prediction: null,
     numbers: [],
