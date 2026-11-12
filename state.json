@@ -58,11 +58,16 @@
       "dailyWins": 7,
       "dailyDate": "2026-11-12",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261112100052117",
+      "lastPendingPeriod": "20261112100052118",
       "freeTrialActive": false,
       "freeTrialUsed": true,
       "freeTrialWins": 0,
       "pastLog": [
+        {
+          "period": "20261112100052117",
+          "side": "SMALL",
+          "status": "LOSS"
+        },
         {
           "period": "20261112100052116",
           "side": "SMALL",
@@ -81,11 +86,6 @@
         {
           "period": "20261112100052113",
           "side": "SMALL",
-          "status": "LOSS"
-        },
-        {
-          "period": "20261112100052112",
-          "side": "BIG",
           "status": "LOSS"
         }
       ],
@@ -2533,6 +2533,12 @@
   ],
   "subOffset": 700547875,
   "history": [
+    {
+      "period": "20261112100052117",
+      "number": 6,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261112100052116",
       "number": 0,
@@ -5526,12 +5532,6 @@
       "number": 9,
       "result": "BIG",
       "color": "green"
-    },
-    {
-      "period": "20261112100051061",
-      "number": 4,
-      "result": "SMALL",
-      "color": "red"
     }
   ],
   "strategy": {
@@ -5549,10 +5549,16 @@
   },
   "log": [
     {
-      "period": "20261112100052117",
-      "label": "SMALL",
+      "period": "20261112100052118",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261112100052117",
+      "label": "SMALL",
+      "actual": "BIG (6)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261112100052116",
@@ -5577,12 +5583,6 @@
       "label": "SMALL",
       "actual": "BIG (8)",
       "resultText": "❌ LOSS"
-    },
-    {
-      "period": "20261112100052112",
-      "label": "BIG",
-      "actual": "SMALL (4)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
@@ -5596,13 +5596,13 @@
     "totalTested": 499
   },
   "run": {
-    "mode": "TOP LATEST (Round 1/2)",
-    "consecutiveLosses": 0,
-    "prediction": "SMALL",
+    "mode": "TOP LATEST (Round 2/2)",
+    "consecutiveLosses": 1,
+    "prediction": "BIG",
     "numbers": [],
-    "level": 1,
+    "level": 2,
     "isSkip": false,
-    "predictionForPeriod": "20261112100052117"
+    "predictionForPeriod": "20261112100052118"
   },
   "engine": {
     "enabled": true
@@ -5651,5 +5651,5 @@
       "createdAt": 1794422397974
     }
   ],
-  "savedAt": 1794505104073
+  "savedAt": 1794505108801
 }
