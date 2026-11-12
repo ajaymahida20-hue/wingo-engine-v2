@@ -608,11 +608,16 @@
       "dailyWins": 0,
       "dailyDate": "2026-11-12",
       "cooldownUntil": null,
-      "lastPendingPeriod": "20261112100050203",
+      "lastPendingPeriod": "20261112100050204",
       "freeTrialActive": true,
       "freeTrialUsed": false,
       "freeTrialWins": 3,
       "pastLog": [
+        {
+          "period": "20261112100050203",
+          "side": "SMALL",
+          "status": "LOSS"
+        },
         {
           "period": "20261112100050202",
           "side": "SMALL",
@@ -2076,6 +2081,12 @@
   ],
   "subOffset": 700547713,
   "history": [
+    {
+      "period": "20261112100050203",
+      "number": 8,
+      "result": "BIG",
+      "color": "red"
+    },
     {
       "period": "20261112100050202",
       "number": 2,
@@ -5069,12 +5080,6 @@
       "number": 3,
       "result": "SMALL",
       "color": "green"
-    },
-    {
-      "period": "20261111100052583",
-      "number": 7,
-      "result": "BIG",
-      "color": "green"
     }
   ],
   "strategy": {
@@ -5092,10 +5097,16 @@
   },
   "log": [
     {
-      "period": "20261112100050203",
-      "label": "SMALL",
+      "period": "20261112100050204",
+      "label": "BIG",
       "actual": "?",
       "resultText": "PENDING"
+    },
+    {
+      "period": "20261112100050203",
+      "label": "SMALL",
+      "actual": "BIG (8)",
+      "resultText": "❌ LOSS"
     },
     {
       "period": "20261112100050202",
@@ -5120,32 +5131,26 @@
       "label": "BIG",
       "actual": "BIG (5)",
       "resultText": "✅ WIN"
-    },
-    {
-      "period": "20261112100050198",
-      "label": "SMALL",
-      "actual": "BIG (5)",
-      "resultText": "❌ LOSS"
     }
   ],
   "stats": {
-    "wins": 244,
+    "wins": 242,
     "jackpots": 0,
-    "losses": 255,
+    "losses": 257,
     "l1Wins": 59,
     "l2Wins": 32,
     "l3Wins": 14,
-    "winRate": 49,
+    "winRate": 48,
     "totalTested": 499
   },
   "run": {
-    "mode": "TOP LATEST (1/2)",
-    "consecutiveLosses": 0,
-    "prediction": "SMALL",
+    "mode": "TOP LATEST (2/2)",
+    "consecutiveLosses": 1,
+    "prediction": "BIG",
     "numbers": [],
-    "level": 1,
+    "level": 2,
     "isSkip": false,
-    "predictionForPeriod": "20261112100050203"
+    "predictionForPeriod": "20261112100050204"
   },
   "engine": {
     "enabled": true
@@ -5182,5 +5187,5 @@
       "createdAt": 1794422397974
     }
   ],
-  "savedAt": 1794447681533
+  "savedAt": 1794447688343
 }
